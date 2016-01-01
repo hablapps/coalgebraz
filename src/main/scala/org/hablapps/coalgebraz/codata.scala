@@ -1,6 +1,10 @@
 package org.hablapps.coalgebraz
 
+import scala.language.implicitConversions
+
 import scalaz._, Scalaz._
+
+import Coalgebra._
 
 case class Stream[H, X](head: H, tail: Option[X]) {
   def map[Y](f: X => Y): Stream[H, Y] = copy(tail = tail.map(f))
@@ -31,6 +35,25 @@ case class IStore[K, V, X](get: V, set: K => X) {
 case class Entity[I, O, B, X](observe: B, next: I => (List[O], Option[X])) {
   def map[Y](f: X => Y): Entity[I, O, B, Y] =
     copy(next = i => next(i).map(_ map f))
+}
+
+object Entity {
+
+  implicit def fromStream[H, X](
+      co: Costream[H, X]): Coentity[Unit, Unit, H, X] = { s =>
+    val Stream(h, f) = co(s)
+    Entity(h, _ => (List.empty, f))
+  }
+
+  implicit def fromAutomata[I, O, X](
+      co: Coautomata[I, O, X]): Coentity[I, O, Unit, X] = { s =>
+    val Automata(tr) = co(s)
+    Entity((), i => tr(i).fold(
+      (List.empty[O], None: Option[X])) { case (o, x) => (List(o), Option(x)) })
+  }
+
+  implicit def fromStore[K, V, X](
+      co: Costore[K, V, X]): Coentity[K, V, Unit, X] = ???
 }
 
 case class IEntity[I, O, B, X](observe: B, next: I => (List[O], X)) {
