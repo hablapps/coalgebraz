@@ -41,8 +41,14 @@ object Entity {
 
   implicit def fromStream[H, X](
       co: Costream[H, X]): Coentity[Unit, Unit, H, X] = { s =>
-    val Stream(h, f) = co(s)
-    Entity(h, _ => (List.empty, f))
+    val Stream(h, t) = co(s)
+    Entity(h, _ => (List.empty, t))
+  }
+
+  implicit def fromIStream[H, X](
+      co: Coistream[H, X]): Coentity[Unit, Unit, H, X] = { s =>
+    val IStream(h, t) = co(s)
+    Entity(h, _ => (List.empty, Option(t)))
   }
 
   implicit def fromAutomata[I, O, X](
@@ -52,8 +58,29 @@ object Entity {
       (List.empty[O], None: Option[X])) { case (o, x) => (List(o), Option(x)) })
   }
 
+  implicit def fromIAutomata[I, O, X](
+      co: Coiautomata[I, O, X]): Coentity[I, O, Unit, X] = { s =>
+    val IAutomata(tr) = co(s)
+    Entity((), i => tr(i).mapElements(List(_), Option.apply))
+  }
+
   implicit def fromStore[K, V, X](
-      co: Costore[K, V, X]): Coentity[K, V, Unit, X] = ???
+      co: Costore[K, V, X]): Coentity[K, Unit, V, X] = { s =>
+    val Store(get, set) = co(s)
+    Entity(get, i => (List.empty, set(i)))
+  }
+
+  implicit def fromIStore[K, V, X](
+      co: Coistore[K, V, X]): Coentity[K, Unit, V, X] = { s =>
+    val IStore(get, set) = co(s)
+    Entity(get, i => (List.empty, Option(set(i))))
+  }
+
+  implicit def fromIEntity[I, O, B, X](
+      co: Coientity[I, O, B, X]): Coentity[I, O, B, X] = { s =>
+    val IEntity(obs, nxt) = co(s)
+    Entity(obs, i => nxt(i).map(Option.apply))
+  }
 }
 
 case class IEntity[I, O, B, X](observe: B, next: I => (List[O], X)) {
