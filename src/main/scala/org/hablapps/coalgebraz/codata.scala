@@ -4,8 +4,6 @@ import scala.language.implicitConversions
 
 import scalaz._, Scalaz._
 
-import Coalgebra._
-
 case class Stream[H, X](head: H, tail: Option[X]) {
   def map[Y](f: X => Y): Stream[H, Y] = copy(tail = tail.map(f))
 }

@@ -2,8 +2,6 @@ package org.hablapps.coalgebraz
 
 import scalaz._, Scalaz._
 
-import Coalgebra._
-
 object Driver {
 
   def runCoentity[I, O, B, X](
