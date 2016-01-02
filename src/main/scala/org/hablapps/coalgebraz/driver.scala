@@ -4,7 +4,15 @@ import scalaz._, Scalaz._
 
 object Driver {
 
-  def runCoentity[I, O, B, X](
+  def behaviour[I, O, B, X](
+      co: Coentity[I, O, B, X], x: X, in: List[I]): List[B] =
+    run(co, x, in).map(_._2)
+
+  def output[I, O, B, X](
+      co: Coentity[I, O, B, X], x: X, in: List[I]): List[O] =
+    run(co, x, in).map(_._1).flatten
+
+  def run[I, O, B, X](
       co: Coentity[I, O, B, X], x: X, in: List[I]): List[(List[O], B)] =
     runHypertree(unfold(co, x), in)
 
