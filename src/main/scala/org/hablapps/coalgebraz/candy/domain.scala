@@ -12,3 +12,7 @@ case object Pear extends Flavour { override def toString = "♧" }
 
 sealed trait FlavourIn
 case class Become(flavour: Flavour) extends FlavourIn
+
+sealed trait PositionIn
+case class OverX(f: Int => Int) extends PositionIn
+case class OverY(f: Int => Int) extends PositionIn

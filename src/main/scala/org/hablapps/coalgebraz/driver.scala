@@ -23,7 +23,7 @@ object Driver {
       val v = List((os, ht.current))
       ox.fold(v)(ht2 => v ++ runHypertree(ht2, is))
     }
-    case Nil => List.empty
+    case Nil => List((List.empty, ht.current))
   }
 
   case class Hypertree[A, B, C](
