@@ -16,3 +16,20 @@ case class Become(flavour: Flavour) extends FlavourIn
 sealed trait PositionIn
 case class OverX(f: Int => Int) extends PositionIn
 case class OverY(f: Int => Int) extends PositionIn
+
+sealed trait Direction
+case object North extends Direction
+case object South extends Direction
+case object East extends Direction
+case object West extends Direction
+
+case class Candy(key: String, flavour: Flavour, position: (Int, Int))
+
+sealed trait CandyIn
+case object Crush extends CandyIn
+case class Fall(n: Int) extends CandyIn
+case class Slide(direction: Direction) extends CandyIn
+case class Mutate(flavour: Flavour) extends CandyIn
+
+sealed trait CandyOut
+case object ByeCandy extends CandyOut

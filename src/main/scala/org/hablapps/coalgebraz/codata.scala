@@ -38,13 +38,13 @@ case class Entity[I, O, B, X](observe: B, next: I => (List[O], Option[X])) {
 object Entity {
 
   implicit def fromStream[H, X](
-      co: Costream[H, X]): Coentity[Unit, Unit, H, X] = { s =>
+      co: Costream[H, X]): Coentity[Unit, Nothing, H, X] = { s =>
     val Stream(h, t) = co(s)
     Entity(h, _ => (List.empty, t))
   }
 
   implicit def fromIStream[H, X](
-      co: Coistream[H, X]): Coentity[Unit, Unit, H, X] = { s =>
+      co: Coistream[H, X]): Coentity[Unit, Nothing, H, X] = { s =>
     val IStream(h, t) = co(s)
     Entity(h, _ => (List.empty, Option(t)))
   }
@@ -63,13 +63,13 @@ object Entity {
   }
 
   implicit def fromStore[K, V, X](
-      co: Costore[K, V, X]): Coentity[K, Unit, V, X] = { s =>
+      co: Costore[K, V, X]): Coentity[K, Nothing, V, X] = { s =>
     val Store(get, set) = co(s)
     Entity(get, i => (List.empty, set(i)))
   }
 
   implicit def fromIStore[K, V, X](
-      co: Coistore[K, V, X]): Coentity[K, Unit, V, X] = { s =>
+      co: Coistore[K, V, X]): Coentity[K, Nothing, V, X] = { s =>
     val IStore(get, set) = co(s)
     Entity(get, i => (List.empty, Option(set(i))))
   }
