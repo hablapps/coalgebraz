@@ -2,7 +2,7 @@ package org.hablapps.coalgebraz.candy
 
 import org.hablapps.coalgebraz._
 
-import Coalgebra._
+import Coalgebra._, CoentityOps._
 
 object Cocandy {
 
