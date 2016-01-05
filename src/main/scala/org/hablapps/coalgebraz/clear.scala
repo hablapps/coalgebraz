@@ -7,7 +7,7 @@ trait ClearProduct[A, B] {
   def apply(a: A, b: B): C
 }
 
-trait ClearProductLowPriority {
+trait ClearProductLowestPriority {
   implicit def tupleClear[A, B]: ClearProduct.Aux[A, B, (A, B)] =
     new ClearProduct[A, B] {
       type C = (A, B)
@@ -15,19 +15,22 @@ trait ClearProductLowPriority {
     }
 }
 
-object ClearProduct extends ClearProductLowPriority {
+trait ClearProductLowerPriority extends ClearProductLowestPriority {
+  implicit def unit2Clear[B]: ClearProduct.Aux[Unit, B, B] =
+    new ClearProduct[Unit, B] {
+      type C = B
+      def apply(a: Unit, b: B) = b
+    }
+}
+
+object ClearProduct extends ClearProductLowerPriority {
+
   type Aux[A, B, C2] = ClearProduct[A, B] { type C = C2 }
 
   implicit def unit1Clear[A]: ClearProduct.Aux[A, Unit, A] =
     new ClearProduct[A, Unit] {
       type C = A
       def apply(a: A, b: Unit) = a
-    }
-
-  implicit def unit2Clear[B]: ClearProduct.Aux[Unit, B, B] =
-    new ClearProduct[Unit, B] {
-      type C = B
-      def apply(a: Unit, b: B) = b
     }
 }
 
@@ -56,6 +59,7 @@ trait ClearSumLowerPriority extends ClearSumLowestPriority {
 }
 
 object ClearSum extends ClearSumLowerPriority {
+
   type Aux[A, B, C2] = ClearSum[A, B] { type C = C2 }
 
   implicit def void1Clear[A]: ClearSum.Aux[A, Void, A] =

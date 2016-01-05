@@ -22,5 +22,7 @@ package object coalgebraz {
 
   type Coientity[I, O, C, X] = Coalgebra[({type λ[α] = IEntity[I, O, C, α]})#λ, X]
 
+  // XXX: using `type Void = Nothing` resulted in multiple errors because of the
+  // problems with implicit resolutions when `Void` is involved. 
   trait Void
 }

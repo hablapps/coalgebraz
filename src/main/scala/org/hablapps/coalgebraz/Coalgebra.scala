@@ -9,10 +9,10 @@ object Coalgebra {
   def always[A](value: A): Coentity[Unit, Void, A, A] =
     _ => Entity(value, _ => (List.empty, Option(value)))
 
-  def constant[A]: Coentity[Unit, Void, A, A] =
-    s => Entity(s, _ => (List.empty, Option(s)))
+  def constant[A]: Coentity[Void, Void, A, A] =
+    s => Entity(s, _ => ??? /* does never happen */)
 
-  def apart[I1, I2, I, O1, O2, O, B1, B2, B, X1, X2](
+  def putApart[I1, I2, I, O1, O2, O, B1, B2, B, X1, X2](
       co1: Coentity[I1, O1, B1, X1],
       co2: Coentity[I2, O2, B2, X2])(implicit
       ev0: ClearSum.Aux[I1, I2, I],
@@ -28,7 +28,7 @@ object Coalgebra {
 
   // TODO: why not implementing this version, where both coalgebras evolve
   // simultaneously?
-  def together[I1, I2, O1, O2, B1, B2, X1, X2](
+  def putTogether[I1, I2, O1, O2, B1, B2, X1, X2](
     co1: Coentity[I1, O1, B1, X1],
     co2: Coentity[I2, O2, B2, X2]): Coentity[(I1, I2), (O1, O2), (B1, B2), (X1, X2)] = ???
 }

@@ -8,7 +8,7 @@ import Coalgebra._, CoentityOps._
 
 object Cocandy {
 
-  val cokey: Coentity[Unit, Void, String, String] = constant[String]
+  val cokey: Coentity[Void, Void, String, String] = constant[String]
 
   val coflavour: Coistore[FlavourIn, Flavour, Flavour] =
     s => IStore(s, _ match {
@@ -24,5 +24,10 @@ object Cocandy {
 
   val cocandy: Coentity[CandyIn, CandyOut, Candy, Candy] = ???
 
-  val cotest = cokey |+| coflavour |+| coposition
+  val cotest: Coentity[
+      FlavourIn \/ PositionIn,
+      Void,
+      ((String, Flavour), (Int, Int)),
+      ((String, Flavour), (Int, Int))] =
+    cokey |+| coflavour |+| coposition
 }
