@@ -37,7 +37,7 @@ trait ClearSum[A, B] {
   def apply[D](fa: A => D, fb: B => D, v: C): D
 }
 
-trait ClearSumLowPriority {
+trait ClearSumLowestPriority {
   implicit def disjClear[A, B]: ClearSum.Aux[A, B, A \/ B] =
     new ClearSum[A, B] {
       type C = A \/ B
@@ -46,7 +46,16 @@ trait ClearSumLowPriority {
     }
 }
 
-object ClearSum extends ClearSumLowPriority {
+trait ClearSumLowerPriority extends ClearSumLowestPriority {
+  implicit def void2Clear[B]: ClearSum.Aux[Void, B, B] =
+    new ClearSum[Void, B] {
+      type C = B
+      def apply(v: Void \/ B) = v.valueOr(???)
+      def apply[D](fa: Void => D, fb: B => D, v: C) = fb(v)
+    }
+}
+
+object ClearSum extends ClearSumLowerPriority {
   type Aux[A, B, C2] = ClearSum[A, B] { type C = C2 }
 
   implicit def void1Clear[A]: ClearSum.Aux[A, Void, A] =
@@ -54,12 +63,5 @@ object ClearSum extends ClearSumLowPriority {
       type C = A
       def apply(v: A \/ Void) = v.swap.valueOr(???)
       def apply[D](fa: A => D, fb: Void => D, v: C) = fa(v)
-    }
-
-  implicit def void2Clear[B]: ClearSum.Aux[Void, B, B] =
-    new ClearSum[Void, B] {
-      type C = B
-      def apply(v: Void \/ B) = v.valueOr(???)
-      def apply[D](fa: Void => D, fb: B => D, v: C) = fb(v)
     }
 }
