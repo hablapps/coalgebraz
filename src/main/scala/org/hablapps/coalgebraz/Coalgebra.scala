@@ -32,11 +32,19 @@ object Coalgebra {
     co1: Coentity[I1, O1, B1, X1],
     co2: Coentity[I2, O2, B2, X2]): Coentity[(I1, I2), (O1, O2), (B1, B2), (X1, X2)] = ???
 
-  def usingState[I, O, B, X, X2](
+  def withState[I, O, B, X, X2](
     co: Coentity[I, O, B, X])(implicit
     iso: X <=> X2): Coentity[I, O, B, X2] = ???
 
-  def usingObservable[I, O, B, X, B2](
+  def withObservable[I, O, B, X, B2](
     co: Coentity[I, O, B, X])(implicit
     iso: B <=> B2): Coentity[I, O, B2, X] = ???
+
+  def routeIn[I, O, B, X, I2](
+    f: (B, I2) => List[I],
+    co: Coentity[I, O, B, X]): Coentity[I2, O, B, X] = ???
+
+  def routeOut[I, O, B, X, O2](
+    f: (B, O) => List[O2],
+    co: Coentity[I, O, B, X]): Coentity[I, O2, B, X] = ???
 }

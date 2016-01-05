@@ -17,7 +17,14 @@ sealed trait PositionIn
 case class OverX(f: Int => Int) extends PositionIn
 case class OverY(f: Int => Int) extends PositionIn
 
-sealed trait Direction
+sealed trait Direction {
+  def toPositionIn: PositionIn = this match {
+    case North => OverY(_ - 1)
+    case West  => OverX(_ - 1)
+    case South => OverY(_ + 1)
+    case East  => OverX(_ + 1)
+  }
+}
 case object North extends Direction
 case object South extends Direction
 case object East extends Direction
@@ -25,11 +32,20 @@ case object West extends Direction
 
 case class Candy(key: String, flavour: Flavour, position: (Int, Int))
 
-sealed trait CandyIn
-case object Crush extends CandyIn
-case class Fall(n: Int) extends CandyIn
-case class Slide(direction: Direction) extends CandyIn
-case class Mutate(flavour: Flavour) extends CandyIn
+sealed trait CandyIn1
+case class Fall(n: Int) extends CandyIn1
+case class Slide(direction: Direction) extends CandyIn1
+case class Mutate(flavour: Flavour) extends CandyIn1
+
+sealed trait CandyIn2
+case object Crush extends CandyIn2
+
+class CandyIn[A]
+
+object CandyIn {
+  implicit object CandyIn1Witness extends CandyIn[CandyIn1]
+  implicit object CandyIn2Witness extends CandyIn[CandyIn2]
+}
 
 sealed trait CandyOut
 case object ByeCandy extends CandyOut

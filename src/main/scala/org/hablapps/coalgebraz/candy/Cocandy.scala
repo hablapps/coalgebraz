@@ -22,8 +22,6 @@ object Cocandy {
     })
   }
 
-  val cocandy: Coentity[CandyIn, CandyOut, Candy, Candy] = ???
-
   implicit val isoCandy = new (((String, Flavour), (Int, Int)) <=> Candy) {
     val to: (((String, Flavour), (Int, Int))) => Candy = {
       case ((key, fla), pos) => Candy(key, fla, pos)
@@ -33,9 +31,16 @@ object Cocandy {
     }
   }
 
-  // TODO: work in `adapt`, to model the input and output (our candy should stop)
-  val cotest: Coentity[FlavourIn \/ PositionIn, Void, Candy, Candy] =
+  // TODO
+  // 1) `extend` input with a new type `CandyIn2`
+  // 2) output should be `CandyOut`
+  val cocandy: Coentity[CandyIn1, Void, Candy, Candy] =
     (cokey |+| coflavour |+| coposition)
-      .usingState[Candy]
-      .usingObservable[Candy]
+      .withState[Candy]
+      .withObservable[Candy]
+      .routeIn[CandyIn1]((_, ci) => ci match {
+        case Fall(n)    => List(OverY(_ + n).right)
+        case Slide(dir) => List(dir.toPositionIn.right)
+        case Mutate(fl) => List(Become(fl).left)
+      })
 }
