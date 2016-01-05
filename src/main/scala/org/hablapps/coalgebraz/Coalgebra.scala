@@ -35,4 +35,8 @@ object Coalgebra {
   def usingState[I, O, B, X, X2](
     co: Coentity[I, O, B, X])(implicit
     iso: X <=> X2): Coentity[I, O, B, X2] = ???
+
+  def usingObservable[I, O, B, X, B2](
+    co: Coentity[I, O, B, X])(implicit
+    iso: B <=> B2): Coentity[I, O, B2, X] = ???
 }

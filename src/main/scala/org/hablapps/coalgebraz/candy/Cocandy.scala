@@ -34,10 +34,8 @@ object Cocandy {
   }
 
   // TODO: work in `adapt`, to model the input and output (our candy should stop)
-  val cotest: Coentity[
-      FlavourIn \/ PositionIn,
-      Void,
-      ((String, Flavour), (Int, Int)),
-      Candy] =
-    (cokey |+| coflavour |+| coposition).using[Candy]
+  val cotest: Coentity[FlavourIn \/ PositionIn, Void, Candy, Candy] =
+    (cokey |+| coflavour |+| coposition)
+      .usingState[Candy]
+      .usingObservable[Candy]
 }
