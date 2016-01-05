@@ -1,6 +1,6 @@
 package org.hablapps.coalgebraz.candy
 
-import scalaz._, Scalaz._
+import scalaz._, Scalaz._, Isomorphism.<=>
 
 import org.hablapps.coalgebraz._
 
@@ -24,10 +24,20 @@ object Cocandy {
 
   val cocandy: Coentity[CandyIn, CandyOut, Candy, Candy] = ???
 
+  implicit val isoCandy = new (((String, Flavour), (Int, Int)) <=> Candy) {
+    val to: (((String, Flavour), (Int, Int))) => Candy = {
+      case ((key, fla), pos) => Candy(key, fla, pos)
+    }
+    val from: Candy => ((String, Flavour), (Int, Int)) = {
+      case Candy(key, fla, pos) => ((key, fla), pos)
+    }
+  }
+
+  // TODO: work in `adapt`, to model the input and output (our candy should stop)
   val cotest: Coentity[
       FlavourIn \/ PositionIn,
       Void,
       ((String, Flavour), (Int, Int)),
-      ((String, Flavour), (Int, Int))] =
-    cokey |+| coflavour |+| coposition
+      Candy] =
+    (cokey |+| coflavour |+| coposition).using[Candy]
 }

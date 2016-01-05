@@ -1,6 +1,6 @@
 package org.hablapps.coalgebraz
 
-import scalaz._, Scalaz._
+import scalaz._, Scalaz._, Isomorphism.<=>
 
 import org.hablapps.coalgebraz
 
@@ -31,4 +31,8 @@ object Coalgebra {
   def putTogether[I1, I2, O1, O2, B1, B2, X1, X2](
     co1: Coentity[I1, O1, B1, X1],
     co2: Coentity[I2, O2, B2, X2]): Coentity[(I1, I2), (O1, O2), (B1, B2), (X1, X2)] = ???
+
+  def usingState[I, O, B, X, X2](
+    co: Coentity[I, O, B, X])(implicit
+    iso: X <=> X2): Coentity[I, O, B, X2] = ???
 }
