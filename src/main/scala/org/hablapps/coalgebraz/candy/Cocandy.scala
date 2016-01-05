@@ -1,12 +1,14 @@
 package org.hablapps.coalgebraz.candy
 
+import scalaz._, Scalaz._
+
 import org.hablapps.coalgebraz._
 
 import Coalgebra._, CoentityOps._
 
 object Cocandy {
 
-  val cokey: Coentity[Unit, Nothing, String, String] = constant[String]
+  val cokey: Coentity[Unit, Void, String, String] = constant[String]
 
   val coflavour: Coistore[FlavourIn, Flavour, Flavour] =
     s => IStore(s, _ match {
@@ -21,4 +23,6 @@ object Cocandy {
   }
 
   val cocandy: Coentity[CandyIn, CandyOut, Candy, Candy] = ???
+
+  val cotest = cokey |+| coflavour |+| coposition
 }

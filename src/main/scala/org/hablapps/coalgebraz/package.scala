@@ -21,4 +21,6 @@ package object coalgebraz {
   type Coentity[I, O, C, X] = Coalgebra[({type λ[α] = Entity[I, O, C, α]})#λ, X]
 
   type Coientity[I, O, C, X] = Coalgebra[({type λ[α] = IEntity[I, O, C, α]})#λ, X]
+
+  trait Void
 }
