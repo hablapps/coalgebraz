@@ -40,7 +40,7 @@ object Coalgebra {
     co: Coentity[I, O, B, X])(implicit
     iso: B <=> B2): Coentity[I, O, B2, X] = ???
 
-  // TODO: I need something like 'feed' to be able to implement this.
+  // TODO: I need something like old 'feed' to be able to implement this.
   def routeIn[I, O, B, X, I2](
       f: B => I2 => List[I],
       co: Coentity[I, O, B, X]): Coentity[I2, O, B, X] = ???
@@ -52,9 +52,17 @@ object Coalgebra {
     Entity(obs, i => nxt(i).swap.map(_ flatMap f(obs)).swap)
   }
 
+  // Lets two coalgebras share the very same inner state.
   def union[I1, I2, I, O1, O2, O, B, X](
-    co1: Coentity[I1, O1, B, X],
-    co2: Coentity[I2, O2, B, X])(implicit
-    ev0: ClearSum.Aux[I1, I2, I],
-    ev1: ClearSum.Aux[O1, O2, O]): Coentity[I, O, B, X] = ???
+      co1: Coentity[I1, O1, B, X],
+      co2: Coentity[I2, O2, B, X])(implicit
+      ev0: ClearSum.Aux[I1, I2, I],
+      ev1: ClearSum.Aux[O1, O2, O]): Coentity[I, O, B, X] = { x =>
+    val Entity(obs1, nxt1) = co1(x)
+    val Entity(_, nxt2) = co2(x)
+    Entity(obs1, i => ev0(
+      i1 => nxt1(i1).swap.map(os => os.map(o1 => ev1(o1.left))).swap,
+      i2 => nxt2(i2).swap.map(os => os.map(o2 => ev1(o2.right))).swap,
+      i))
+  }
 }
