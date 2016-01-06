@@ -40,11 +40,21 @@ object Coalgebra {
     co: Coentity[I, O, B, X])(implicit
     iso: B <=> B2): Coentity[I, O, B2, X] = ???
 
+  // TODO: I need something like 'feed' to be able to implement this.
   def routeIn[I, O, B, X, I2](
-    f: (B, I2) => List[I],
-    co: Coentity[I, O, B, X]): Coentity[I2, O, B, X] = ???
+      f: B => I2 => List[I],
+      co: Coentity[I, O, B, X]): Coentity[I2, O, B, X] = ???
 
   def routeOut[I, O, B, X, O2](
-    f: (B, O) => List[O2],
-    co: Coentity[I, O, B, X]): Coentity[I, O2, B, X] = ???
+      f: B => O => List[O2],
+      co: Coentity[I, O, B, X]): Coentity[I, O2, B, X] = { x =>
+    val Entity(obs, nxt) = co(x)
+    Entity(obs, i => nxt(i).swap.map(_ flatMap f(obs)).swap)
+  }
+
+  def union[I1, I2, I, O1, O2, O, B, X](
+    co1: Coentity[I1, O1, B, X],
+    co2: Coentity[I2, O2, B, X])(implicit
+    ev0: ClearSum.Aux[I1, I2, I],
+    ev1: ClearSum.Aux[O1, O2, O]): Coentity[I, O, B, X] = ???
 }

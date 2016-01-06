@@ -40,12 +40,5 @@ case class Mutate(flavour: Flavour) extends CandyIn1
 sealed trait CandyIn2
 case object Crush extends CandyIn2
 
-class CandyIn[A]
-
-object CandyIn {
-  implicit object CandyIn1Witness extends CandyIn[CandyIn1]
-  implicit object CandyIn2Witness extends CandyIn[CandyIn2]
-}
-
 sealed trait CandyOut
 case object ByeCandy extends CandyOut

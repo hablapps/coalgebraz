@@ -31,16 +31,20 @@ object Cocandy {
     }
   }
 
-  // TODO
-  // 1) `extend` input with a new type `CandyIn2`
-  // 2) output should be `CandyOut`
-  val cocandy: Coentity[CandyIn1, Void, Candy, Candy] =
+  val cocandy1: Coentity[CandyIn1, Void, Candy, Candy] =
     (cokey |+| coflavour |+| coposition)
       .withState[Candy]
       .withObservable[Candy]
-      .routeIn[CandyIn1]((_, ci) => ci match {
+      .routeIn[CandyIn1](_ => _ match {
         case Fall(n)    => List(OverY(_ + n).right)
         case Slide(dir) => List(dir.toPositionIn.right)
         case Mutate(fl) => List(Become(fl).left)
       })
+
+  val cocandy2: Coentity[CandyIn2, CandyOut, Candy, Candy] = {
+    case c: Candy => Entity(c, _ => (List(ByeCandy), None))
+  }
+
+  val cocandy: Coentity[CandyIn, CandyOut, Candy, Candy] =
+    cocandy1 /+\ cocandy2
 }
