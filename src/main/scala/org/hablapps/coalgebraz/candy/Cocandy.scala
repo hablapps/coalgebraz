@@ -35,7 +35,7 @@ object Cocandy {
     (cokey |+| coflavour |+| coposition)
       .withState[Candy]
       .withObservable[Candy]
-      .routeIn[CandyIn1](_ => _ match {
+      .routeIn(_ => _ match {
         case Fall(n)    => List(OverY(_ + n).right)
         case Slide(dir) => List(dir.toPositionIn.right)
         case Mutate(fl) => List(Become(fl).left)

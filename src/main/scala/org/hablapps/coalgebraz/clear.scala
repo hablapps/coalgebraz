@@ -53,7 +53,7 @@ trait ClearSumLowerPriority extends ClearSumLowestPriority {
   implicit def void2Clear[B]: ClearSum.Aux[Void, B, B] =
     new ClearSum[Void, B] {
       type C = B
-      def apply(v: Void \/ B) = v.valueOr(???)
+      def apply(v: Void \/ B) = v | ???
       def apply[D](fa: Void => D, fb: B => D, v: C) = fb(v)
     }
 }
@@ -65,7 +65,7 @@ object ClearSum extends ClearSumLowerPriority {
   implicit def void1Clear[A]: ClearSum.Aux[A, Void, A] =
     new ClearSum[A, Void] {
       type C = A
-      def apply(v: A \/ Void) = v.swap.valueOr(???)
+      def apply(v: A \/ Void) = v.swap | ???
       def apply[D](fa: A => D, fb: Void => D, v: C) = fa(v)
     }
 }
