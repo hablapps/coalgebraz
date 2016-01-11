@@ -62,10 +62,17 @@ object Coalgebra {
     }
   }
 
+  // Adapts a system to map input broader events into smaller ones, given a
+  // mapper function.
   def routeIn[I, O, B, X, I2](
       f: B => I2 => List[I],
-      co: Coentity[I, O, B, X]): Coentity[I2, O, B, X] = ???
+      co: Coentity[I, O, B, X]): Coentity[I2, O, B, X] = { x =>
+    val Entity(obs, nxt) = co(x)
+    Entity(obs, i => feed(co, f(obs)(i), x))
+  }
 
+  // Adapts a system to map output smaller events into broader ones, given a
+  // mapper function.
   def routeOut[I, O, B, X, O2](
       f: B => O => List[O2],
       co: Coentity[I, O, B, X]): Coentity[I, O2, B, X] = { x =>
