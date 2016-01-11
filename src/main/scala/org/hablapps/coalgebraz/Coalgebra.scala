@@ -33,12 +33,18 @@ object Coalgebra {
     co2: Coentity[I2, O2, B2, X2]): Coentity[(I1, I2), (O1, O2), (B1, B2), (X1, X2)] = ???
 
   def withState[I, O, B, X, X2](
-    co: Coentity[I, O, B, X])(implicit
-    iso: X <=> X2): Coentity[I, O, B, X2] = ???
+      co: Coentity[I, O, B, X])(implicit
+      iso: X <=> X2): Coentity[I, O, B, X2] = { x2 =>
+    val Entity(obs, nxt) = co(iso.from(x2))
+    Entity(obs, i => nxt(i).map(_ map iso.to))
+  }
 
   def withObservable[I, O, B, X, B2](
-    co: Coentity[I, O, B, X])(implicit
-    iso: B <=> B2): Coentity[I, O, B2, X] = ???
+      co: Coentity[I, O, B, X])(implicit
+      iso: B <=> B2): Coentity[I, O, B2, X] = { x =>
+    val Entity(obs, nxt) = co(x)
+    Entity(iso.to(obs), nxt)
+  }
 
   // TODO: I need something like old 'feed' to be able to implement this.
   def routeIn[I, O, B, X, I2](
@@ -52,7 +58,8 @@ object Coalgebra {
     Entity(obs, i => nxt(i).swap.map(_ flatMap f(obs)).swap)
   }
 
-  // Lets two coalgebras share the very same inner state.
+  // Permits two coalgebras to share the very same inner state. It worths
+  // mentioning that the observation from the second coalgebra is discarded.
   def union[I1, I2, I, O1, O2, O, B, X](
       co1: Coentity[I1, O1, B, X],
       co2: Coentity[I2, O2, B, X])(implicit
