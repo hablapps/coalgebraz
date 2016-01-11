@@ -1,5 +1,7 @@
 package org.hablapps.coalgebraz
 
+import scala.language.implicitConversions
+
 import scalaz._, Scalaz._, Isomorphism.<=>
 
 import org.hablapps.coalgebraz
@@ -93,5 +95,43 @@ object Coalgebra {
       i1 => nxt1(i1).swap.map(os => os.map(o1 => ev1(o1.left))).swap,
       i2 => nxt2(i2).swap.map(os => os.map(o2 => ev1(o2.right))).swap,
       i))
+  }
+
+  sealed trait CoseqIn[I, B, X]
+  case class ApplySuch[I, B, X](f: B => Option[I]) extends CoseqIn[I, B, X]
+  case class Prepend[I, B, X](value: X) extends CoseqIn[I, B, X]
+
+  sealed trait CoseqOut[O, X]
+  case class WrappedOut[O, X](os: List[O]) extends CoseqOut[O, X]
+  case class Prepended[O, X](value: X) extends CoseqOut[O, X]
+  case class Removed[O, X](value: X) extends CoseqOut[O, X]
+
+  type CoentitySeq[I, O, B, X] =
+    Coentity[CoseqIn[I, B, X], CoseqOut[O, X], List[B], List[X]]
+
+  // object Coseq {
+  //
+  //   implicit def allOrNone[A](loa: List[Option[A]]): Option[List[A]] =
+  //     loa.sequence
+  //
+  //   implicit def someOrNone[A](loa: List[Option[A]]): Option[List[A]] = loa match {
+  //     case Nil => None
+  //     case (Some(x)::xs) => someOrNone(xs).map(x::_)
+  //     case (None::xs) => someOrNone(xs)
+  //   }
+  // }
+
+  def toCoseq[I, O, B, X](
+      co: Coentity[I, O, B, X]): CoentitySeq[I, O, B, X] = { xs =>
+    val es = xs map (co(_))
+    val bs = es map (_.observe)
+    val nx = es map (_.next)
+    Entity(bs, _ match {
+      case ApplySuch(f) => {
+        val ois = bs map f
+        ???
+      }
+      case Prepend(x) => (List(Prepended(x)), Option(x::xs))
+    })
   }
 }

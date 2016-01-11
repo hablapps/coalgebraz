@@ -47,4 +47,7 @@ object Cocandy {
 
   val cocandy: Coentity[CandyIn, CandyOut, Candy, Candy] =
     cocandy1 /+\ cocandy2
+
+  val cocandies: CoentitySeq[CandyIn, CandyOut, Candy, Candy] =
+    cocandy.toCoseq
 }
