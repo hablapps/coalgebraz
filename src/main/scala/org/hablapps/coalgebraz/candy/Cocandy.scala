@@ -5,6 +5,7 @@ import scalaz._, Scalaz._, Isomorphism.<=>
 import org.hablapps.coalgebraz._
 
 import Coalgebraz._, CoentityOps._
+import Sq.someOrNone
 
 object Cocandy {
 
@@ -49,5 +50,5 @@ object Cocandy {
     cocandy1 /+\ cocandy2
 
   val cocandies: CoentitySeq[CandyIn, CandyOut, Candy, Candy] =
-    cocandy.toCoseq(Sq.someOrNone)
+    cocandy.toCoseq
 }

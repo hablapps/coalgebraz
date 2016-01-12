@@ -96,33 +96,6 @@ object Coalgebraz {
       i))
   }
 
-  sealed trait CoseqIn[I, B, X]
-  case class ApplySuch[I, B, X](f: B => Option[I]) extends CoseqIn[I, B, X]
-  case class Prepend[I, B, X](value: X) extends CoseqIn[I, B, X]
-
-  sealed trait CoseqOut[O, X]
-  case class WrappedOut[O, X](os: NonEmptyList[O]) extends CoseqOut[O, X]
-  case class Prepended[O, X](value: X) extends CoseqOut[O, X]
-  case class Removed[O, X](value: X) extends CoseqOut[O, X]
-
-  type CoentitySeq[I, O, B, X] =
-    Coentity[CoseqIn[I, B, X], CoseqOut[O, X], List[B], List[X]]
-
-  // XXX: seems like a comonad!?!?
-  implicit class Tuple2Helper[A, B](t2: Tuple2[A, B]) {
-    def extend[C](f: Tuple2[A, B] => C): Tuple2[A, C] = t2 match {
-      case (a, _) => (a, f(t2))
-    }
-  }
-
-  def zip3[A, B, C](
-      la: List[A],
-      lb: List[B],
-      lc: List[C]): List[(A, B, C)] = (la, lb, lc) match {
-    case (Nil, _, _) | (_, Nil, _) | (_, _, Nil) => List.empty
-    case (a::as, b::bs, c::cs) => (a, b, c) :: zip3(as, bs, cs)
-  }
-
   def toCoseq[I, O, B, X](
       co: Coentity[I, O, B, X])(implicit
       sq: Sq[List, Option]): CoentitySeq[I, O, B, X] = { xs =>

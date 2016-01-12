@@ -5,6 +5,15 @@ import scala.language.implicitConversions
 
 import scalaz._, Scalaz._
 
+sealed trait CoseqIn[I, B, X]
+case class ApplySuch[I, B, X](f: B => Option[I]) extends CoseqIn[I, B, X]
+case class Prepend[I, B, X](value: X) extends CoseqIn[I, B, X]
+
+sealed trait CoseqOut[O, X]
+case class WrappedOut[O, X](os: NonEmptyList[O]) extends CoseqOut[O, X]
+case class Prepended[O, X](value: X) extends CoseqOut[O, X]
+case class Removed[O, X](value: X) extends CoseqOut[O, X]
+
 trait Sq[F[_], G[_]] {
   def apply[A](fga: F[G[A]]): G[F[A]]
 }

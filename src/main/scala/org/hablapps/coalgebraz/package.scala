@@ -4,6 +4,8 @@ import scala.language.higherKinds
 
 package object coalgebraz {
 
+  /* Shared aliases */
+
   type Coalgebra[F[_], S] = S => F[S]
 
   type Costream[H, X] = Coalgebra[({type λ[α] = Stream[H, α]})#λ, X]
@@ -25,4 +27,24 @@ package object coalgebraz {
   // XXX: using `type Void = Nothing` resulted in multiple errors because of the
   // problems with implicit resolutions when `Nothing` is involved.
   trait Void { ??? } // non-instantiable!
+
+  type CoentitySeq[I, O, B, X] =
+    Coentity[CoseqIn[I, B, X], CoseqOut[O, X], List[B], List[X]]
+
+  /* Generic combinators */
+
+  // XXX: seems like a comonad!?!?
+  implicit class Tuple2Helper[A, B](t2: Tuple2[A, B]) {
+    def extend[C](f: Tuple2[A, B] => C): Tuple2[A, C] = t2 match {
+      case (a, _) => (a, f(t2))
+    }
+  }
+
+  def zip3[A, B, C](
+      la: List[A],
+      lb: List[B],
+      lc: List[C]): List[(A, B, C)] = (la, lb, lc) match {
+    case (Nil, _, _) | (_, Nil, _) | (_, _, Nil) => List.empty
+    case (a::as, b::bs, c::cs) => (a, b, c) :: zip3(as, bs, cs)
+  }
 }
