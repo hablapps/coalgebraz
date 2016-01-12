@@ -115,6 +115,14 @@ object Coalgebraz {
     }
   }
 
+  def zip3[A, B, C](
+      la: List[A],
+      lb: List[B],
+      lc: List[C]): List[(A, B, C)] = (la, lb, lc) match {
+    case (Nil, _, _) | (_, Nil, _) | (_, _, Nil) => List.empty
+    case (a::as, b::bs, c::cs) => (a, b, c) :: zip3(as, bs, cs)
+  }
+
   def toCoseq[I, O, B, X](
       co: Coentity[I, O, B, X])(implicit
       sq: Sq[List, Option]): CoentitySeq[I, O, B, X] = { xs =>
@@ -125,7 +133,7 @@ object Coalgebraz {
       case ApplySuch(f) => {
         val emp = List.empty[CoseqOut[O, X]]
         val ts: List[(List[CoseqOut[O, X]], Option[X])] =
-          Applicative[List].tuple3(xs, nx, bs map f) map {
+          zip3(xs, nx, bs map f) map {
             case (x, _, None) => (emp, Option(x))
             case (x, nxt, Some(i)) => {
               ((nxt(i).swap.map { os =>
@@ -140,7 +148,7 @@ object Coalgebraz {
           }
         ts.unzip.swap.map(_.flatten).swap.map(sq(_))
       }
-      case Prepend(x) => (List(Prepended(x)), Option(x::xs))
+      case Prepend(x) => (List(Prepended(x)), Option(x :: xs))
     })
   }
 }
