@@ -1,5 +1,6 @@
 package org.hablapps.coalgebraz
 
+import scala.language.higherKinds
 import scala.language.implicitConversions
 
 import scalaz._, Scalaz._, Isomorphism.<=>
@@ -102,34 +103,63 @@ object Coalgebra {
   case class Prepend[I, B, X](value: X) extends CoseqIn[I, B, X]
 
   sealed trait CoseqOut[O, X]
-  case class WrappedOut[O, X](os: List[O]) extends CoseqOut[O, X]
+  case class WrappedOut[O, X](os: NonEmptyList[O]) extends CoseqOut[O, X]
   case class Prepended[O, X](value: X) extends CoseqOut[O, X]
   case class Removed[O, X](value: X) extends CoseqOut[O, X]
 
   type CoentitySeq[I, O, B, X] =
     Coentity[CoseqIn[I, B, X], CoseqOut[O, X], List[B], List[X]]
 
-  // object Coseq {
-  //
-  //   implicit def allOrNone[A](loa: List[Option[A]]): Option[List[A]] =
-  //     loa.sequence
-  //
-  //   implicit def someOrNone[A](loa: List[Option[A]]): Option[List[A]] = loa match {
-  //     case Nil => None
-  //     case (Some(x)::xs) => someOrNone(xs).map(x::_)
-  //     case (None::xs) => someOrNone(xs)
-  //   }
-  // }
+  trait Sq[F[_], G[_]] {
+    def apply[A](fga: F[G[A]]): G[F[A]]
+  }
+
+  object Sq {
+
+    implicit object AllOrNone extends Sq[List, Option] {
+      def apply[A](fga: List[Option[A]]): Option[List[A]] = fga.sequence
+    }
+
+    implicit object SomeOrNone extends Sq[List, Option] {
+      def apply[A](fga: List[Option[A]]): Option[List[A]] =
+        fga.flatMap(_.toList) match {
+          case Nil => None
+          case xs  => Some(xs)
+        }
+    }
+  }
+
+  // XXX: seems like a comonad!?!?
+  implicit class Tuple2Helper[A, B](t2: Tuple2[A, B]) {
+    def extend[C](f: Tuple2[A, B] => C): Tuple2[A, C] = t2 match {
+      case (a, _) => (a, f(t2))
+    }
+  }
 
   def toCoseq[I, O, B, X](
-      co: Coentity[I, O, B, X]): CoentitySeq[I, O, B, X] = { xs =>
+      co: Coentity[I, O, B, X])(implicit
+      sq: Sq[List, Option]): CoentitySeq[I, O, B, X] = { xs =>
     val es = xs map (co(_))
     val bs = es map (_.observe)
     val nx = es map (_.next)
     Entity(bs, _ match {
       case ApplySuch(f) => {
-        val ois = bs map f
-        ???
+        val emp = List.empty[CoseqOut[O, X]]
+        val ts: List[(List[CoseqOut[O, X]], Option[X])] =
+          Applicative[List].tuple3(xs, nx, bs map f) map {
+            case (x, _, None) => (emp, Option(x))
+            case (x, nxt, Some(i)) => {
+              ((nxt(i).swap.map { os =>
+                List(os.toNel.map(WrappedOut.apply[O, X]))
+                  .sequence
+                  .getOrElse(emp)
+              }).extend {
+                case (None, os) => Removed[O, X](x) :: os
+                case (_, os)    => os
+              }).swap
+            }
+          }
+        ts.unzip.swap.map(_.flatten).swap.map(sq(_))
       }
       case Prepend(x) => (List(Prepended(x)), Option(x::xs))
     })
