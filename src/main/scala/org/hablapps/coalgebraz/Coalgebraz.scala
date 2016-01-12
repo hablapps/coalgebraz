@@ -96,6 +96,14 @@ object Coalgebraz {
       i))
   }
 
+  // Turns a single coalgebra with its associated state into a coalgebra which
+  // handles a list of such states. The input for the new system is `CoseqIn`, a
+  // type of event which lets the programmer to add new elements or alter the
+  // states individually. Removal is not covered since we're working with
+  // `Entity` which is able to stop by its own.
+  //
+  // XXX: this combinator is quite ugly, I'm sure it can be cleaned up, though
+  // there are other priorities right now.
   def toCoseq[I, O, B, X](
       co: Coentity[I, O, B, X])(implicit
       sq: Sq[List, Option]): CoentitySeq[I, O, B, X] = { xs =>

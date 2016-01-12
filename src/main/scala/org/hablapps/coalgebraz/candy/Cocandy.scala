@@ -1,9 +1,10 @@
 package org.hablapps.coalgebraz.candy
 
+import scala.util.Random
+
 import scalaz._, Scalaz._, Isomorphism.<=>
 
 import org.hablapps.coalgebraz._
-
 import Coalgebraz._, CoentityOps._
 import Sq.someOrNone
 
@@ -51,4 +52,9 @@ object Cocandy {
 
   val cocandies: CoentitySeq[CandyIn, CandyOut, Candy, Candy] =
     cocandy.toCoseq
+
+  // XXX: side-effecting random. Should use a pure one!
+  val corandom: Coistream[Int, Random] = { rnd =>
+    IStream(rnd.nextInt, rnd)
+  }
 }
