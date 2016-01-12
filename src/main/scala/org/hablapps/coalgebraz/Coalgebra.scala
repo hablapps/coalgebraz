@@ -5,8 +5,6 @@ import scala.language.implicitConversions
 
 import scalaz._, Scalaz._, Isomorphism.<=>
 
-import org.hablapps.coalgebraz
-
 object Coalgebra {
 
   def always[A](value: A): Coentity[Unit, Void, A, A] =
@@ -109,25 +107,6 @@ object Coalgebra {
 
   type CoentitySeq[I, O, B, X] =
     Coentity[CoseqIn[I, B, X], CoseqOut[O, X], List[B], List[X]]
-
-  trait Sq[F[_], G[_]] {
-    def apply[A](fga: F[G[A]]): G[F[A]]
-  }
-
-  object Sq {
-
-    implicit object AllOrNone extends Sq[List, Option] {
-      def apply[A](fga: List[Option[A]]): Option[List[A]] = fga.sequence
-    }
-
-    implicit object SomeOrNone extends Sq[List, Option] {
-      def apply[A](fga: List[Option[A]]): Option[List[A]] =
-        fga.flatMap(_.toList) match {
-          case Nil => None
-          case xs  => Some(xs)
-        }
-    }
-  }
 
   // XXX: seems like a comonad!?!?
   implicit class Tuple2Helper[A, B](t2: Tuple2[A, B]) {

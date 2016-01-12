@@ -4,7 +4,7 @@ sealed trait Flavour
 case object Lemon extends Flavour { override def toString = "♠" }
 case object Orange extends Flavour { override def toString = "♣" }
 case object Mint extends Flavour { override def toString = "♥" }
-case object Strawberry extends Flavour { override def toString = "♦" }
+case object Coconut extends Flavour { override def toString = "♦" }
 case object Banana extends Flavour { override def toString = "♤" }
 case object Apple extends Flavour { override def toString = "♡" }
 case object Melon extends Flavour { override def toString = "♢" }
