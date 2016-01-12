@@ -5,7 +5,7 @@ import scala.language.implicitConversions
 
 import scalaz._, Scalaz._, Isomorphism.<=>
 
-object Coalgebra {
+object Coalgebraz {
 
   def always[A](value: A): Coentity[Unit, Void, A, A] =
     _ => Entity(value, _ => (List.empty, Option(value)))
