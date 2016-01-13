@@ -2,6 +2,8 @@ package org.hablapps
 
 import scala.language.higherKinds
 
+import scalaz._, Scalaz._, Isomorphism.<=>
+
 package object coalgebraz {
 
   /* Shared aliases */
@@ -47,4 +49,10 @@ package object coalgebraz {
     case (Nil, _, _) | (_, Nil, _) | (_, _, Nil) => List.empty
     case (a::as, b::bs, c::cs) => (a, b, c) :: zip3(as, bs, cs)
   }
+
+  /* Implicit views */
+
+  implicit def isoTo[A, B](implicit ev: A <=> B): A => B = ev.to
+
+  implicit def isoFrom[A, B](implicit ev: A <=> B): B => A = ev.from
 }

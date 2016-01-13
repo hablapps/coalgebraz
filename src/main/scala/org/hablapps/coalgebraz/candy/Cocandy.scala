@@ -9,6 +9,7 @@ import org.hablapps.coalgebraz.Store
 import Coalgebraz._, CoentityOps._
 import Sq.someOrNone
 import Nat.Syntax._
+import Isos._
 
 object Cocandy {
 
@@ -24,15 +25,6 @@ object Cocandy {
       case OverX(f) => (f(x), y)
       case OverY(f) => (x, f(y))
     })
-  }
-
-  implicit val isoCandy = new (((String, Flavour), (Int, Int)) <=> Candy) {
-    val to: (((String, Flavour), (Int, Int))) => Candy = {
-      case ((key, fla), pos) => Candy(key, fla, pos)
-    }
-    val from: Candy => ((String, Flavour), (Int, Int)) = {
-      case Candy(key, fla, pos) => ((key, fla), pos)
-    }
   }
 
   val cocandy1: Coentity[CandyIn1, Void, Candy, Candy] =
@@ -55,10 +47,23 @@ object Cocandy {
   val cocandies: CoentitySeq[CandyIn, CandyOut, Candy, Candy] =
     cocandy.toCoseq
 
-  // XXX: side-effecting random. It'll be nice to use a pure one!
-  val corandom: Coistream[Int, Random] = rnd => IStream(rnd.nextInt, rnd)
+  val cosize: Coentity[Void, Void, Int, Int] = constant[Int]
 
-  // A counter system which will stop right after overtaking the passed limit.
+  // XXX: side-effecting random. It'll be nice to use a pure one!
+  val corandom: Coistream[Int, Random] = { rnd =>
+    IStream(rnd.nextInt, rnd)
+  }
+
+  val coboard: Coentity[BoardIn, BoardOut, Board, Board] = {
+    val co = (cosize |+| cocandies)
+      .withState[Board]
+      .withObservable[Board]
+    ???
+    (co |+| corandom)
+      .withObservable[Board](_._1)
+    ???
+  }
+
   def cocounter(limit: Nat): Costore[CounterIn, Nat, Nat] = { x =>
     Store(x, _ match {
       case Increase(n) => if (x + n > limit) None else Option(x + n)

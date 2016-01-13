@@ -18,8 +18,8 @@ class CoentityOps[I1, O1, B1, X1](val co1: Coentity[I1, O1, B1, X1]) {
   def withState[X2](implicit iso: X1 <=> X2) =
     Coalgebraz.withState[I1, O1, B1, X1, X2](co1)
 
-  def withObservable[B2](implicit iso: B1 <=> B2) =
-    Coalgebraz.withObservable[I1, O1, B1, X1, B2](co1)
+  def withObservable[B2](implicit to: B1 => B2) =
+    Coalgebraz.withObservable[I1, O1, B1, X1, B2](co1)(to)
 
   def routeIn[I2](f: B1 => I2 => List[I1]) =
     Coalgebraz.routeIn[I1, O1, B1, X1, I2](f, co1)

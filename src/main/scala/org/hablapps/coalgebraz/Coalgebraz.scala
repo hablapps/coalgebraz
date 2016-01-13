@@ -42,9 +42,9 @@ object Coalgebraz {
 
   def withObservable[I, O, B, X, B2](
       co: Coentity[I, O, B, X])(implicit
-      iso: B <=> B2): Coentity[I, O, B2, X] = { x =>
+      to: B => B2): Coentity[I, O, B2, X] = { x =>
     val Entity(obs, nxt) = co(x)
-    Entity(iso.to(obs), nxt)
+    Entity(to(obs), nxt)
   }
 
   // Feeds a coalgebra with a list of inputs and returns the final state (if

@@ -1,5 +1,7 @@
 package org.hablapps.coalgebraz.candy
 
+import scala.util.Random
+
 sealed trait Flavour
 case object Lemon extends Flavour { override def toString = "♠" }
 case object Orange extends Flavour { override def toString = "♣" }
@@ -46,3 +48,14 @@ case object ByeCandy extends CandyOut
 sealed trait CounterIn
 case class Increase(n: Nat) extends CounterIn
 case class Decrease(n: Nat) extends CounterIn
+
+case class Board(size: Int, candies: List[Candy])
+
+sealed trait BoardIn
+case class Transform(key: String, flavour: Flavour) extends BoardIn
+case class Interchange(pos: (Int, Int), dir: Direction) extends BoardIn
+case class NewCandy(candy: Candy) extends BoardIn
+case class CrushThem(keys: List[String]) extends BoardIn
+
+sealed trait BoardOut
+case class IncreasePoints(n: Nat) extends BoardOut
