@@ -2,7 +2,10 @@ package org.hablapps.coalgebraz.candy
 
 import scala.language.implicitConversions
 
-case class Nat(us: List[Unit])
+case class Nat(us: List[Unit]) {
+  def asInt: Int = us.length
+  override def toString = asInt.toString
+}
 
 object Nat {
 
@@ -13,21 +16,20 @@ object Nat {
 
   def add(a: Nat, b: Nat): Nat = Nat(a.us ++ b.us)
 
-  def sub(a: Nat, b: Nat): Nat = apply(toInt(a) - toInt(b))
+  def sub(a: Nat, b: Nat): Nat = apply(a.asInt - b.asInt)
 
-  def lt(a: Nat, b: Nat): Boolean = toInt(a) < toInt(b)
+  def lt(a: Nat, b: Nat): Boolean = a.asInt < b.asInt
 
-  def ht(a: Nat, b: Nat): Boolean = toInt(a) > toInt(b)
-
-  def toInt(a: Nat): Int = a.us.length
+  def ht(a: Nat, b: Nat): Boolean = a.asInt > b.asInt
 
   case class NatOps(a: Nat) {
     def +(b: Nat) = Nat.add(a, b)
     def -(b: Nat) = Nat.sub(a, b)
     def <(b: Nat) = Nat.lt(a, b)
     def >(b: Nat) = Nat.ht(a, b)
-    def asInt = Nat.toInt(a)
   }
+
+  implicit def intToNat(i: Int): Nat = apply(i)
 
   object Syntax {
     implicit def toNatOps(a: Nat): NatOps = NatOps(a)

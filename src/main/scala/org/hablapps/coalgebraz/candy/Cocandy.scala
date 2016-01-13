@@ -59,8 +59,8 @@ object Cocandy {
   val corandom: Coistream[Int, Random] = rnd => IStream(rnd.nextInt, rnd)
 
   // A counter system which will stop right after overtaking the passed limit.
-  def cocounter(limit: Nat): Costore[CounterIn, Int, Nat] = { x =>
-    Store(x.asInt, _ match {
+  def cocounter(limit: Nat): Costore[CounterIn, Nat, Nat] = { x =>
+    Store(x, _ match {
       case Increase(n) => if (x + n > limit) None else Option(x + n)
       case Decrease(n) => Option(x - n)
     })
