@@ -42,3 +42,7 @@ case object Crush extends CandyIn2
 
 sealed trait CandyOut
 case object ByeCandy extends CandyOut
+
+sealed trait CounterIn
+case class Increase(n: Int) extends CounterIn
+case class Decrease(n: Int) extends CounterIn

@@ -5,8 +5,10 @@ import scala.util.Random
 import scalaz._, Scalaz._, Isomorphism.<=>
 
 import org.hablapps.coalgebraz._
+import org.hablapps.coalgebraz.Store
 import Coalgebraz._, CoentityOps._
 import Sq.someOrNone
+import Nat._, Nat.Syntax._
 
 object Cocandy {
 
@@ -53,8 +55,17 @@ object Cocandy {
   val cocandies: CoentitySeq[CandyIn, CandyOut, Candy, Candy] =
     cocandy.toCoseq
 
-  // XXX: side-effecting random. Should use a pure one!
-  val corandom: Coistream[Int, Random] = { rnd =>
-    IStream(rnd.nextInt, rnd)
+  // XXX: side-effecting random. It'll be nice to use a pure one!
+  val corandom: Coistream[Int, Random] = rnd => IStream(rnd.nextInt, rnd)
+
+  // A counter system which will stop right after overtaking the passed limit.
+  def cocounter(limit: Int): Costore[CounterIn, Int, Nat] = { x =>
+    Store(x.asInt, _ match {
+      case Increase(n) => {
+        val x2 = x + Nat(n)
+        if (x2.asInt > limit) None else Option(x2)
+      }
+      case Decrease(n) => Option(x - Nat(n))
+    })
   }
 }
