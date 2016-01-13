@@ -32,6 +32,10 @@ object Routing {
   def routeOutBoard(
       board: Board)(
       out: CoseqOut[CandyOut, Candy]): List[BoardOut] = out match {
+    case WrappedOut(os) => {
+      val pts = os.list.foldLeft(0)((acc, ByeCandy) => acc + 1)
+      if (pts > 0) List(IncreasePoints(pts)) else List.empty
+    }
     case _ => List.empty
   }
 }
