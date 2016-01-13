@@ -25,7 +25,7 @@ object Sq {
 }
 
 sealed trait CoseqIn[I, B, X]
-case class ApplySuch[I, B, X](f: B => Option[I]) extends CoseqIn[I, B, X]
+case class Elem[I, B, X](f: B => Option[I]) extends CoseqIn[I, B, X]
 case class Prepend[I, B, X](value: X) extends CoseqIn[I, B, X]
 
 sealed trait CoseqOut[O, X]

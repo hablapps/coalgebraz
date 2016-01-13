@@ -1,6 +1,7 @@
 package org.hablapps.coalgebraz.candy
 
 import scala.util.Random
+import Function.const
 
 import scalaz._, Scalaz._, Isomorphism.<=>
 
@@ -10,6 +11,7 @@ import Coalgebraz._, CoentityOps._
 import Sq.someOrNone
 import Nat.Syntax._
 import Isos._
+import Routing._
 
 object Cocandy {
 
@@ -31,11 +33,7 @@ object Cocandy {
     (cokey |+| coflavour |+| coposition)
       .withState[Candy]
       .withObservable[Candy]
-      .routeIn(_ => _ match {
-        case Fall(n)    => List(OverY(_ + n).right)
-        case Slide(dir) => List(dir.toPositionIn.right)
-        case Mutate(fl) => List(Become(fl).left)
-      })
+      .routeIn(routeInCandy1)
 
   val cocandy2: Coentity[CandyIn2, CandyOut, Candy, Candy] = {
     case c: Candy => Entity(c, _ => (List(ByeCandy), None))
@@ -54,14 +52,14 @@ object Cocandy {
     IStream(rnd.nextInt, rnd)
   }
 
-  val coboard: Coentity[BoardIn, BoardOut, Board, Board] = {
+  val coboard: Coentity[BoardIn, BoardOut, Board, (Board, Random)] = {
     val co = (cosize |+| cocandies)
       .withState[Board]
       .withObservable[Board]
-    ???
     (co |+| corandom)
-      .withObservable[Board](_._1)
-    ???
+      .withObservable(_._1)
+      .routeIn(routeInBoard)
+      .routeOut[BoardOut](routeOutBoard)
   }
 
   def cocounter(limit: Nat): Costore[CounterIn, Nat, Nat] = { x =>

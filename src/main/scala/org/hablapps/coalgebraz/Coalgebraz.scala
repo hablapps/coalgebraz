@@ -111,7 +111,7 @@ object Coalgebraz {
     val bs = es map (_.observe)
     val nx = es map (_.next)
     Entity(bs, _ match {
-      case ApplySuch(f) => {
+      case Elem(f) => {
         val emp = List.empty[CoseqOut[O, X]]
         val ts: List[(List[CoseqOut[O, X]], Option[X])] =
           zip3(xs, nx, bs map f) map {
