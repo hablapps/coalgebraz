@@ -13,13 +13,19 @@ object Nat {
 
   def add(a: Nat, b: Nat): Nat = Nat(a.us ++ b.us)
 
-  def sub(a: Nat, b: Nat): Nat = apply(toInt(a)-toInt(b))
+  def sub(a: Nat, b: Nat): Nat = apply(toInt(a) - toInt(b))
+
+  def lt(a: Nat, b: Nat): Boolean = toInt(a) < toInt(b)
+
+  def ht(a: Nat, b: Nat): Boolean = toInt(a) > toInt(b)
 
   def toInt(a: Nat): Int = a.us.length
 
   case class NatOps(a: Nat) {
-    def +(b: Nat): Nat = Nat.add(a, b)
-    def -(b: Nat): Nat = Nat.sub(a, b)
+    def +(b: Nat) = Nat.add(a, b)
+    def -(b: Nat) = Nat.sub(a, b)
+    def <(b: Nat) = Nat.lt(a, b)
+    def >(b: Nat) = Nat.ht(a, b)
     def asInt = Nat.toInt(a)
   }
 

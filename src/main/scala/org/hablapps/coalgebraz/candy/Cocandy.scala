@@ -8,7 +8,7 @@ import org.hablapps.coalgebraz._
 import org.hablapps.coalgebraz.Store
 import Coalgebraz._, CoentityOps._
 import Sq.someOrNone
-import Nat._, Nat.Syntax._
+import Nat.Syntax._
 
 object Cocandy {
 
@@ -59,13 +59,10 @@ object Cocandy {
   val corandom: Coistream[Int, Random] = rnd => IStream(rnd.nextInt, rnd)
 
   // A counter system which will stop right after overtaking the passed limit.
-  def cocounter(limit: Int): Costore[CounterIn, Int, Nat] = { x =>
+  def cocounter(limit: Nat): Costore[CounterIn, Int, Nat] = { x =>
     Store(x.asInt, _ match {
-      case Increase(n) => {
-        val x2 = x + Nat(n)
-        if (x2.asInt > limit) None else Option(x2)
-      }
-      case Decrease(n) => Option(x - Nat(n))
+      case Increase(n) => if (x + n > limit) None else Option(x + n)
+      case Decrease(n) => Option(x - n)
     })
   }
 }
