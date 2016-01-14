@@ -102,8 +102,8 @@ object Coalgebraz {
   // states individually. Removal is not covered since we're working with
   // `Entity` which is able to stop by its own.
   //
-  // XXX: this combinator is quite ugly, I'm sure it can be cleaned up, though
-  // there are other priorities right now.
+  // XXX: this implementation is quite ugly, I'm sure it can be cleaned up,
+  // though there are other priorities right now.
   def toCoseq[I, O, B, X](
       co: Coentity[I, O, B, X])(implicit
       sq: Sq[List, Option]): CoentitySeq[I, O, B, X] = { xs =>
@@ -130,6 +130,28 @@ object Coalgebraz {
         ts.unzip.swap.map(_.flatten).swap.map(sq(_))
       }
       case Prepend(x) => (List(Prepended(x)), Option(x :: xs))
+    })
+  }
+
+  def retroFeedback[I, O, B, X](
+      f: B => O => Option[I])(
+      co: Coentity[I, O, B, X]): Coentity[I, O, B, X] = { x =>
+    type Out = (List[O], Option[X])
+
+    def g(acc: List[O], q: List[O], s: X, nxt: I => Out): Out = q match {
+      case Nil => (acc, Option(s))
+      case h::t => {
+        f(co(s).observe)(h).fold(g(acc :+ h, t, s, nxt)) { i =>
+          val (os, ox) = nxt(i)
+          ox.fold((acc ++ q, Option.empty[X]))(g(acc :+ h, t ++ os, _, nxt))
+        }
+      }
+    }
+
+    val Entity(obs, nxt) = co(x)
+    Entity(obs, i => nxt(i) match {
+      case res@(_, None) => res
+      case (os, Some(x2)) => g(List.empty, os, x2, nxt)
     })
   }
 }

@@ -52,15 +52,17 @@ object Cocandy {
     IStream(rnd.nextInt, rnd)
   }
 
-  val coboard: Coentity[BoardIn, BoardOut, Board, (Board, Random)] = {
-    val co = (cosize |+| cocandies)
+  val coboard: Coentity[BoardIn, BoardOut, Board, (Board, Random)] =
+    ((cosize |+| cocandies)
       .withState[Board]
       .withObservable[Board]
-    (co |+| corandom)
-      .withObservable(_._1)
-      .routeIn(routeInBoard)
-      .routeOut[BoardOut](routeOutBoard)
-  }
+      |+| corandom)
+        .withObservable(_._1)
+        .routeIn(routeInBoard)
+        .routeOut[BoardOut](routeOutBoard)
+
+  val coretroboard: Coentity[BoardIn, BoardOut, Board, (Board, Random)] =
+    coboard.retroFeedback(???)
 
   def cocounter(limit: Nat): Costore[CounterIn, Nat, Nat] = { x =>
     Store(x, _ match {
