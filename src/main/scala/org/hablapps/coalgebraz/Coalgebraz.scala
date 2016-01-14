@@ -133,6 +133,8 @@ object Coalgebraz {
     })
   }
 
+  // TODO: `f` should be extended to `B => O => List[I]`, though it's not
+  // required yet by candy.
   def routeBack[I, O, B, X](
       f: B => O => Option[I])(
       co: Coentity[I, O, B, X]): Coentity[I, O, B, X] = { x =>

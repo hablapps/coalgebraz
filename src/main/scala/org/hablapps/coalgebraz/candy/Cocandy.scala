@@ -48,21 +48,18 @@ object Cocandy {
   val cosize: Coentity[Void, Void, Int, Int] = constant[Int]
 
   // XXX: side-effecting random. It'll be nice to use a pure one!
-  val corandom: Coistream[Int, Random] = { rnd =>
-    IStream(rnd.nextInt, rnd)
+  val cofactory: Coistream[Candy, Random] = { rnd =>
+    IStream(???, rnd)
   }
 
-  val coboard: Coentity[BoardIn, BoardOut, Board, (Board, Random)] =
+  val coboard: Coentity[BoardIn, BoardOut, (Board, Candy), (Board, Random)] =
     ((cosize |+| cocandies)
       .withState[Board]
       .withObservable[Board]
-      |+| corandom)
-        .withObservable(_._1)
+      |+| cofactory)
         .routeIn(routeInBoard)
         .routeOut[BoardOut](routeOutBoard)
-
-  val coretroboard: Coentity[BoardIn, BoardOut, Board, (Board, Random)] =
-    coboard.routeBack(routeBackBoard)
+        .routeBack(routeBackBoard)
 
   def cocounter(limit: Nat): Costore[CounterIn, Nat, Nat] = { x =>
     Store(x, _ match {
