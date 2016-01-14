@@ -58,4 +58,7 @@ case class NewCandy(candy: Candy) extends BoardIn
 case class CrushThem(keys: List[String]) extends BoardIn
 
 sealed trait BoardOut
-case class IncreasePoints(n: Nat) extends BoardOut
+case class Popped(n: Nat) extends BoardOut
+case class Aligned(keys: List[String]) extends BoardOut
+case class Suspended(pos: (Int, Int)) extends BoardOut
+case class Inhabitated(pos: (Int, Int)) extends BoardOut

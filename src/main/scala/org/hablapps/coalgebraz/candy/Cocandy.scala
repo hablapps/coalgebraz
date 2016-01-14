@@ -62,7 +62,7 @@ object Cocandy {
         .routeOut[BoardOut](routeOutBoard)
 
   val coretroboard: Coentity[BoardIn, BoardOut, Board, (Board, Random)] =
-    coboard.retroFeedback(???)
+    coboard.routeBack(routeBackBoard)
 
   def cocounter(limit: Nat): Costore[CounterIn, Nat, Nat] = { x =>
     Store(x, _ match {

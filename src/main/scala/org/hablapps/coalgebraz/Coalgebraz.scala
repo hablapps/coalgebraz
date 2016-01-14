@@ -133,7 +133,7 @@ object Coalgebraz {
     })
   }
 
-  def retroFeedback[I, O, B, X](
+  def routeBack[I, O, B, X](
       f: B => O => Option[I])(
       co: Coentity[I, O, B, X]): Coentity[I, O, B, X] = { x =>
     type Out = (List[O], Option[X])

@@ -36,8 +36,8 @@ class CoentityOps[I1, O1, B1, X1](val co1: Coentity[I1, O1, B1, X1]) {
   def toCoseq(implicit sq: Sq[List, Option]) =
     Coalgebraz.toCoseq[I1, O1, B1, X1](co1)(sq)
 
-  def retroFeedback(f: B1 => O1 => Option[I1]) =
-    Coalgebraz.retroFeedback[I1, O1, B1, X1](f)(co1)
+  def routeBack(f: B1 => O1 => Option[I1]) =
+    Coalgebraz.routeBack[I1, O1, B1, X1](f)(co1)
 }
 
 object CoentityOps {
