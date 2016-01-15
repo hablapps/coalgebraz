@@ -33,12 +33,15 @@ object Routing {
 
   def routeOutBoard(
       obs: (Board, Candy))(
-      out: CoseqOut[CandyOut, Candy]): List[BoardOut] = out match {
-    case WrappedOut(os) => {
-      val n = os.list.foldLeft(0)((acc, ByeCandy) => acc + 1)
-      if (n > 0) List(Popped(n)) else List.empty
-    }
-    case _ => List.empty
+      out: CoseqOut[CandyOut, Candy]): List[BoardOut] = {
+    val bos: List[BoardOut] = observeForReaction(obs._1).toList
+    bos ++ (out match {
+      case WrappedOut(os) => {
+        val n = os.list.foldLeft(0)((acc, ByeCandy) => acc + 1)
+        if (n > 0) List(Popped(n)) else List.empty
+      }
+      case _ => List.empty
+    })
   }
 
   def routeBackBoard(
@@ -56,4 +59,14 @@ object Routing {
     case Popped(n) => List(Increase(n))
     case _ => List.empty
   }
+
+  /* Reactions */
+
+  private def observeForReaction(board: Board): Option[BoardOut] = ???
+
+  private def observeForGravitate(board: Board): Option[Suspended] = ???
+
+  private def observeForPopulate(board: Board): Option[Inhabitated] = ???
+
+  private def observeForCrush(board: Board): Option[Aligned] = ???
 }
