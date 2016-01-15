@@ -39,6 +39,8 @@ object Cocandy {
     case c: Candy => Entity(c, _ => (List(ByeCandy), None))
   }
 
+  // XXX: I'm not a big fan of this implementation, perhaps there's a cleaner
+  // way to achieve `cocandy`.
   val cocandy: Coentity[CandyIn, CandyOut, Candy, Candy] =
     cocandy1 /+\ cocandy2
 
