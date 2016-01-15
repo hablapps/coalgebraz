@@ -49,4 +49,11 @@ object Routing {
     case Inhabitated(pos) => Option(NewCandy(obs._2.copy(position = pos)))
     case _ => None
   }
+
+  def routeOutBoard2(
+      obs: (Board, Candy))(
+      out: BoardOut): List[CounterIn] = out match {
+    case Popped(n) => List(Increase(n))
+    case _ => List.empty
+  }
 }
