@@ -33,6 +33,9 @@ package object coalgebraz {
   type CoentitySeq[I, O, B, X] =
     Coentity[CoseqIn[I, B, X], CoseqOut[O, X], List[B], List[X]]
 
+  type  ->[A, B] = To[A, B]
+  type <->[A, B] = Iso[A, B]
+
   /* Generic combinators */
 
   // XXX: seems like a comonad!?!?
@@ -49,10 +52,4 @@ package object coalgebraz {
     case (Nil, _, _) | (_, Nil, _) | (_, _, Nil) => List.empty
     case (a::as, b::bs, c::cs) => (a, b, c) :: zip3(as, bs, cs)
   }
-
-  /* Implicit views */
-
-  implicit def isoTo[A, B](implicit ev: A <=> B): A => B = ev.to
-
-  implicit def isoFrom[A, B](implicit ev: A <=> B): B => A = ev.from
 }

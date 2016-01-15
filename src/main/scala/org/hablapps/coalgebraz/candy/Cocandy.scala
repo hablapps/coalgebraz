@@ -10,7 +10,7 @@ import org.hablapps.coalgebraz.Store
 import Coalgebraz._, CoentityOps._
 import Sq.someOrNone
 import Nat.Syntax._
-import Isos._
+import Isos.{ isoCandy, isoBoard }
 import Routing._
 
 object Cocandy {
@@ -58,13 +58,19 @@ object Cocandy {
       .withObservable[Board]
       |+| cofactory)
         .routeIn(routeInBoard)
-        .routeOut[BoardOut](routeOutBoard)
+        .routeOut(routeOutBoard)
         .routeBack(routeBackBoard)
 
-  def cocounter(limit: Nat): Costore[CounterIn, Nat, Nat] = { x =>
-    Store(x, _ match {
-      case Increase(n) => if (x + n > limit) None else Option(x + n)
-      case Decrease(n) => Option(x - n)
+  def cocounter(limit: Nat): Coentity[CounterIn, CounterOut, Nat, Nat] = { x =>
+    Entity(x, _ match {
+      case Increase(n) if x + n > limit => (List(Done), None)
+      case Increase(n) => (List.empty, Option(x + n))
+      case Decrease(n) => (List.empty, Option(x - n))
     })
   }
+
+  def cogame(target: Nat): Coentity[BoardIn, CounterOut, (Board, Nat), (Board, Random, Nat)] =
+    (coboard.routeOut[CounterIn](???) |->| cocounter(target))
+      .withState[(Board, Random, Nat)]
+      .withObservable[(Board, Nat)](To { case ((b, r), n) => (b, n) })
 }

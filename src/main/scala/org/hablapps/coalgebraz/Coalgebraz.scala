@@ -3,7 +3,7 @@ package org.hablapps.coalgebraz
 import scala.language.higherKinds
 import scala.language.implicitConversions
 
-import scalaz._, Scalaz._, Isomorphism.<=>
+import scalaz._, Scalaz._
 
 object Coalgebraz {
 
@@ -35,16 +35,16 @@ object Coalgebraz {
 
   def withState[I, O, B, X, X2](
       co: Coentity[I, O, B, X])(implicit
-      iso: X <=> X2): Coentity[I, O, B, X2] = { x2 =>
+      iso: X <-> X2): Coentity[I, O, B, X2] = { x2 =>
     val Entity(obs, nxt) = co(iso.from(x2))
     Entity(obs, i => nxt(i).map(_ map iso.to))
   }
 
   def withObservable[I, O, B, X, B2](
       co: Coentity[I, O, B, X])(implicit
-      to: B => B2): Coentity[I, O, B2, X] = { x =>
+      ev0: B -> B2): Coentity[I, O, B2, X] = { x =>
     val Entity(obs, nxt) = co(x)
-    Entity(to(obs), nxt)
+    Entity(ev0.to(obs), nxt)
   }
 
   // Feeds a coalgebra with a list of inputs and returns the final state (if
@@ -156,4 +156,10 @@ object Coalgebraz {
       case (os, Some(x2)) => g(List.empty, os, x2, nxt)
     })
   }
+
+  def flow[A, I, O, B, B1, B2, X, X1, X2](
+    co1: Coentity[I, A, B1, X1],
+    co2: Coentity[A, O, B2, X2])(implicit
+    ev0: ClearProduct.Aux[B1, B2, B],
+    ev1: ClearProduct.Aux[X1, X2, X]): Coentity[I, O, B, X] = ???
 }

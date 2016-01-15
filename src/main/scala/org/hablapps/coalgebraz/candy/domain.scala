@@ -49,6 +49,9 @@ sealed trait CounterIn
 case class Increase(n: Nat) extends CounterIn
 case class Decrease(n: Nat) extends CounterIn
 
+sealed trait CounterOut
+case object Done extends CounterOut
+
 case class Board(size: Int, candies: List[Candy])
 
 sealed trait BoardIn
