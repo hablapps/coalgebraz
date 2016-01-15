@@ -71,7 +71,13 @@ object Routing {
 
   private def observeForGravitate(board: Board): Option[Suspended] = ???
 
-  private def observeForPopulate(board: Board): Option[Inhabitated] = ???
+  private def observeForPopulate(board: Board): Option[Inhabitated] = {
+    val Board(size, candies) = board
+    (1 to size).toStream
+      .map((_, 1))
+      .find(pos => candies.exists(_.position == pos))
+      .map(Inhabitated(_))
+  }
 
   private def observeForCrush(board: Board): Option[Aligned] = ???
 }
