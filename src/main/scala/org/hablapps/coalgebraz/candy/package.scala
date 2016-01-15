@@ -6,6 +6,8 @@ package object candy {
 
   type CandyIn = CandyIn1 \/ CandyIn2
 
+  type Game = (Board, Nat)
+
   // XXX: consider using `ScalaCheck` gens to avoid this crap
   def intToCandy(i: Int) = {
     val fl = i % 8 match {

@@ -1,5 +1,7 @@
 package org.hablapps.coalgebraz
 
+import scala.io.StdIn.readLine
+
 import scalaz._, Scalaz._
 
 object Driver {
@@ -17,13 +19,35 @@ object Driver {
     runHypertree(unfold(co, x), in)
 
   def runHypertree[I, O, B](
-      ht: Hypertree[I, O, B], in: List[I]): List[(List[O], B)] = in match {
+      ht: Hypertree[I, O, B],
+      in: List[I]): List[(List[O], B)] = in match {
     case (i::is) => {
       val (os, ox) = ht.transition(i)
       val v = List((os, ht.current))
       ox.fold(v)(ht2 => v ++ runHypertree(ht2, is))
     }
     case Nil => List((List.empty, ht.current))
+  }
+
+  def runIO[I: Read, O, B, X](
+      co: Coentity[I, O, B, X],
+      x: X,
+      eff: B => Unit): Unit =
+    runHypertreeIO(unfold(co, x), eff)
+
+  def runHypertreeIO[I: Read, O, B](
+      ht: Hypertree[I, O, B],
+      eff: B => Unit): Unit = {
+    val s = readLine("> ")
+    val oi = Read[I].read(s)
+    oi.fold({
+      println(s"unknown input: '$s'")
+      runHypertreeIO(ht, eff)
+    }) { i =>
+      val (os, ox) = ht.transition(i)
+      eff(ht.current)
+      ox.fold(println("Bye!"))(ht2 => runHypertreeIO(ht2, eff))
+    }
   }
 
   case class Hypertree[A, B, C](

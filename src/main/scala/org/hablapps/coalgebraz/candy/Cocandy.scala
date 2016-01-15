@@ -69,7 +69,7 @@ object Cocandy {
     })
   }
 
-  def cogame(target: Nat): Coentity[BoardIn, CounterOut, (Board, Nat), (Board, Random, Nat)] =
+  def cogame(target: Nat): Coentity[BoardIn, CounterOut, Game, (Board, Random, Nat)] =
     (coboard.routeOut[CounterIn](routeOutBoard2) |->| cocounter(target))
       .withState[(Board, Random, Nat)]
       .withObservable(To { case ((b, r), n) => (b, n) })
