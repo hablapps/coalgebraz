@@ -1,5 +1,6 @@
 package org.hablapps.coalgebraz.candy
 
+import scala.collection.immutable.Stream
 import scala.util.Random
 
 import scalaz._, Scalaz._
@@ -62,7 +63,11 @@ object Routing {
 
   /* Reactions */
 
-  private def observeForReaction(board: Board): Option[BoardOut] = ???
+  private def observeForReaction(board: Board): Option[BoardOut] =
+    Stream(observeForGravitate _, observeForPopulate _, observeForCrush _)
+      .map(_(board))
+      .find(_.isDefined)
+      .flatten
 
   private def observeForGravitate(board: Board): Option[Suspended] = ???
 
