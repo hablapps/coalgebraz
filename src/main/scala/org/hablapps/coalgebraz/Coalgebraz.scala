@@ -134,7 +134,7 @@ object Coalgebraz {
   }
 
   // TODO: `f` should be extended to `B => O => List[I]`, though it's not
-  // required yet by candy.
+  // required by candy yet.
   def routeBack[I, O, B, X](
       f: B => O => Option[I])(
       co: Coentity[I, O, B, X]): Coentity[I, O, B, X] = { x =>
@@ -158,8 +158,18 @@ object Coalgebraz {
   }
 
   def flow[A, I, O, B, B1, B2, X, X1, X2](
-    co1: Coentity[I, A, B1, X1],
-    co2: Coentity[A, O, B2, X2])(implicit
-    ev0: ClearProduct.Aux[B1, B2, B],
-    ev1: ClearProduct.Aux[X1, X2, X]): Coentity[I, O, B, X] = ???
+      co1: Coentity[I, A, B1, X1],
+      co2: Coentity[A, O, B2, X2])(implicit
+      ev0: ClearProduct.Aux[B1, B2, B],
+      ev1: ClearProduct.Aux[X1, X2, X],
+      ev2: (X1, X2) <-> X): Coentity[I, O, B, X] = { x =>
+    val Entity(obs1, nxt1) = co1(ev2.from(x)._1)
+    val x2 = ev2.from(x)._2
+    val Entity(obs2, _) = co2(x2)
+    Entity(ev0(obs1, obs2), { i1 =>
+      val (o1s, ox1) = nxt1(i1)
+      val (o2s, ox2) = feed(co2, o1s, x2)
+      (o2s, (ox1 |@| ox2)(ev1(_, _)))
+    })
+  }
 }

@@ -22,6 +22,7 @@ object IO extends App {
     }
   }
 
+  // XXX: far from safe, but good enough to toy around
   implicit val readBoardIn: Read[BoardIn] = new Read[BoardIn] {
     def read(s: String) = {
       s.split(" ") match {
@@ -36,6 +37,8 @@ object IO extends App {
       }
     }
   }
+
+  /* Crush them all! */
 
   runIO(
     cogame(10),
