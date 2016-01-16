@@ -66,19 +66,43 @@ object Coalgebraz {
   // Adapts a system to map input broader events into smaller ones, given a
   // mapper function.
   def routeIn[I, O, B, X, I2](
-      f: B => I2 => List[I],
-      co: Coentity[I, O, B, X]): Coentity[I2, O, B, X] = { x =>
+      co: Coentity[I, O, B, X])(implicit
+      r: Router[B, I2, I]): Coentity[I2, O, B, X] = { x =>
     val Entity(obs, nxt) = co(x)
-    Entity(obs, i => feed(co, f(obs)(i), x))
+    Entity(obs, i => feed(co, r(obs)(i), x))
   }
 
   // Adapts a system to map output smaller events into broader ones, given a
   // mapper function.
   def routeOut[I, O, B, X, O2](
-      f: B => O => List[O2],
-      co: Coentity[I, O, B, X]): Coentity[I, O2, B, X] = { x =>
+      co: Coentity[I, O, B, X])(implicit
+      r: Router[B, O, O2]): Coentity[I, O2, B, X] = { x =>
     val Entity(obs, nxt) = co(x)
-    Entity(obs, i => nxt(i).swap.map(_ flatMap f(obs)).swap)
+    Entity(obs, i => nxt(i).swap.map(_ flatMap r(obs)).swap)
+  }
+
+  // TODO: `f` should be extended to `B => O => List[I]`, though it's not
+  // required by candy yet.
+  def routeBack[I, O, B, X](
+      co: Coentity[I, O, B, X])(implicit
+      r: B => O => Option[I]): Coentity[I, O, B, X] = { x =>
+    type Out = (List[O], Option[X])
+
+    def g(acc: List[O], q: List[O], s: X, nxt: I => Out): Out = q match {
+      case Nil => (acc, Option(s))
+      case h::t => {
+        r(co(s).observe)(h).fold(g(acc :+ h, t, s, nxt)) { i =>
+          val (os, ox) = nxt(i)
+          ox.fold((acc ++ q, Option.empty[X]))(g(acc :+ h, t ++ os, _, nxt))
+        }
+      }
+    }
+
+    val Entity(obs, nxt) = co(x)
+    Entity(obs, i => nxt(i) match {
+      case res@(_, None) => res
+      case (os, Some(x2)) => g(List.empty, os, x2, nxt)
+    })
   }
 
   // Permits two coalgebras to share the very same inner state. It worths
@@ -130,30 +154,6 @@ object Coalgebraz {
         ts.unzip.swap.map(_.flatten).swap.map(sq(_))
       }
       case Prepend(x) => (List(Prepended(x)), Option(x :: xs))
-    })
-  }
-
-  // TODO: `f` should be extended to `B => O => List[I]`, though it's not
-  // required by candy yet.
-  def routeBack[I, O, B, X](
-      f: B => O => Option[I])(
-      co: Coentity[I, O, B, X]): Coentity[I, O, B, X] = { x =>
-    type Out = (List[O], Option[X])
-
-    def g(acc: List[O], q: List[O], s: X, nxt: I => Out): Out = q match {
-      case Nil => (acc, Option(s))
-      case h::t => {
-        f(co(s).observe)(h).fold(g(acc :+ h, t, s, nxt)) { i =>
-          val (os, ox) = nxt(i)
-          ox.fold((acc ++ q, Option.empty[X]))(g(acc :+ h, t ++ os, _, nxt))
-        }
-      }
-    }
-
-    val Entity(obs, nxt) = co(x)
-    Entity(obs, i => nxt(i) match {
-      case res@(_, None) => res
-      case (os, Some(x2)) => g(List.empty, os, x2, nxt)
     })
   }
 
