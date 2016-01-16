@@ -27,7 +27,7 @@ class CoentityOps[I1, O1, B1, X1](val co1: Coentity[I1, O1, B1, X1]) {
   def routeOut[O2](implicit r: Router[B1, O1, O2]) =
     Coalgebraz.routeOut[I1, O1, B1, X1, O2](co1)
 
-  def routeBack(implicit r: B1 => O1 => Option[I1]) =
+  def routeBack(implicit r: Router[B1, O1, I1]) =
     Coalgebraz.routeBack[I1, O1, B1, X1](co1)
 
   def /+\[I2, I, O2, O](

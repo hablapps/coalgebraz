@@ -49,11 +49,11 @@ object Routing {
 
   implicit def routeBackBoard(
       obs: (Board, Candy))(
-      out: BoardOut): Option[BoardIn] = out match {
-    case Aligned(keys)    => Option(CrushThem(keys))
-    case Suspended(pos)   => Option(Interchange(pos, South))
-    case Inhabitated(pos) => Option(NewCandy(obs._2.copy(position = pos)))
-    case _ => None
+      out: BoardOut): List[BoardIn] = out match {
+    case Aligned(keys)    => List(CrushThem(keys))
+    case Suspended(pos)   => List(Interchange(pos, South))
+    case Inhabitated(pos) => List(NewCandy(obs._2.copy(position = pos)))
+    case _ => List.empty
   }
 
   implicit def routeOutBoard2(

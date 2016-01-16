@@ -59,7 +59,7 @@ object Cocandy {
       |+| cofactory)
         .routeIn[BoardIn]
         .routeOut[BoardOut]
-        .routeBack(routeBackBoard)
+        .routeBack
 
   def cocounter(limit: Nat): Coentity[CounterIn, CounterOut, Nat, Nat] = { x =>
     Entity(x, _ match {

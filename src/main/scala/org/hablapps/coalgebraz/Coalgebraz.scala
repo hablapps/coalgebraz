@@ -85,15 +85,18 @@ object Coalgebraz {
   // required by candy yet.
   def routeBack[I, O, B, X](
       co: Coentity[I, O, B, X])(implicit
-      r: B => O => Option[I]): Coentity[I, O, B, X] = { x =>
+      r: B => O => List[I]): Coentity[I, O, B, X] = { x =>
     type Out = (List[O], Option[X])
 
     def g(acc: List[O], q: List[O], s: X, nxt: I => Out): Out = q match {
       case Nil => (acc, Option(s))
       case h::t => {
-        r(co(s).observe)(h).fold(g(acc :+ h, t, s, nxt)) { i =>
-          val (os, ox) = nxt(i)
-          ox.fold((acc ++ q, Option.empty[X]))(g(acc :+ h, t ++ os, _, nxt))
+        r(co(s).observe)(h) match {
+          case Nil => g(acc :+ h, t, s, nxt)
+          case is => {
+            val (os, ox) = feed(co, is, s)
+            ox.fold((acc ++ q, Option.empty[X]))(g(acc :+ h, t ++ os, _, nxt))
+          }
         }
       }
     }
