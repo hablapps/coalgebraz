@@ -33,7 +33,7 @@ object Cocandy {
     (cokey |+| coflavour |+| coposition)
       .withState[Candy]
       .withObservable[Candy]
-      .routeIn(routeInCandy1)
+      .routeIn[CandyIn1]
 
   val cocandy2: Coentity[CandyIn2, CandyOut, Candy, Candy] = {
     case c: Candy => Entity(c, _ => (List(ByeCandy), None))
@@ -57,9 +57,9 @@ object Cocandy {
       .withState[Board]
       .withObservable[Board]
       |+| cofactory)
-        .routeIn(routeInBoard)
-        .routeOut(routeOutBoard)
-        .routeBack(routeBackBoard)
+        .routeIn[BoardIn]
+        .routeOut[BoardOut]
+        .routeBack
 
   def cocounter(limit: Nat): Coentity[CounterIn, CounterOut, Nat, Nat] = { x =>
     Entity(x, _ match {

@@ -1,5 +1,7 @@
 package org.hablapps.coalgebraz.candy
 
+import scala.language.implicitConversions
+
 import scala.collection.immutable.Stream
 import scala.util.Random
 
@@ -9,7 +11,7 @@ import org.hablapps.coalgebraz._
 
 object Routing {
 
-  def routeInCandy1(
+  implicit def routeInCandy1(
       candy: Candy)(
       in: CandyIn1): List[FlavourIn \/ PositionIn] = in match {
     case Fall(n)    => List(OverY(_ + n).right)
@@ -17,7 +19,7 @@ object Routing {
     case Mutate(fl) => List(Become(fl).left)
   }
 
-  def routeInBoard(
+  implicit def routeInBoard(
       obs: (Board, Candy))(
       in: BoardIn): List[CoseqIn[CandyIn, Candy, Candy] \/ Unit] = in match {
     case Transform(key, flavour) => List(-\/(Elem {
@@ -32,7 +34,7 @@ object Routing {
     }))
   }
 
-  def routeOutBoard(
+  implicit def routeOutBoard(
       obs: (Board, Candy))(
       out: CoseqOut[CandyOut, Candy]): List[BoardOut] = {
     val bos: List[BoardOut] = observeForReaction(obs._1).toList
@@ -45,16 +47,16 @@ object Routing {
     })
   }
 
-  def routeBackBoard(
+  implicit def routeBackBoard(
       obs: (Board, Candy))(
-      out: BoardOut): Option[BoardIn] = out match {
-    case Aligned(keys)    => Option(CrushThem(keys))
-    case Suspended(pos)   => Option(Interchange(pos, South))
-    case Inhabitated(pos) => Option(NewCandy(obs._2.copy(position = pos)))
-    case _ => None
+      out: BoardOut): List[BoardIn] = out match {
+    case Aligned(keys)    => List(CrushThem(keys))
+    case Suspended(pos)   => List(Interchange(pos, South))
+    case Inhabitated(pos) => List(NewCandy(obs._2.copy(position = pos)))
+    case _ => List.empty
   }
 
-  def routeOutBoard2(
+  implicit def routeOutBoard2(
       obs: (Board, Candy))(
       out: BoardOut): List[CounterIn] = out match {
     case Popped(n) => List(Increase(n))
