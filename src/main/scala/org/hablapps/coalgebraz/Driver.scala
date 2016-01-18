@@ -50,7 +50,7 @@ object Driver {
     }) { i =>
       val (os, ox) = ht.transition(i)
       eff(ht.current)
-      ox.fold(println("Finished"))(ht2 => runHypertreeIO(ht2, eff))
+      ox.fold(println("Done!"))(ht2 => runHypertreeIO(ht2, eff))
     }
   }
 

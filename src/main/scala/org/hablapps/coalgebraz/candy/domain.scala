@@ -34,7 +34,9 @@ case object South extends Direction
 case object East extends Direction
 case object West extends Direction
 
-case class Candy(key: String, flavour: Flavour, position: (Int, Int))
+case class Candy(key: String, flavour: Flavour, position: (Int, Int)) {
+  override def toString = flavour.toString
+}
 
 sealed trait CandyIn1
 case class Fall(n: Int) extends CandyIn1

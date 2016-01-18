@@ -30,6 +30,9 @@ class CoentityOps[I1, O1, B1, X1](val co1: Coentity[I1, O1, B1, X1]) {
   def routeBack(implicit r: Router[B1, O1, I1]) =
     Coalgebraz.routeBack[I1, O1, B1, X1](co1)
 
+  def outputFromBehaviour(f: B1 => List[O1]) =
+    Coalgebraz.outputFromBehaviour(co1)(f)
+
   def /+\[I2, I, O2, O](
       co2: Coentity[I2, O2, B1, X1])(implicit
       ev0: ClearSum.Aux[I1, I2, I],

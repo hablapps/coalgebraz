@@ -39,15 +39,12 @@ object Routing {
 
   implicit def routeOutBoard(
       obs: (Board, Candy))(
-      out: CoseqOut[CandyOut, Candy]): List[BoardOut] = {
-    val bos: List[BoardOut] = observeForReaction(obs._1).toList
-    bos ++ (out match {
-      case WrappedOut(os) => {
-        val n = os.list.foldLeft(0)((acc, ByeCandy) => acc + 1)
-        if (n > 0) List(Popped(n)) else List.empty
-      }
-      case _ => List.empty
-    })
+      out: CoseqOut[CandyOut, Candy]): List[BoardOut] = out match {
+    case WrappedOut(os) => {
+      val n = os.list.foldLeft(0)((acc, ByeCandy) => acc + 1)
+      if (n > 0) List(Popped(n)) else List.empty
+    }
+    case _ => List.empty
   }
 
   implicit def routeBackBoard(
@@ -66,26 +63,25 @@ object Routing {
     case _ => List.empty
   }
 
-  /* Reactions */
-
-  private def observeForReaction(board: Board): Option[BoardOut] =
+  def observeForReaction(beh: (Board, Candy)): List[BoardOut] =
     Stream(observeForGravitate _, observeForPopulate _, observeForCrush _)
-      .map(_(board))
+      .map(_(beh._1))
       .find(_.isDefined)
       .flatten
+      .toList
 
   private def observeForGravitate(board: Board): Option[Suspended] =
     board.candies.find { c1 =>
-      c1.position._2 != board.size && board.candies.exists { c2 =>
+      c1.position._2 != board.size && (! board.candies.exists { c2 =>
         c2.position == c1.position.map(_ + 1)
-      }
+      })
     }.map(c => Suspended(c.position))
 
   private def observeForPopulate(board: Board): Option[Inhabitated] = {
     val Board(size, candies) = board
     (1 to size).toStream
       .map((_, 1))
-      .find(pos => candies.exists(_.position == pos))
+      .find(pos => ! candies.exists(_.position == pos))
       .map(Inhabitated(_))
   }
 
