@@ -38,11 +38,17 @@ object Driver {
   def runHypertreeIO[I: Read, O, B](
       ht: Hypertree[I, O, B],
       eff: B => Unit): Unit = {
-    val s = readLine("> ")
+    val s = readLine("$ ")
     val oi = Read[I].read(s)
     oi.fold({
-      println(s"unknown input: '$s'")
-      runHypertreeIO(ht, eff)
+      if (s == "exit")
+        println("Bye")
+      else if (s == "")
+        runHypertreeIO(ht, eff)
+      else {
+        println(s"unknown input: '$s'")
+        runHypertreeIO(ht, eff)
+      }
     }) { i =>
       val (os, ox) = ht.transition(i)
       eff(ht.current)
