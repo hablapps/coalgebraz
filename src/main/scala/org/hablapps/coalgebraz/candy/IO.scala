@@ -62,7 +62,7 @@ object IO extends App {
     |                          |___/
     |""".stripMargin)
 
-  val target = 10
+  val target = 15
 
   println(s"### TARGET: $target points ###\n")
 
