@@ -7,8 +7,13 @@ import scalaz._, Scalaz._
 
 object Coalgebraz {
 
-  def always[A](value: A): Coentity[Unit, Void, A, A] =
-    _ => Entity(value, _ => (List.empty, Option(value)))
+  def always[I, B, X](value: B): Coentity[I, Void, B, X] = { x =>
+    Entity(value, _ => (List.empty, Option(x)))
+  }
+
+  def until[I, B, X](value: B, f: I => Boolean): Coentity[I, Void, B, X] = { x =>
+    Entity(value, i => if (f(i)) (List.empty, None) else (List.empty, Option(x)))
+  }
 
   def constant[A]: Coentity[Void, Void, A, A] =
     s => Entity(s, _ => ??? /* does never happen */)
