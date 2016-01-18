@@ -29,7 +29,7 @@ object Routing {
     case Interchange(pos, dir) => ???
     case NewCandy(candy) => List(-\/(Prepend(candy)), \/-(()))
     case CrushThem(keys) => List(-\/(Elem {
-      case Candy(k, _, _) if keys contains k => Option(Crush.right)
+      case Candy(k, _, _) if keys.toList contains k => Option(Crush.right)
       case _ => None
     }))
   }
@@ -71,7 +71,12 @@ object Routing {
       .find(_.isDefined)
       .flatten
 
-  private def observeForGravitate(board: Board): Option[Suspended] = ???
+  private def observeForGravitate(board: Board): Option[Suspended] =
+    board.candies.find { c1 =>
+      c1.position._2 != board.size && board.candies.exists { c2 =>
+        c2.position == c1.position.map(_ + 1)
+      }
+    }.map(c => Suspended(c.position))
 
   private def observeForPopulate(board: Board): Option[Inhabitated] = {
     val Board(size, candies) = board
@@ -81,5 +86,29 @@ object Routing {
       .map(Inhabitated(_))
   }
 
-  private def observeForCrush(board: Board): Option[Aligned] = ???
+  // XXX: assumes a full board
+  private def observeForCrush(board: Board): Option[Aligned] = {
+
+    def align(f: Candy => Int, g: Candy => Int): List[Candy] =
+      board.candies
+        .groupBy(f)
+        .mapValues { vs =>
+          vs.sortWith((c1, c2) => g(c1) < g(c2))
+            .groupWhen((c1, c2) => c1.flavour == c2.flavour)
+            .map(_.toList)
+            .filter(_.size >= 3)
+            .flatten
+        }
+        .values
+        .toList
+        .flatten
+
+    (align(_.position._1, _.position._2) ++ align(_.position._2, _.position._1))
+      .distinct
+      .foldLeft(Option.empty[Aligned]) {
+        case (Some(Aligned(nel)), c) =>
+          Some(Aligned(nel.append(NonEmptyList(c.key))))
+        case (None, c) => Some(Aligned(NonEmptyList(c.key)))
+      }
+  }
 }
