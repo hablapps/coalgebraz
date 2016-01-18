@@ -20,7 +20,7 @@ object IO extends App {
       }).mkString(" "))
       println()
     }
-    println(s"Points: ${game._2}")
+    println(s"Points: ${game._2}\n")
   }
 
   implicit val readDirection: Read[Direction] = new Read[Direction] {
@@ -51,8 +51,23 @@ object IO extends App {
 
   /* Crush them all! */
 
+  println("""
+    |   _____                _          _____                _
+    |  / ____|              | |        / ____|              | |
+    | | |     __ _ _ __   __| |_   _  | |     _ __ _   _ ___| |__
+    | | |    / _` | '_ \ / _` | | | | | |    | '__| | | / __| '_ \
+    | | |___| (_| | | | | (_| | |_| | | |____| |  | |_| \__ \ | | |
+    |  \_____\__,_|_| |_|\__,_|\__, |  \_____|_|   \__,_|___/_| |_|
+    |                           __/ |
+    |                          |___/
+    |""".stripMargin)
+
+  val target = 10
+
+  println(s"### TARGET: $target points ###\n")
+
   runIO(
-    cogame(10),
+    cogame(target),
     (Board(8, List(Candy("one", Lemon, (1, 1)))), new Random(), Nat(0)),
     printGame)
 }
