@@ -38,6 +38,7 @@ object Driver {
   def runHypertreeIO[I: Read, O, B](
       ht: Hypertree[I, O, B],
       eff: B => Unit): Unit = {
+    eff(ht.current)
     val s = readLine("$ ")
     val oi = Read[I].read(s)
     oi.fold(s match {
@@ -49,7 +50,6 @@ object Driver {
       }
     }) { i =>
       val (os, ox) = ht.transition(i)
-      eff(ht.current)
       ox.fold(println("Done!"))(ht2 => runHypertreeIO(ht2, eff))
     }
   }

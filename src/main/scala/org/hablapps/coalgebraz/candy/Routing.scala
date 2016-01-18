@@ -28,6 +28,8 @@ object Routing {
     }))
     case Interchange(pos, dir) => List(-\/(Elem {
       case Candy(_, _, `pos`) => Option(Slide(dir).left)
+      case Candy(_, _, pos2) if dir(pos) == pos2 =>
+        Option(Slide(dir.opposite).left)
       case _ => None
     }))
     case NewCandy(candy) => List(-\/(Prepend(candy)), \/-(()))

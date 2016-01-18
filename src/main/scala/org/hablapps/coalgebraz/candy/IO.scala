@@ -52,7 +52,7 @@ object IO extends App {
   /* Crush them all! */
 
   runIO(
-    cogame(25),
-    (Board(8, List.empty), new Random(), Nat(0)),
+    cogame(10),
+    (Board(8, List(Candy("one", Lemon, (1, 1)))), new Random(), Nat(0)),
     printGame)
 }

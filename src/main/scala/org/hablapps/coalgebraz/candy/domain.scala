@@ -22,6 +22,21 @@ case class OverX(f: Int => Int) extends PositionIn
 case class OverY(f: Int => Int) extends PositionIn
 
 sealed trait Direction {
+
+  def apply(pos: (Int, Int)) = this match {
+    case North => pos.map(_ - 1)
+    case West  => pos.swap.map(_ - 1).swap
+    case South => pos.map(_ + 1)
+    case East  => pos.swap.map(_ + 1).swap
+  }
+
+  val opposite = this match {
+    case North => South
+    case West  => East
+    case South => North
+    case East  => West
+  }
+
   def toPositionIn: PositionIn = this match {
     case North => OverY(_ - 1)
     case West  => OverX(_ - 1)
