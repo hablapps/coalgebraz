@@ -26,7 +26,10 @@ object Routing {
       case Candy(`key`, _, _) => Option(Mutate(flavour).left)
       case _ => None
     }))
-    case Interchange(pos, dir) => ???
+    case Interchange(pos, dir) => List(-\/(Elem {
+      case Candy(_, _, `pos`) => Option(Slide(dir).left)
+      case _ => None
+    }))
     case NewCandy(candy) => List(-\/(Prepend(candy)), \/-(()))
     case CrushThem(keys) => List(-\/(Elem {
       case Candy(k, _, _) if keys.toList contains k => Option(Crush.right)
