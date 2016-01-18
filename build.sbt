@@ -15,4 +15,5 @@ initialCommands in console := """
   | import Coalgebraz._
   | import org.hablapps.coalgebraz.candy._
   | import Cocandy._
+  | import scala.util.Random
   |""".stripMargin

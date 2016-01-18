@@ -1,5 +1,7 @@
 package org.hablapps.coalgebraz
 
+import scala.math.abs
+
 import scalaz._, Scalaz._
 
 package object candy {
@@ -10,7 +12,7 @@ package object candy {
 
   // XXX: consider using `ScalaCheck` gens to avoid this crap
   def intToCandy(i: Int) = {
-    val fl = i % 8 match {
+    val fl = abs(i) % 8 match {
       case 0 => Lemon
       case 1 => Orange
       case 2 => Mint

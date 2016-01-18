@@ -108,6 +108,19 @@ object Coalgebraz {
     })
   }
 
+  def outputFromBehaviour[I, O, B, X](
+      co: Coentity[I, O, B, X])(
+      f: B => List[O]): Coentity[I, O, B, X] = { x =>
+    val Entity(obs, nxt) = co(x)
+    Entity(obs, i => nxt(i) match {
+      case res@(_, None) => res
+      case (os, Some(x2)) => {
+        val Entity(b, _) = co(x2)
+        (os ++ f(b), Option(x2))
+      }
+    })
+  }
+
   // Permits two coalgebras to share the very same inner state. It worths
   // mentioning that the observation from the second coalgebra is discarded.
   def union[I1, I2, I, O1, O2, O, B, X](
