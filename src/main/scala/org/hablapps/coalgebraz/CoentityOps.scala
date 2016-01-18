@@ -21,14 +21,14 @@ class CoentityOps[I1, O1, B1, X1](val co1: Coentity[I1, O1, B1, X1]) {
   def withObservable[B2](implicit ev0: B1 -> B2) =
     Coalgebraz.withObservable[I1, O1, B1, X1, B2](co1)
 
-  def routeIn[I2](f: B1 => I2 => List[I1]) =
-    Coalgebraz.routeIn[I1, O1, B1, X1, I2](f, co1)
+  def routeIn[I2](implicit r: Router[B1, I2, I1]) =
+    Coalgebraz.routeIn[I1, O1, B1, X1, I2](co1)
 
-  def routeOut[O2](f: B1 => O1 => List[O2]) =
-    Coalgebraz.routeOut[I1, O1, B1, X1, O2](f, co1)
+  def routeOut[O2](implicit r: Router[B1, O1, O2]) =
+    Coalgebraz.routeOut[I1, O1, B1, X1, O2](co1)
 
-  def routeBack(f: B1 => O1 => Option[I1]) =
-    Coalgebraz.routeBack[I1, O1, B1, X1](f)(co1)
+  def routeBack(implicit r: Router[B1, O1, I1]) =
+    Coalgebraz.routeBack[I1, O1, B1, X1](co1)
 
   def /+\[I2, I, O2, O](
       co2: Coentity[I2, O2, B1, X1])(implicit

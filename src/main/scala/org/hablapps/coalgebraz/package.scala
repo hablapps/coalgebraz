@@ -36,6 +36,8 @@ package object coalgebraz {
   type  ->[A, B] = To[A, B]
   type <->[A, B] = Iso[A, B]
 
+  type Router[B, A1, A2] = B => A1 => List[A2]
+
   /* Generic combinators */
 
   // XXX: seems like a comonad!?!?
