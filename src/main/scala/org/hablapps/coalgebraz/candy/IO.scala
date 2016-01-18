@@ -10,7 +10,18 @@ import Cocandy._
 
 object IO extends App {
 
-  def printGame(game: Game): Unit = ???
+  def printGame(game: Game): Unit = {
+    print("  ")
+    println((1 to game._1.size).mkString(" "))
+    (1 to game._1.size) foreach { y =>
+      print(s"$y ")
+      print(((1 to game._1.size) map { x =>
+        game._1.candies.find(_.position == (x, y)).fold("-")(_.toString)
+      }).mkString(" "))
+      println()
+    }
+    println(s"Points: ${game._2}")
+  }
 
   implicit val readDirection: Read[Direction] = new Read[Direction] {
     def read(s: String) = s match {
@@ -42,6 +53,6 @@ object IO extends App {
 
   runIO(
     cogame(10),
-    (Board(8, List.empty), new Random(), Nat(0)),
+    (Board(8, List(Candy("one", Lemon, (1, 1)))), new Random(), Nat(0)),
     printGame)
 }
