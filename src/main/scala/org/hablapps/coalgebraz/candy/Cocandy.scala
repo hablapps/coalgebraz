@@ -64,7 +64,7 @@ object Cocandy {
         .outputFromBehaviour(observeForReaction)
         .routeBack(routeBackBoard)
 
-  def cocounter(limit: Nat): Coentity[CounterIn, CounterOut, Nat, Nat] = { x =>
+  def coscore(limit: Nat): Coentity[CounterIn, CounterOut, Nat, Nat] = { x =>
     Entity(x, _ match {
       case Increase(n) if x + n > limit => (List(Done), None)
       case Increase(n) => (List.empty, Option(x + n))
@@ -73,7 +73,7 @@ object Cocandy {
   }
 
   def cogame(target: Nat): Coentity[BoardIn, CounterOut, Game, (Board, Random, Nat)] =
-    (coboard.routeOut[CounterIn](routeOutBoard2) |->| cocounter(target))
+    (coboard.routeOut[CounterIn](routeOutBoard2) |->| coscore(target))
       .withState[(Board, Random, Nat)]
       .withObservable(To { case ((b, r), n) => (b, n) })
 }
