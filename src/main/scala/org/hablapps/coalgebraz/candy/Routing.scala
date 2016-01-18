@@ -71,7 +71,12 @@ object Routing {
       .find(_.isDefined)
       .flatten
 
-  private def observeForGravitate(board: Board): Option[Suspended] = ???
+  private def observeForGravitate(board: Board): Option[Suspended] =
+    board.candies.find { c1 =>
+      c1.position._2 != board.size && board.candies.exists { c2 =>
+        c2.position == c1.position.map(_ + 1)
+      }
+    }.map(c => Suspended(c.position))
 
   private def observeForPopulate(board: Board): Option[Inhabitated] = {
     val Board(size, candies) = board
