@@ -28,7 +28,7 @@ package object coalgebraz {
 
   // XXX: using `type Void = Nothing` resulted in multiple errors because of the
   // problems with implicit resolutions when `Nothing` is involved.
-  trait Void { ??? } // non-instantiable!
+  final class Void { ??? } // non-instantiable!
 
   type CoentitySeq[I, O, B, X] =
     Coentity[CoseqIn[I, B, X], CoseqOut[O, X], List[B], List[X]]
