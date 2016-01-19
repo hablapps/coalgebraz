@@ -48,7 +48,7 @@ class CoentityOps[I1, O1, B1, X1](val co1: Coentity[I1, O1, B1, X1]) {
       co2: Coentity[I2, O2, B1, X1])(implicit
       ev0: ClearSum.Aux[I1, I2, I],
       ev1: ClearSum.Aux[O1, O2, O]) =
-    Coalgebraz.union[I1, I2, I, O1, O2, O, B1, X1](co1, co2)
+    Coalgebraz.fusion[I1, I2, I, O1, O2, O, B1, X1](co1, co2)
 
   def toCoseq(implicit sq: Sq[List, Option]) =
     Coalgebraz.toCoseq[I1, O1, B1, X1](co1)(sq)
