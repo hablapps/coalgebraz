@@ -157,7 +157,7 @@ object Coalgebraz {
     })
   }
 
-  def putApart[I1, I2, I, O1, O2, O, B1, B2, B, X1, X2](
+  def coexist[I1, I2, I, O1, O2, O, B1, B2, B, X1, X2](
       co1: Coentity[I1, O1, B1, X1],
       co2: Coentity[I2, O2, B2, X2])(implicit
       ev0: ClearSum.Aux[I1, I2, I],
@@ -171,17 +171,7 @@ object Coalgebraz {
       i2 => nxt2(i2).bimap(_.map(o => ev1(o.right)), _.map((s, _))), i))
   }
 
-  // TODO: why not implementing this version, where both coalgebras evolve
-  // simultaneously?
-  def putTogether[I1, I2, I, O1, O2, O, B1, B2, B, X1, X2](
-    co1: Coentity[I1, O1, B1, X1],
-    co2: Coentity[I2, O2, B2, X2])(implicit
-    ev0: ClearProduct.Aux[I1, I2, I],
-    ev1: ClearProduct.Aux[O1, O2, O],
-    ev2: ClearProduct.Aux[B1, B2, B]): Coentity[I, O, B, (X1, X2)] = ???
-
-  // Permits two coalgebras to share the very same inner state. It is worth
-  // mentioning that the observation from the second coalgebra is discarded.
+  // Permits two coalgebras to share the very same inner state.
   def fusion[I1, I2, I, O1, O2, O, B1, B2, B, X](
       co1: Coentity[I1, O1, B1, X],
       co2: Coentity[I2, O2, B2, X])(implicit

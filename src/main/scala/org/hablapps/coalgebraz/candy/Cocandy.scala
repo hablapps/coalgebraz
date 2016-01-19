@@ -42,7 +42,7 @@ object Cocandy {
   // XXX: I'm not a big fan of this implementation, perhaps there's a cleaner
   // way to achieve `cocandy`.
   val cocandy: Coentity[CandyIn, CandyOut, Candy, Candy] =
-    (cocandy1 /+\ cocandy2).withObservable(To { case (c1, _) => c1 })
+    (cocandy1 /+\ cocandy2) withObservable (To { case (c1, _) => c1 })
 
   val cocandies: CoentitySeq[CandyIn, CandyOut, Candy, Candy] =
     cocandy.toCoseq
