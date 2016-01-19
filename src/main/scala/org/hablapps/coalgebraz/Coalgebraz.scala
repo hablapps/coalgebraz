@@ -34,9 +34,12 @@ object Coalgebraz {
 
   // TODO: why not implementing this version, where both coalgebras evolve
   // simultaneously?
-  def putTogether[I1, I2, O1, O2, B1, B2, X1, X2](
+  def putTogether[I1, I2, I, O1, O2, O, B1, B2, B, X1, X2](
     co1: Coentity[I1, O1, B1, X1],
-    co2: Coentity[I2, O2, B2, X2]): Coentity[(I1, I2), (O1, O2), (B1, B2), (X1, X2)] = ???
+    co2: Coentity[I2, O2, B2, X2])(implicit
+    ev0: ClearProduct.Aux[I1, I2, I],
+    ev1: ClearProduct.Aux[O1, O2, O],
+    ev2: ClearProduct.Aux[B1, B2, B]): Coentity[I, O, B, (X1, X2)] = ???
 
   def withState[I, O, B, X, X2](
       co: Coentity[I, O, B, X])(implicit
@@ -50,6 +53,20 @@ object Coalgebraz {
       ev0: B -> B2): Coentity[I, O, B2, X] = { x =>
     val Entity(obs, nxt) = co(x)
     Entity(ev0.to(obs), nxt)
+  }
+
+  def withInput[I, O, B, X, I2](
+      co: Coentity[I, O, B, X])(implicit
+      ev0: To[I2, I]): Coentity[I2, O, B, X] = { x =>
+    val Entity(obs, nxt) = co(x)
+    Entity(obs, i2 => nxt(ev0.to(i2)))
+  }
+
+  def withOutput[I, O, B, X, O2](
+      co: Coentity[I, O, B, X])(implicit
+      ev0: O -> O2): Coentity[I, O2, B, X] = { x =>
+    val Entity(obs, nxt) = co(x)
+    Entity(obs, i => nxt(i).swap.map(_ map ev0.to).swap)
   }
 
   // Feeds a coalgebra with a list of inputs and returns the final state (if
