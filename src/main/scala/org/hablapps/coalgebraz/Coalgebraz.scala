@@ -80,8 +80,6 @@ object Coalgebraz {
     Entity(obs, i => nxt(i).swap.map(_ flatMap r(obs)).swap)
   }
 
-  // TODO: `f` should be extended to `B => O => List[I]`, though it's not
-  // required by candy yet.
   def routeBack[I, O, B, X](
       co: Coentity[I, O, B, X])(implicit
       r: B => O => List[I]): Coentity[I, O, B, X] = { x =>
