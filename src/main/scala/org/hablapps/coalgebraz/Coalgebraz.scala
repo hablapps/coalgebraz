@@ -180,16 +180,17 @@ object Coalgebraz {
     ev1: ClearProduct.Aux[O1, O2, O],
     ev2: ClearProduct.Aux[B1, B2, B]): Coentity[I, O, B, (X1, X2)] = ???
 
-  // Permits two coalgebras to share the very same inner state. It worths
+  // Permits two coalgebras to share the very same inner state. It is worth
   // mentioning that the observation from the second coalgebra is discarded.
-  def fusion[I1, I2, I, O1, O2, O, B, X](
-      co1: Coentity[I1, O1, B, X],
-      co2: Coentity[I2, O2, B, X])(implicit
+  def fusion[I1, I2, I, O1, O2, O, B1, B2, B, X](
+      co1: Coentity[I1, O1, B1, X],
+      co2: Coentity[I2, O2, B2, X])(implicit
       ev0: ClearSum.Aux[I1, I2, I],
-      ev1: ClearSum.Aux[O1, O2, O]): Coentity[I, O, B, X] = { x =>
+      ev1: ClearSum.Aux[O1, O2, O],
+      ev2: ClearProduct.Aux[B1, B2, B]): Coentity[I, O, B, X] = { x =>
     val Entity(obs1, nxt1) = co1(x)
-    val Entity(_, nxt2) = co2(x)
-    Entity(obs1, i => ev0(
+    val Entity(obs2, nxt2) = co2(x)
+    Entity(ev2(obs1, obs2), i => ev0(
       i1 => nxt1(i1).swap.map(os => os.map(o1 => ev1(o1.left))).swap,
       i2 => nxt2(i2).swap.map(os => os.map(o2 => ev1(o2.right))).swap,
       i))
