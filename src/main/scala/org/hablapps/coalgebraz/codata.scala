@@ -4,12 +4,12 @@ import scala.language.implicitConversions
 
 import scalaz._, Scalaz._
 
-case class Stream[H, X](head: H, tail: Option[X]) {
-  def map[Y](f: X => Y): Stream[H, Y] = copy(tail = tail.map(f))
+case class StreamF[H, X](head: H, tail: Option[X]) {
+  def map[Y](f: X => Y): StreamF[H, Y] = copy(tail = tail.map(f))
 }
 
-case class IStream[H, X](head: H, tail: X) {
-  def map[Y](f: X => Y): IStream[H, Y] = copy(tail = f(tail))
+case class IStreamF[H, X](head: H, tail: X) {
+  def map[Y](f: X => Y): IStreamF[H, Y] = copy(tail = f(tail))
 }
 
 case class Automata[I, O, X](transition: I => Option[(O, X)]) {
@@ -37,15 +37,15 @@ case class Entity[I, O, B, X](observe: B, next: I => (List[O], Option[X])) {
 
 object Entity {
 
-  implicit def fromStream[H, X](
+  implicit def fromStreamF[H, X](
       co: Costream[H, X]): Coentity[Unit, Void, H, X] = { s =>
-    val Stream(h, t) = co(s)
+    val StreamF(h, t) = co(s)
     Entity(h, _ => (List.empty, t))
   }
 
-  implicit def fromIStream[H, X](
+  implicit def fromIStreamF[H, X](
       co: Coistream[H, X]): Coentity[Unit, Void, H, X] = { s =>
-    val IStream(h, t) = co(s)
+    val IStreamF(h, t) = co(s)
     Entity(h, _ => (List.empty, Option(t)))
   }
 
@@ -88,12 +88,12 @@ case class IEntity[I, O, B, X](observe: B, next: I => (List[O], X)) {
 
 object Codata {
 
-  implicit def StreamFunctor[H] = new Functor[({type λ[α] = Stream[H, α]})#λ] {
-    def map[A, B](r: Stream[H, A])(f: A => B) = r map f
+  implicit def StreamFFunctor[H] = new Functor[({type λ[α] = StreamF[H, α]})#λ] {
+    def map[A, B](r: StreamF[H, A])(f: A => B) = r map f
   }
 
-  implicit def IStreamFunctor[H] = new Functor[({type λ[α] = IStream[H, α]})#λ] {
-    def map[A, B](r: IStream[H, A])(f: A => B) = r map f
+  implicit def IStreamFFunctor[H] = new Functor[({type λ[α] = IStreamF[H, α]})#λ] {
+    def map[A, B](r: IStreamF[H, A])(f: A => B) = r map f
   }
 
   implicit def AutomataFunctor[I, O] = new Functor[({type λ[α] = Automata[I, O, α]})#λ] {

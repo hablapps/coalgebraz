@@ -10,9 +10,9 @@ package object coalgebraz {
 
   type Coalgebra[F[_], S] = S => F[S]
 
-  type Costream[H, X] = Coalgebra[({type λ[α] = Stream[H, α]})#λ, X]
+  type Costream[H, X] = Coalgebra[({type λ[α] = StreamF[H, α]})#λ, X]
 
-  type Coistream[H, X] = Coalgebra[({type λ[α] = IStream[H, α]})#λ, X]
+  type Coistream[H, X] = Coalgebra[({type λ[α] = IStreamF[H, α]})#λ, X]
 
   type Coautomata[I, O, X] = Coalgebra[({type λ[α] = Automata[I, O, α]})#λ, X]
 

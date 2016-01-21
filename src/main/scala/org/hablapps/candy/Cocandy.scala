@@ -51,7 +51,7 @@ object Cocandy {
 
   // XXX: side-effecting random. It'll be nice to use a pure one!
   val factory: Coistream[Candy, Random] = { rnd =>
-    IStream(intToCandy(rnd.nextInt), rnd)
+    IStreamF(intToCandy(rnd.nextInt), rnd)
   }
 
   val board: Coentity[BoardIn, BoardOut, (Board, Candy), (Board, Random)] =
