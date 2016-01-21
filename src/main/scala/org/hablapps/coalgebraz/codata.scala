@@ -12,22 +12,22 @@ case class IStreamF[H, X](head: H, tail: X) {
   def map[Y](f: X => Y): IStreamF[H, Y] = copy(tail = f(tail))
 }
 
-case class Automata[I, O, X](transition: I => Option[(O, X)]) {
-  def map[Y](f: X => Y): Automata[I, O, Y] =
-    Automata(i => transition(i).map(_ map f))
+case class AutomataF[I, O, X](transition: I => Option[(O, X)]) {
+  def map[Y](f: X => Y): AutomataF[I, O, Y] =
+    AutomataF(i => transition(i).map(_ map f))
 }
 
-case class IAutomata[I, O, X](transition: I => (O, X)) {
-  def map[Y](f: X => Y): IAutomata[I, O, Y] =
-    IAutomata(i => transition(i) map f)
+case class IAutomataF[I, O, X](transition: I => (O, X)) {
+  def map[Y](f: X => Y): IAutomataF[I, O, Y] =
+    IAutomataF(i => transition(i) map f)
 }
 
-case class Store[K, V, X](get: V, set: K => Option[X]) {
-  def map[Y](f: X => Y): Store[K, V, Y] = copy(set = k => set(k) map f)
+case class StoreF[K, V, X](get: V, set: K => Option[X]) {
+  def map[Y](f: X => Y): StoreF[K, V, Y] = copy(set = k => set(k) map f)
 }
 
-case class IStore[K, V, X](get: V, set: K => X) {
-  def map[Y](f: X => Y): IStore[K, V, Y] = copy(set = k => f(set(k)))
+case class IStoreF[K, V, X](get: V, set: K => X) {
+  def map[Y](f: X => Y): IStoreF[K, V, Y] = copy(set = k => f(set(k)))
 }
 
 case class Entity[I, O, B, X](observe: B, next: I => (List[O], Option[X])) {
@@ -49,28 +49,28 @@ object Entity {
     Entity(h, _ => (List.empty, Option(t)))
   }
 
-  implicit def fromAutomata[I, O, X](
+  implicit def fromAutomataF[I, O, X](
       co: Coautomata[I, O, X]): Coentity[I, O, Unit, X] = { s =>
-    val Automata(tr) = co(s)
+    val AutomataF(tr) = co(s)
     Entity((), i => tr(i).fold(
       (List.empty[O], None: Option[X])) { case (o, x) => (List(o), Option(x)) })
   }
 
-  implicit def fromIAutomata[I, O, X](
+  implicit def fromIAutomataF[I, O, X](
       co: Coiautomata[I, O, X]): Coentity[I, O, Unit, X] = { s =>
-    val IAutomata(tr) = co(s)
+    val IAutomataF(tr) = co(s)
     Entity((), i => tr(i).mapElements(List(_), Option.apply))
   }
 
-  implicit def fromStore[K, V, X](
+  implicit def fromStoreF[K, V, X](
       co: Costore[K, V, X]): Coentity[K, Void, V, X] = { s =>
-    val Store(get, set) = co(s)
+    val StoreF(get, set) = co(s)
     Entity(get, i => (List.empty, set(i)))
   }
 
-  implicit def fromIStore[K, V, X](
+  implicit def fromIStoreF[K, V, X](
       co: Coistore[K, V, X]): Coentity[K, Void, V, X] = { s =>
-    val IStore(get, set) = co(s)
+    val IStoreF(get, set) = co(s)
     Entity(get, i => (List.empty, Option(set(i))))
   }
 
@@ -96,20 +96,20 @@ object Codata {
     def map[A, B](r: IStreamF[H, A])(f: A => B) = r map f
   }
 
-  implicit def AutomataFunctor[I, O] = new Functor[({type λ[α] = Automata[I, O, α]})#λ] {
-    def map[A, B](r: Automata[I, O, A])(f: A => B) = r map f
+  implicit def AutomataFFunctor[I, O] = new Functor[({type λ[α] = AutomataF[I, O, α]})#λ] {
+    def map[A, B](r: AutomataF[I, O, A])(f: A => B) = r map f
   }
 
-  implicit def IAutomataFunctor[I, O] = new Functor[({type λ[α] = IAutomata[I, O, α]})#λ] {
-    def map[A, B](r: IAutomata[I, O, A])(f: A => B) = r map f
+  implicit def IAutomataFFunctor[I, O] = new Functor[({type λ[α] = IAutomataF[I, O, α]})#λ] {
+    def map[A, B](r: IAutomataF[I, O, A])(f: A => B) = r map f
   }
 
-  implicit def StoreFunctor[K, V] = new Functor[({type λ[α] = Store[K, V, α]})#λ] {
-    def map[A, B](r: Store[K, V, A])(f: A => B) = r map f
+  implicit def StoreFFunctor[K, V] = new Functor[({type λ[α] = StoreF[K, V, α]})#λ] {
+    def map[A, B](r: StoreF[K, V, A])(f: A => B) = r map f
   }
 
-  implicit def IStoreFunctor[K, V] = new Functor[({type λ[α] = IStore[K, V, α]})#λ] {
-    def map[A, B](r: IStore[K, V, A])(f: A => B) = r map f
+  implicit def IStoreFFunctor[K, V] = new Functor[({type λ[α] = IStoreF[K, V, α]})#λ] {
+    def map[A, B](r: IStoreF[K, V, A])(f: A => B) = r map f
   }
 
   implicit def EntityFunctor[I, O, C] = new Functor[({type λ[α] = Entity[I, O, C, α]})#λ] {

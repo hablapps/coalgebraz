@@ -6,7 +6,7 @@ import Function.const
 import scalaz._, Scalaz._, Isomorphism.<=>
 
 import org.hablapps.coalgebraz._
-import org.hablapps.coalgebraz.Store
+import org.hablapps.coalgebraz.StoreF
 import Coalgebraz._, CoentityOps._
 import Sq.someOrNone
 import Nat.Syntax._
@@ -18,12 +18,12 @@ object Cocandy {
   val key: Coentity[Void, Void, String, String] = blocked[String]
 
   val flavour: Coistore[FlavourIn, Flavour, Flavour] =
-    s => IStore(s, _ match {
+    s => IStoreF(s, _ match {
       case Become(flavour) => flavour
     })
 
   val position: Coistore[PositionIn, (Int, Int), (Int, Int)] = {
-    case s@(x, y) => IStore(s, _ match {
+    case s@(x, y) => IStoreF(s, _ match {
       case OverX(f) => (f(x), y)
       case OverY(f) => (x, f(y))
     })
