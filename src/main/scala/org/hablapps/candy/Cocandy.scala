@@ -30,7 +30,7 @@ object Cocandy {
   }
 
   val cocandy1: Coentity[CandyIn1, Void, Candy, Candy] =
-    (cokey |+| coflavour |+| coposition)
+    (cokey |*| coflavour |*| coposition)
       .withState[Candy]
       .withObservable[Candy]
       .routeIn[CandyIn1]
@@ -42,7 +42,7 @@ object Cocandy {
   // XXX: I'm not a big fan of this implementation, perhaps there's a cleaner
   // way to achieve `cocandy`.
   val cocandy: Coentity[CandyIn, CandyOut, Candy, Candy] =
-    (cocandy1 \+/ cocandy2) withObservable (To { case (c1, _) => c1 })
+    (cocandy1 \*/ cocandy2) withObservable (To { case (c1, _) => c1 })
 
   val cocandies: CoentitySeq[CandyIn, CandyOut, Candy, Candy] =
     cocandy.toCoseq
@@ -55,10 +55,10 @@ object Cocandy {
   }
 
   val coboard: Coentity[BoardIn, BoardOut, (Board, Candy), (Board, Random)] =
-    ((cosize |+| cocandies)
+    ((cosize |*| cocandies)
       .withState[Board]
       .withObservable[Board]
-      |+| cofactory)
+      |*| cofactory)
         .routeIn[BoardIn]
         .routeOut[BoardOut]
         .outputFromBehaviour(observeForReaction)
