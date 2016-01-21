@@ -15,56 +15,56 @@ import Routing._
 
 object Cocandy {
 
-  val cokey: Coentity[Void, Void, String, String] = blocked[String]
+  val key: Coentity[Void, Void, String, String] = blocked[String]
 
-  val coflavour: Coistore[FlavourIn, Flavour, Flavour] =
+  val flavour: Coistore[FlavourIn, Flavour, Flavour] =
     s => IStore(s, _ match {
       case Become(flavour) => flavour
     })
 
-  val coposition: Coistore[PositionIn, (Int, Int), (Int, Int)] = {
+  val position: Coistore[PositionIn, (Int, Int), (Int, Int)] = {
     case s@(x, y) => IStore(s, _ match {
       case OverX(f) => (f(x), y)
       case OverY(f) => (x, f(y))
     })
   }
 
-  val cocandy1: Coentity[CandyIn1, Void, Candy, Candy] =
-    (cokey |*| coflavour |*| coposition)
+  val candy1: Coentity[CandyIn1, Void, Candy, Candy] =
+    (key |*| flavour |*| position)
       .withState[Candy]
       .withObservable[Candy]
       .routeIn[CandyIn1]
 
-  val cocandy2: Coentity[CandyIn2, CandyOut, Candy, Candy] = {
+  val candy2: Coentity[CandyIn2, CandyOut, Candy, Candy] = {
     case c: Candy => Entity(c, _ => (List(ByeCandy), None))
   }
 
   // XXX: I'm not a big fan of this implementation, perhaps there's a cleaner
-  // way to achieve `cocandy`.
-  val cocandy: Coentity[CandyIn, CandyOut, Candy, Candy] =
-    (cocandy1 \*/ cocandy2) withObservable (To { case (c1, _) => c1 })
+  // way to achieve `candy`.
+  val candy: Coentity[CandyIn, CandyOut, Candy, Candy] =
+    (candy1 \*/ candy2) withObservable (To { case (c1, _) => c1 })
 
-  val cocandies: CoentitySeq[CandyIn, CandyOut, Candy, Candy] =
-    cocandy.toCoseq
+  val candies: CoentitySeq[CandyIn, CandyOut, Candy, Candy] =
+    candy.toCoseq
 
-  val cosize: Coentity[Void, Void, Int, Int] = blocked[Int]
+  val size: Coentity[Void, Void, Int, Int] = blocked[Int]
 
   // XXX: side-effecting random. It'll be nice to use a pure one!
-  val cofactory: Coistream[Candy, Random] = { rnd =>
+  val factory: Coistream[Candy, Random] = { rnd =>
     IStream(intToCandy(rnd.nextInt), rnd)
   }
 
-  val coboard: Coentity[BoardIn, BoardOut, (Board, Candy), (Board, Random)] =
-    ((cosize |*| cocandies)
+  val board: Coentity[BoardIn, BoardOut, (Board, Candy), (Board, Random)] =
+    ((size |*| candies)
       .withState[Board]
       .withObservable[Board]
-      |*| cofactory)
+      |*| factory)
         .routeIn[BoardIn]
         .routeOut[BoardOut]
         .outputFromBehaviour(observeForReaction)
         .routeBack(routeBackBoard)
 
-  def coscore(limit: Nat): Coentity[CounterIn, CounterOut, Nat, Nat] = { x =>
+  def score(limit: Nat): Coentity[CounterIn, CounterOut, Nat, Nat] = { x =>
     Entity(x, _ match {
       case Increase(n) if x + n > limit => (List(Done), None)
       case Increase(n) => (List.empty, Option(x + n))
@@ -72,8 +72,8 @@ object Cocandy {
     })
   }
 
-  def cogame(target: Nat): Coentity[BoardIn, CounterOut, Game, (Board, Random, Nat)] =
-    (coboard.routeOut[CounterIn] |->| coscore(target))
+  def game(target: Nat): Coentity[BoardIn, CounterOut, Game, (Board, Random, Nat)] =
+    (board.routeOut[CounterIn] |->| score(target))
       .withState[(Board, Random, Nat)]
       .withObservable(To { case ((b, r), n) => (b, n) })
 }
