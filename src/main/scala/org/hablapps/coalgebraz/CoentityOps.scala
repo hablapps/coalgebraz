@@ -12,12 +12,6 @@ class CoentityOps[I1, O1, B1, X1](val co1: Coentity[I1, O1, B1, X1]) {
   def withObservable[B2](implicit ev0: B1 -> B2) =
     Coalgebraz.withObservable(co1)
 
-  def withInput[I2](implicit ev0: I2 -> I1) =
-    Coalgebraz.withInput(co1)
-
-  def withOutput[O2](implicit ev0: O1 -> O2) =
-    Coalgebraz.withOutput(co1)
-
   def routeIn[I2](implicit r: Router[B1, I2, I1]) =
     Coalgebraz.routeIn(co1)
 
