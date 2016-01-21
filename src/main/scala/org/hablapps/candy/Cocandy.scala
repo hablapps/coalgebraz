@@ -1,4 +1,4 @@
-package org.hablapps.coalgebraz.candy
+package org.hablapps.candy
 
 import scala.util.Random
 import Function.const
