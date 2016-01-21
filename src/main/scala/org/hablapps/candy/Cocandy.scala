@@ -15,7 +15,7 @@ import Routing._
 
 object Cocandy {
 
-  val cokey: Coentity[Void, Void, String, String] = constant[String]
+  val cokey: Coentity[Void, Void, String, String] = blocked[String]
 
   val coflavour: Coistore[FlavourIn, Flavour, Flavour] =
     s => IStore(s, _ match {
@@ -47,7 +47,7 @@ object Cocandy {
   val cocandies: CoentitySeq[CandyIn, CandyOut, Candy, Candy] =
     cocandy.toCoseq
 
-  val cosize: Coentity[Void, Void, Int, Int] = constant[Int]
+  val cosize: Coentity[Void, Void, Int, Int] = blocked[Int]
 
   // XXX: side-effecting random. It'll be nice to use a pure one!
   val cofactory: Coistream[Candy, Random] = { rnd =>

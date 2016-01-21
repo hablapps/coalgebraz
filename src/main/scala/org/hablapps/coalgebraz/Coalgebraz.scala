@@ -15,7 +15,7 @@ object Coalgebraz {
     Entity(v, i => if (f(i)) (List.empty, None) else (List.empty, Option(x)))
   }
 
-  def constant[A]: Coentity[Void, Void, A, A] =
+  def blocked[A]: Coentity[Void, Void, A, A] =
     s => Entity(s, _ => ??? /* does never happen */)
 
   def withState[I, O, B, X, X2](
