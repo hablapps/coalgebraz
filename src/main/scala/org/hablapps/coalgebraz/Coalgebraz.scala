@@ -15,6 +15,11 @@ object Coalgebraz {
     EntityF(v, i => if (f(i)) (List.empty, None) else (List.empty, Option(x)))
   }
 
+  def until[I, O, B, X](
+    f: I => Boolean)(
+      co: Entity[I, O, B, X]): Entity[I, O, B, X] =
+        untilOut[I, O, B, X](f)(co)
+
   def untilOut[I, O, B, X](
       f: I => Boolean,
       g: B => I => List[O] = (_: B) => (_: I) => List.empty[O])(
@@ -23,10 +28,25 @@ object Coalgebraz {
     EntityF(obs, i => if(f(i)) (g(obs)(i), None) else nxt(i))
   }
 
-  def until[I, O, B, X](
+  def untilAndThen[I, O, B, X](
       f: I => Boolean)(
-      co: Entity[I, O, B, X]): Entity[I, O, B, X] =
-    untilOut[I, O, B, X](f)(co)
+      co1: Entity[I, O, B, X],
+      co2: Entity[I, O, B, X]): Entity[I, O, B, (X, Boolean)] = { case (x, s) =>
+
+    def g(
+        nxt: I => (List[O], Option[X]),
+        b: Boolean): I => (List[O], Option[(X, Boolean)]) =
+      i => nxt(i) map (_ map ((_, b)))
+
+    if (s) {
+      val EntityF(obs2, nxt2) = co2(x)
+      EntityF(obs2, g(nxt2, true))
+    } else {
+      lazy val EntityF(obs1, nxt1) = co1(x)
+      lazy val EntityF(obs2, nxt2) = co2(x)
+      EntityF(obs1, i => f(i).fold(g(nxt2, true)(i), g(nxt1, false)(i)))
+    }
+  }
 
   def blocked[A]: Entity[Void, Void, A, A] =
     s => EntityF(s, _ => ??? /* does never happen */)
