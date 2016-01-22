@@ -1,4 +1,4 @@
-package org.hablapps.coalgebraz
+package org.hablapps
 
 import scala.math.abs
 

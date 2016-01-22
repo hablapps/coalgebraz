@@ -1,4 +1,4 @@
-package org.hablapps.coalgebraz.candy
+package org.hablapps.candy
 
 import scalaz._, Scalaz._
 

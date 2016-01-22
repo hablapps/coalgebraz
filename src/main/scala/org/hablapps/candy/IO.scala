@@ -1,4 +1,4 @@
-package org.hablapps.coalgebraz.candy
+package org.hablapps.candy
 
 import scala.util.Random
 
@@ -67,7 +67,7 @@ object IO extends App {
   println(s"### TARGET: $target points ###\n")
 
   runIO(
-    cogame(target),
+    game(target),
     (Board(8, List(Candy("one", Lemon, (1, 1)))), new Random(), Nat(0)),
     printGame)
 }
