@@ -5,6 +5,8 @@ import scalaz._, Scalaz._
 trait ClearProduct[A, B] {
   type C
   def apply(a: A, b: B): C
+  def piA(c: C): A
+  def piB(c: C): B
 }
 
 trait ClearProductLowestPriority {
@@ -12,6 +14,8 @@ trait ClearProductLowestPriority {
     new ClearProduct[A, B] {
       type C = (A, B)
       def apply(a: A, b: B) = (a, b)
+      def piA(c: C) = c._1
+      def piB(c: C) = c._2
     }
 }
 
@@ -20,6 +24,8 @@ trait ClearProductLowerPriority extends ClearProductLowestPriority {
     new ClearProduct[Unit, B] {
       type C = B
       def apply(a: Unit, b: B) = b
+      def piA(c: C) = ()
+      def piB(c: C) = c
     }
 }
 
@@ -31,6 +37,8 @@ object ClearProduct extends ClearProductLowerPriority {
     new ClearProduct[A, Unit] {
       type C = A
       def apply(a: A, b: Unit) = a
+      def piA(c: C) = c
+      def piB(c: C) = ()
     }
 }
 

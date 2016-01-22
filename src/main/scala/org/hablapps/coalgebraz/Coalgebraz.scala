@@ -141,18 +141,19 @@ object Coalgebraz {
     })
   }
 
-  def coexist[I1, I2, I, O1, O2, O, B1, B2, B, X1, X2](
+  def coexist[I1, I2, I, O1, O2, O, B1, B2, B, X1, X2, X](
       co1: Entity[I1, O1, B1, X1],
       co2: Entity[I2, O2, B2, X2])(implicit
       ev0: ClearSum.Aux[I1, I2, I],
       ev1: ClearSum.Aux[O1, O2, O],
-      ev2: ClearProduct.Aux[B1, B2, B]): Entity[I, O, B, (X1, X2)] = { x =>
-    val (s, t) = x
+      ev2: ClearProduct.Aux[B1, B2, B],
+      ev3: ClearProduct.Aux[X1, X2, X]): Entity[I, O, B, X] = { x =>
+    val (s, t) = (ev3.piA(x), ev3.piB(x))
     val EntityF(obs1, nxt1) = co1(s)
     val EntityF(obs2, nxt2) = co2(t)
     EntityF(ev2(obs1, obs2), i => ev0(
-      i1 => nxt1(i1).bimap(_.map(o => ev1(o.left)), _.map((_, t))),
-      i2 => nxt2(i2).bimap(_.map(o => ev1(o.right)), _.map((s, _))), i))
+      i1 => nxt1(i1).bimap(_.map(o => ev1(o.left)), _.map(ev3(_, t))),
+      i2 => nxt2(i2).bimap(_.map(o => ev1(o.right)), _.map(ev3(s, _))), i))
   }
 
   // Permits two coalgebras to share the very same inner state.
@@ -174,10 +175,9 @@ object Coalgebraz {
       co1: Entity[I, A, B1, X1],
       co2: Entity[A, O, B2, X2])(implicit
       ev0: ClearProduct.Aux[B1, B2, B],
-      ev1: ClearProduct.Aux[X1, X2, X],
-      ev2: (X1, X2) <-> X): Entity[I, O, B, X] = { x =>
-    val EntityF(obs1, nxt1) = co1(ev2.from(x)._1)
-    val x2 = ev2.from(x)._2
+      ev1: ClearProduct.Aux[X1, X2, X]): Entity[I, O, B, X] = { x =>
+    val EntityF(obs1, nxt1) = co1(ev1.piA(x))
+    val x2 = ev1.piB(x)
     val EntityF(obs2, _) = co2(x2)
     EntityF(ev0(obs1, obs2), { i1 =>
       val (o1s, ox1) = nxt1(i1)
