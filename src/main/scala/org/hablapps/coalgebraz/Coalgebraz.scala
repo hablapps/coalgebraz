@@ -17,7 +17,7 @@ object Coalgebraz {
 
   def untilOut[I, O, B, X](
       f: I => Boolean,
-      g: B => I => List[O])(
+      g: B => I => List[O] = (_: B) => (_: I) => List.empty[O])(
       co: Entity[I, O, B, X]): Entity[I, O, B, X] = { x =>
     val EntityF(obs, nxt) = co(x)
     EntityF(obs, i => if(f(i)) (g(obs)(i), None) else nxt(i))
@@ -26,7 +26,7 @@ object Coalgebraz {
   def until[I, O, B, X](
       f: I => Boolean)(
       co: Entity[I, O, B, X]): Entity[I, O, B, X] =
-    untilOut(f, (_: B) => (_: I) => List.empty)(co)
+    untilOut[I, O, B, X](f)(co)
 
   def blocked[A]: Entity[Void, Void, A, A] =
     s => EntityF(s, _ => ??? /* does never happen */)
