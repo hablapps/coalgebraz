@@ -10,28 +10,28 @@ package object coalgebraz {
 
   type Coalgebra[F[_], S] = S => F[S]
 
-  type Costream[H, X] = Coalgebra[({type λ[α] = StreamF[H, α]})#λ, X]
+  type Stream[H, X] = Coalgebra[({type λ[α] = StreamF[H, α]})#λ, X]
 
-  type Coistream[H, X] = Coalgebra[({type λ[α] = IStreamF[H, α]})#λ, X]
+  type IStream[H, X] = Coalgebra[({type λ[α] = IStreamF[H, α]})#λ, X]
 
-  type Coautomata[I, O, X] = Coalgebra[({type λ[α] = AutomataF[I, O, α]})#λ, X]
+  type Automata[I, O, X] = Coalgebra[({type λ[α] = AutomataF[I, O, α]})#λ, X]
 
-  type Coiautomata[I, O, X] = Coalgebra[({type λ[α] = IAutomataF[I, O, α]})#λ, X]
+  type IAutomata[I, O, X] = Coalgebra[({type λ[α] = IAutomataF[I, O, α]})#λ, X]
 
-  type Costore[K, V, X] = Coalgebra[({type λ[α] = StoreF[K, V, α]})#λ, X]
+  type Store[K, V, X] = Coalgebra[({type λ[α] = StoreF[K, V, α]})#λ, X]
 
-  type Coistore[K, V, X] = Coalgebra[({type λ[α] = IStoreF[K, V, α]})#λ, X]
+  type IStore[K, V, X] = Coalgebra[({type λ[α] = IStoreF[K, V, α]})#λ, X]
 
-  type Coentity[I, O, C, X] = Coalgebra[({type λ[α] = EntityF[I, O, C, α]})#λ, X]
+  type Entity[I, O, C, X] = Coalgebra[({type λ[α] = EntityF[I, O, C, α]})#λ, X]
 
-  type Coientity[I, O, C, X] = Coalgebra[({type λ[α] = IEntityF[I, O, C, α]})#λ, X]
+  type IEntity[I, O, C, X] = Coalgebra[({type λ[α] = IEntityF[I, O, C, α]})#λ, X]
 
   // XXX: using `type Void = Nothing` resulted in multiple errors because of the
   // problems with implicit resolutions when `Nothing` is involved.
   final class Void { ??? } // non-instantiable!
 
-  type CoentitySeq[I, O, B, X] =
-    Coentity[CoseqIn[I, B, X], CoseqOut[O, X], List[B], List[X]]
+  type EntitySeq[I, O, B, X] =
+    Entity[CoseqIn[I, B, X], CoseqOut[O, X], List[B], List[X]]
 
   type  ->[A, B] = To[A, B]
   type <->[A, B] = Iso[A, B]
