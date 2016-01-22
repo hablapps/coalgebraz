@@ -38,6 +38,8 @@ package object coalgebraz {
 
   type Router[B, A1, A2] = B => A1 => List[A2]
 
+  type Next[I, O, X] = I => (List[O], Option[X])
+
   /* Generic combinators */
 
   // XXX: seems like a comonad!?!?

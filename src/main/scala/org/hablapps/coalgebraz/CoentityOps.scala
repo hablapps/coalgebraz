@@ -14,6 +14,11 @@ class EntityOps[I1, O1, B1, X1](val co1: Entity[I1, O1, B1, X1]) {
   def untilAndThen(f: I1 => Boolean)(co2: Entity[I1, O1, B1, X1]) =
     Coalgebraz.untilAndThen(f)(co1, co2)
 
+  def stop = Coalgebraz.stop(co1)
+
+  def stopOut(f: B1 => I1 => List[O1]) =
+    Coalgebraz.stopOut(f)(co1)
+
   def withState[X2](implicit ev0: X1 <-> X2) =
     Coalgebraz.withState(co1)
 
