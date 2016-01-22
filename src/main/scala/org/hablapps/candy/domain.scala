@@ -53,13 +53,11 @@ case class Candy(key: String, flavour: Flavour, position: (Int, Int)) {
   override def toString = flavour.toString
 }
 
-sealed trait CandyIn1
-case class Fall(n: Int) extends CandyIn1
-case class Slide(direction: Direction) extends CandyIn1
-case class Mutate(flavour: Flavour) extends CandyIn1
-
-sealed trait CandyIn2
-case object Crush extends CandyIn2
+sealed trait CandyIn
+case class Fall(n: Int) extends CandyIn
+case class Slide(direction: Direction) extends CandyIn
+case class Mutate(flavour: Flavour) extends CandyIn
+case object Crush extends CandyIn
 
 sealed trait CandyOut
 case object ByeCandy extends CandyOut

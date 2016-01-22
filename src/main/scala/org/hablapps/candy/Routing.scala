@@ -11,30 +11,34 @@ import org.hablapps.coalgebraz._
 
 object Routing {
 
-  implicit def routeInCandy1(
+  implicit def routeInCandy(
       candy: Candy)(
-      in: CandyIn1): List[FlavourIn \/ PositionIn] = in match {
+      in: CandyIn): List[FlavourIn \/ PositionIn] = in match {
     case Fall(n)    => List(OverY(_ + n).right)
     case Slide(dir) => List(dir.toPositionIn.right)
     case Mutate(fl) => List(Become(fl).left)
+    case _          => List.empty
   }
+
+  implicit def routeOutCandy(candy: Candy)(in: Void): List[CandyOut] =
+    List.empty
 
   implicit def routeInBoard(
       obs: (Board, Candy))(
       in: BoardIn): List[CoseqIn[CandyIn, Candy, Candy] \/ Unit] = in match {
     case Transform(key, flavour) => List(-\/(Elem {
-      case Candy(`key`, _, _) => Option(Mutate(flavour).left)
+      case Candy(`key`, _, _) => Option(Mutate(flavour))
       case _ => None
     }))
     case Interchange(pos, dir) => List(-\/(Elem {
-      case Candy(_, _, `pos`) => Option(Slide(dir).left)
+      case Candy(_, _, `pos`) => Option(Slide(dir))
       case Candy(_, _, pos2) if dir(pos) == pos2 =>
-        Option(Slide(dir.opposite).left)
+        Option(Slide(dir.opposite))
       case _ => None
     }))
     case NewCandy(candy) => List(-\/(Prepend(candy)), \/-(()))
     case CrushThem(keys) => List(-\/(Elem {
-      case Candy(k, _, _) if keys.toList contains k => Option(Crush.right)
+      case Candy(k, _, _) if keys.toList contains k => Option(Crush)
       case _ => None
     }))
   }

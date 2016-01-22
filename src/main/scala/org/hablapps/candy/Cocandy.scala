@@ -29,20 +29,12 @@ object Cocandy {
     })
   }
 
-  val candy1: Entity[CandyIn1, Void, Candy, Candy] =
-    (key |*| flavour |*| position)
+  val candy: Entity[CandyIn, CandyOut, Candy, Candy] =
+    ((key |*| flavour |*| position)
       .withState[Candy]
       .withObservable[Candy]
-      .routeIn[CandyIn1]
-
-  val candy2: Entity[CandyIn2, CandyOut, Candy, Candy] = {
-    case c: Candy => EntityF(c, _ => (List(ByeCandy), None))
-  }
-
-  // XXX: I'm not a big fan of this implementation, perhaps there's a cleaner
-  // way to achieve `candy`.
-  val candy: Entity[CandyIn, CandyOut, Candy, Candy] =
-    (candy1 \*/ candy2) withObservable (To { case (c1, _) => c1 })
+      .routeIn[CandyIn]
+      .routeOut[CandyOut]) |~| (_ == Crush, _ => _ => List(ByeCandy))
 
   val candies: EntitySeq[CandyIn, CandyOut, Candy, Candy] =
     candy.toCoseq
