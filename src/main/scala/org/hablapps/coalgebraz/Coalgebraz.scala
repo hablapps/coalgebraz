@@ -26,9 +26,9 @@ object Coalgebraz {
   }
 
   def until[I, O, B, X](
-    f: I => Boolean)(
+      f: I => Boolean)(
       co: Entity[I, O, B, X]): Entity[I, O, B, X] =
-        untilOut[I, O, B, X](f)(co)
+    untilOut[I, O, B, X](f)(co)
 
   def untilOut[I, O, B, X](
       f: I => Boolean,
