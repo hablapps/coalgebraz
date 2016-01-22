@@ -12,7 +12,7 @@ initialCommands in console := """
   | import scalaz._, Scalaz._
   | import org.hablapps.coalgebraz._
   | import Driver._
-  | import Coalgebraz._
+  | import Coalgebraz._, EntityOps._
   | import org.hablapps.candy._
   | import Cocandy._
   | import scala.util.Random

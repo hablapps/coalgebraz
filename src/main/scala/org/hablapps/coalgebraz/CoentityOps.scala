@@ -6,6 +6,9 @@ import scalaz._, Scalaz._
 
 class EntityOps[I1, O1, B1, X1](val co1: Entity[I1, O1, B1, X1]) {
 
+  def until(f: I1 => Boolean) =
+    Coalgebraz.until(f)(co1)
+
   def withState[X2](implicit ev0: X1 <-> X2) =
     Coalgebraz.withState(co1)
 

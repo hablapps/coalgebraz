@@ -11,8 +11,15 @@ object Coalgebraz {
     EntityF(v, _ => (List.empty, Option(x)))
   }
 
-  def until[I, B, X](v: B, f: I => Boolean): Entity[I, Void, B, X] = { x =>
+  def til[I, B, X](v: B, f: I => Boolean): Entity[I, Void, B, X] = { x =>
     EntityF(v, i => if (f(i)) (List.empty, None) else (List.empty, Option(x)))
+  }
+
+  def until[I, O, B, X](
+      f: I => Boolean)(
+      co: Entity[I, O, B, X]): Entity[I, O, B, X] = { x =>
+    val EntityF(obs, nxt) = co(x)
+    EntityF(obs, i => if(f(i)) (List.empty, None) else nxt(i))
   }
 
   def blocked[A]: Entity[Void, Void, A, A] =
