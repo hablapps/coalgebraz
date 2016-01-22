@@ -45,7 +45,7 @@ object Coalgebraz {
     xAndThen[I, O, B, X](nxt1 => nxt2 => i =>
       f(i).fold(g(nxt2(i), true), g(nxt1(i), false)))(co1, co2)
 
-  def andThen[I, O, B, X](
+  def andthen[I, O, B, X](
       co1: Entity[I, O, B, X],
       co2: Entity[I, O, B, X]): Entity[I, O, B, (X, Boolean)] = {
     xAndThen[I, O, B, X](nxt1 => nxt2 => i => {
