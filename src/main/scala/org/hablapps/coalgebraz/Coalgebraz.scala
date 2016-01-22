@@ -8,28 +8,28 @@ import scalaz._, Scalaz._
 object Coalgebraz {
 
   def always[I, B, X](v: B): Coentity[I, Void, B, X] = { x =>
-    Entity(v, _ => (List.empty, Option(x)))
+    EntityF(v, _ => (List.empty, Option(x)))
   }
 
   def until[I, B, X](v: B, f: I => Boolean): Coentity[I, Void, B, X] = { x =>
-    Entity(v, i => if (f(i)) (List.empty, None) else (List.empty, Option(x)))
+    EntityF(v, i => if (f(i)) (List.empty, None) else (List.empty, Option(x)))
   }
 
   def blocked[A]: Coentity[Void, Void, A, A] =
-    s => Entity(s, _ => ??? /* does never happen */)
+    s => EntityF(s, _ => ??? /* does never happen */)
 
   def withState[I, O, B, X, X2](
       co: Coentity[I, O, B, X])(implicit
       iso: X <-> X2): Coentity[I, O, B, X2] = { x2 =>
-    val Entity(obs, nxt) = co(iso.from(x2))
-    Entity(obs, i => nxt(i).map(_ map iso.to))
+    val EntityF(obs, nxt) = co(iso.from(x2))
+    EntityF(obs, i => nxt(i).map(_ map iso.to))
   }
 
   def withObservable[I, O, B, X, B2](
       co: Coentity[I, O, B, X])(implicit
       ev0: B -> B2): Coentity[I, O, B2, X] = { x =>
-    val Entity(obs, nxt) = co(x)
-    Entity(ev0.to(obs), nxt)
+    val EntityF(obs, nxt) = co(x)
+    EntityF(ev0.to(obs), nxt)
   }
 
   // Feeds a coalgebra with a list of inputs and returns the final state (if
@@ -40,7 +40,7 @@ object Coalgebraz {
       x: X): (List[O], Option[X]) = in match {
     case Nil => (List.empty, Option(x))
     case i::is => {
-      val Entity(_, nxt) = co(x)
+      val EntityF(_, nxt) = co(x)
       nxt(i) match {
         case (os, Some(x2)) => feed(co, is, x2).mapElements(_1 = os ++ _)
         case (os, None) => (os, None)
@@ -53,8 +53,8 @@ object Coalgebraz {
   def routeIn[I, O, B, X, I2](
       co: Coentity[I, O, B, X])(implicit
       r: Router[B, I2, I]): Coentity[I2, O, B, X] = { x =>
-    val Entity(obs, nxt) = co(x)
-    Entity(obs, i => feed(co, r(obs)(i), x))
+    val EntityF(obs, nxt) = co(x)
+    EntityF(obs, i => feed(co, r(obs)(i), x))
   }
 
   // Adapts a system to map output smaller events into broader ones, given a
@@ -62,8 +62,8 @@ object Coalgebraz {
   def routeOut[I, O, B, X, O2](
       co: Coentity[I, O, B, X])(implicit
       r: Router[B, O, O2]): Coentity[I, O2, B, X] = { x =>
-    val Entity(obs, nxt) = co(x)
-    Entity(obs, i => nxt(i).swap.map(_ flatMap r(obs)).swap)
+    val EntityF(obs, nxt) = co(x)
+    EntityF(obs, i => nxt(i).swap.map(_ flatMap r(obs)).swap)
   }
 
   def routeBack[I, O, B, X](
@@ -84,8 +84,8 @@ object Coalgebraz {
       }
     }
 
-    val Entity(obs, nxt) = co(x)
-    Entity(obs, i => nxt(i) match {
+    val EntityF(obs, nxt) = co(x)
+    EntityF(obs, i => nxt(i) match {
       case res@(_, None) => res
       case (os, Some(x2)) => g(List.empty, os, x2, nxt)
     })
@@ -94,11 +94,11 @@ object Coalgebraz {
   def outputFromBehaviour[I, O, B, X](
       co: Coentity[I, O, B, X])(
       f: B => List[O]): Coentity[I, O, B, X] = { x =>
-    val Entity(obs, nxt) = co(x)
-    Entity(obs, i => nxt(i) match {
+    val EntityF(obs, nxt) = co(x)
+    EntityF(obs, i => nxt(i) match {
       case res@(_, None) => res
       case (os, Some(x2)) => {
-        val Entity(b, _) = co(x2)
+        val EntityF(b, _) = co(x2)
         (os ++ f(b), Option(x2))
       }
     })
@@ -108,7 +108,7 @@ object Coalgebraz {
   // handles a list of such states. The input for the new system is `CoseqIn`, a
   // type of event which lets the programmer to add new elements or alter the
   // states individually. Removal is not covered since we're working with
-  // `Entity` which is able to stop by its own.
+  // `EntityF` which is able to stop by its own.
   //
   // XXX: this implementation is quite ugly, I'm sure it can be cleaned up,
   // though there are other priorities right now.
@@ -118,7 +118,7 @@ object Coalgebraz {
     val es = xs map (co(_))
     val bs = es map (_.observe)
     val nx = es map (_.next)
-    Entity(bs, _ match {
+    EntityF(bs, _ match {
       case Elem(f) => {
         val emp = List.empty[CoseqOut[O, X]]
         val ts: List[(List[CoseqOut[O, X]], Option[X])] =
@@ -148,9 +148,9 @@ object Coalgebraz {
       ev1: ClearSum.Aux[O1, O2, O],
       ev2: ClearProduct.Aux[B1, B2, B]): Coentity[I, O, B, (X1, X2)] = { x =>
     val (s, t) = x
-    val Entity(obs1, nxt1) = co1(s)
-    val Entity(obs2, nxt2) = co2(t)
-    Entity(ev2(obs1, obs2), i => ev0(
+    val EntityF(obs1, nxt1) = co1(s)
+    val EntityF(obs2, nxt2) = co2(t)
+    EntityF(ev2(obs1, obs2), i => ev0(
       i1 => nxt1(i1).bimap(_.map(o => ev1(o.left)), _.map((_, t))),
       i2 => nxt2(i2).bimap(_.map(o => ev1(o.right)), _.map((s, _))), i))
   }
@@ -162,9 +162,9 @@ object Coalgebraz {
       ev0: ClearSum.Aux[I1, I2, I],
       ev1: ClearSum.Aux[O1, O2, O],
       ev2: ClearProduct.Aux[B1, B2, B]): Coentity[I, O, B, X] = { x =>
-    val Entity(obs1, nxt1) = co1(x)
-    val Entity(obs2, nxt2) = co2(x)
-    Entity(ev2(obs1, obs2), i => ev0(
+    val EntityF(obs1, nxt1) = co1(x)
+    val EntityF(obs2, nxt2) = co2(x)
+    EntityF(ev2(obs1, obs2), i => ev0(
       i1 => nxt1(i1).swap.map(os => os.map(o1 => ev1(o1.left))).swap,
       i2 => nxt2(i2).swap.map(os => os.map(o2 => ev1(o2.right))).swap,
       i))
@@ -176,10 +176,10 @@ object Coalgebraz {
       ev0: ClearProduct.Aux[B1, B2, B],
       ev1: ClearProduct.Aux[X1, X2, X],
       ev2: (X1, X2) <-> X): Coentity[I, O, B, X] = { x =>
-    val Entity(obs1, nxt1) = co1(ev2.from(x)._1)
+    val EntityF(obs1, nxt1) = co1(ev2.from(x)._1)
     val x2 = ev2.from(x)._2
-    val Entity(obs2, _) = co2(x2)
-    Entity(ev0(obs1, obs2), { i1 =>
+    val EntityF(obs2, _) = co2(x2)
+    EntityF(ev0(obs1, obs2), { i1 =>
       val (o1s, ox1) = nxt1(i1)
       val (o2s, ox2) = feed(co2, o1s, x2)
       (o2s, (ox1 |@| ox2)(ev1(_, _)))

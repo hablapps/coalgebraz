@@ -30,59 +30,59 @@ case class IStoreF[K, V, X](get: V, set: K => X) {
   def map[Y](f: X => Y): IStoreF[K, V, Y] = copy(set = k => f(set(k)))
 }
 
-case class Entity[I, O, B, X](observe: B, next: I => (List[O], Option[X])) {
-  def map[Y](f: X => Y): Entity[I, O, B, Y] =
+case class EntityF[I, O, B, X](observe: B, next: I => (List[O], Option[X])) {
+  def map[Y](f: X => Y): EntityF[I, O, B, Y] =
     copy(next = i => next(i).map(_ map f))
 }
 
-object Entity {
+object EntityF {
 
   implicit def fromStreamF[H, X](
       co: Costream[H, X]): Coentity[Unit, Void, H, X] = { s =>
     val StreamF(h, t) = co(s)
-    Entity(h, _ => (List.empty, t))
+    EntityF(h, _ => (List.empty, t))
   }
 
   implicit def fromIStreamF[H, X](
       co: Coistream[H, X]): Coentity[Unit, Void, H, X] = { s =>
     val IStreamF(h, t) = co(s)
-    Entity(h, _ => (List.empty, Option(t)))
+    EntityF(h, _ => (List.empty, Option(t)))
   }
 
   implicit def fromAutomataF[I, O, X](
       co: Coautomata[I, O, X]): Coentity[I, O, Unit, X] = { s =>
     val AutomataF(tr) = co(s)
-    Entity((), i => tr(i).fold(
+    EntityF((), i => tr(i).fold(
       (List.empty[O], None: Option[X])) { case (o, x) => (List(o), Option(x)) })
   }
 
   implicit def fromIAutomataF[I, O, X](
       co: Coiautomata[I, O, X]): Coentity[I, O, Unit, X] = { s =>
     val IAutomataF(tr) = co(s)
-    Entity((), i => tr(i).mapElements(List(_), Option.apply))
+    EntityF((), i => tr(i).mapElements(List(_), Option.apply))
   }
 
   implicit def fromStoreF[K, V, X](
       co: Costore[K, V, X]): Coentity[K, Void, V, X] = { s =>
     val StoreF(get, set) = co(s)
-    Entity(get, i => (List.empty, set(i)))
+    EntityF(get, i => (List.empty, set(i)))
   }
 
   implicit def fromIStoreF[K, V, X](
       co: Coistore[K, V, X]): Coentity[K, Void, V, X] = { s =>
     val IStoreF(get, set) = co(s)
-    Entity(get, i => (List.empty, Option(set(i))))
+    EntityF(get, i => (List.empty, Option(set(i))))
   }
 
-  implicit def fromIEntity[I, O, B, X](
+  implicit def fromIEntityF[I, O, B, X](
       co: Coientity[I, O, B, X]): Coentity[I, O, B, X] = { s =>
-    val IEntity(obs, nxt) = co(s)
-    Entity(obs, i => nxt(i).map(Option.apply))
+    val IEntityF(obs, nxt) = co(s)
+    EntityF(obs, i => nxt(i).map(Option.apply))
   }
 }
 
-case class IEntity[I, O, B, X](observe: B, next: I => (List[O], X)) {
-  def map[Y](f: X => Y): IEntity[I, O, B, Y] =
+case class IEntityF[I, O, B, X](observe: B, next: I => (List[O], X)) {
+  def map[Y](f: X => Y): IEntityF[I, O, B, Y] =
     copy(next = i => next(i) map f)
 }
 
@@ -112,11 +112,11 @@ object Codata {
     def map[A, B](r: IStoreF[K, V, A])(f: A => B) = r map f
   }
 
-  implicit def EntityFunctor[I, O, C] = new Functor[({type λ[α] = Entity[I, O, C, α]})#λ] {
-    def map[A, B](r: Entity[I, O, C, A])(f: A => B) = r map f
+  implicit def EntityFFunctor[I, O, C] = new Functor[({type λ[α] = EntityF[I, O, C, α]})#λ] {
+    def map[A, B](r: EntityF[I, O, C, A])(f: A => B) = r map f
   }
 
-  implicit def IEntityFunctor[I, O, C] = new Functor[({type λ[α] = IEntity[I, O, C, α]})#λ] {
-    def map[A, B](r: IEntity[I, O, C, A])(f: A => B) = r map f
+  implicit def IEntityFFunctor[I, O, C] = new Functor[({type λ[α] = IEntityF[I, O, C, α]})#λ] {
+    def map[A, B](r: IEntityF[I, O, C, A])(f: A => B) = r map f
   }
 }

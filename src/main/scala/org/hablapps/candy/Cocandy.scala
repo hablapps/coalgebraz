@@ -36,7 +36,7 @@ object Cocandy {
       .routeIn[CandyIn1]
 
   val candy2: Coentity[CandyIn2, CandyOut, Candy, Candy] = {
-    case c: Candy => Entity(c, _ => (List(ByeCandy), None))
+    case c: Candy => EntityF(c, _ => (List(ByeCandy), None))
   }
 
   // XXX: I'm not a big fan of this implementation, perhaps there's a cleaner
@@ -65,7 +65,7 @@ object Cocandy {
         .routeBack(routeBackBoard)
 
   def score(limit: Nat): Coentity[CounterIn, CounterOut, Nat, Nat] = { x =>
-    Entity(x, _ match {
+    EntityF(x, _ match {
       case Increase(n) if x + n > limit => (List(Done), None)
       case Increase(n) => (List.empty, Option(x + n))
       case Decrease(n) => (List.empty, Option(x - n))

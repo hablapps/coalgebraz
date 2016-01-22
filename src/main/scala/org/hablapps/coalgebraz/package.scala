@@ -22,9 +22,9 @@ package object coalgebraz {
 
   type Coistore[K, V, X] = Coalgebra[({type λ[α] = IStoreF[K, V, α]})#λ, X]
 
-  type Coentity[I, O, C, X] = Coalgebra[({type λ[α] = Entity[I, O, C, α]})#λ, X]
+  type Coentity[I, O, C, X] = Coalgebra[({type λ[α] = EntityF[I, O, C, α]})#λ, X]
 
-  type Coientity[I, O, C, X] = Coalgebra[({type λ[α] = IEntity[I, O, C, α]})#λ, X]
+  type Coientity[I, O, C, X] = Coalgebra[({type λ[α] = IEntityF[I, O, C, α]})#λ, X]
 
   // XXX: using `type Void = Nothing` resulted in multiple errors because of the
   // problems with implicit resolutions when `Nothing` is involved.

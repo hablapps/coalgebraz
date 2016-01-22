@@ -60,7 +60,7 @@ object Driver {
 
   def unfold[I, O, B, X](
       co: Coentity[I, O, B, X], x: X): Hypertree[I, O, B] = {
-    val Entity(obs, nxt) = co(x)
+    val EntityF(obs, nxt) = co(x)
     Hypertree(obs, i => nxt(i).map(_.map(unfold(co, _))))
   }
 }
