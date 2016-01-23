@@ -31,6 +31,8 @@ object Nat {
 
   implicit def intToNat(i: Int): Nat = apply(i)
 
+  implicit def natToInt(n: Nat): Int = n.asInt
+
   object Syntax {
     implicit def toNatOps(a: Nat): NatOps = NatOps(a)
   }

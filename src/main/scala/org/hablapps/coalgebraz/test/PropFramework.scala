@@ -10,8 +10,8 @@ object PropFramework {
   case object DontKnow extends Satisfied
 
   def satisfiedHypertree[I, O, B](
+      ht: Hypertree[I, O, B])(
       prop: EntityProp[B],
-      ht: Hypertree[I, O, B],
       input: List[I] = List.empty,
       timeout: Long = 100): Satisfied = {
     if (timeout == 0 || input.isEmpty) {
@@ -23,7 +23,7 @@ object PropFramework {
         case an: AndNext[B] if an.now.f(ht.current) => {
           val (_, ox) = ht.transition(input.head)
           ox.fold[Satisfied](Yes) { ht2 =>
-            satisfiedHypertree(an.nxt(()), ht2, input.tail, timeout - 1)
+            satisfiedHypertree(ht2)(an.nxt(()), input.tail, timeout - 1)
           }
         }
         case _ => No
@@ -32,10 +32,10 @@ object PropFramework {
   }
 
   def satisfied[I, O, B, X](
+      co: Entity[I, O, B, X])(
       prop: EntityProp[B],
-      co: Entity[I, O, B, X],
       x0: X,
       input: List[I] = List.empty,
       timeout: Long = 100): Satisfied =
-    satisfiedHypertree(prop, unfold(co, x0), input, timeout)
+    satisfiedHypertree(unfold(co, x0))(prop, input, timeout)
 }

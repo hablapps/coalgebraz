@@ -19,11 +19,12 @@ case class AndNext[B](
 
 object EntityProp {
 
-  def now[B](f: B => Boolean) = Now(f)
+  def now[B](f: B => Boolean): EntityProp[B] = Now(f)
 
-  def next[B](now: Now[B], nxt: Unit => EntityProp[B]) = AndNext(now, nxt)
+  def ignore[B]: EntityProp[B] = now(const(true))
 
-  def ignore[B] = now(const(true))
+  def next[B](f: B => Boolean): EntityProp[B] =
+    ignore andNext (_ => now(f))
 
   def always[B](f: B => Boolean): EntityProp[B] =
     Now(f) andNext (_ => always(f))

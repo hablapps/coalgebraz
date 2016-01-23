@@ -6,7 +6,9 @@ scalaVersion := "2.11.7"
 
 scalacOptions ++= Seq("-unchecked", "-deprecation", "-feature")
 
-libraryDependencies ++= Seq("org.scalaz" %% "scalaz-core" % "7.2.0")
+libraryDependencies ++= Seq(
+  "org.scalaz" %% "scalaz-core" % "7.2.0",
+  "org.scalatest" % "scalatest_2.11" % "2.2.4")
 
 initialCommands in console := """
   | import scalaz._, Scalaz._
