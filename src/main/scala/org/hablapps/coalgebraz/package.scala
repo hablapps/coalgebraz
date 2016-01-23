@@ -22,9 +22,10 @@ package object coalgebraz {
 
   type IStore[K, V, X] = Coalgebra[({type λ[α] = IStoreF[K, V, α]})#λ, X]
 
-  type Entity[I, O, C, X] = Coalgebra[({type λ[α] = EntityF[I, O, C, α]})#λ, X]
+  // XXX: is there a better name for `B`, more related to oBservable
+  type Entity[I, O, B, X] = Coalgebra[({type λ[α] = EntityF[I, O, B, α]})#λ, X]
 
-  type IEntity[I, O, C, X] = Coalgebra[({type λ[α] = IEntityF[I, O, C, α]})#λ, X]
+  type IEntity[I, O, B, X] = Coalgebra[({type λ[α] = IEntityF[I, O, B, α]})#λ, X]
 
   // XXX: using `type Void = Nothing` resulted in multiple errors because of the
   // problems with implicit resolutions when `Nothing` is involved.

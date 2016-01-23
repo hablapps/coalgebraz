@@ -13,6 +13,7 @@ initialCommands in console := """
   | import org.hablapps.coalgebraz._
   | import Driver._
   | import Coalgebraz._, EntityOps._
+  | import org.hablapps.coalgebraz.test._, PropFramework._
   | import org.hablapps.candy._
   | import Cocandy._
   | import scala.util.Random
