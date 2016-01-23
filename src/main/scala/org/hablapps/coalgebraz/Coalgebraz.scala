@@ -54,6 +54,16 @@ object Coalgebraz {
     })(co1, co2)
   }
 
+  def interleave[I, O, B, X](
+      co1: Entity[I, O, B, X],
+      co2: Entity[I, O, B, X]): Entity[I, O, B, (X, Boolean)] = { case (x, s) =>
+    lazy val EntityF(obs1, nxt1) = co1(x)
+    lazy val EntityF(obs2, nxt2) = co2(x)
+    s.fold(
+      EntityF(obs2, i => g(nxt1(i), false)),
+      EntityF(obs1, i => g(nxt2(i), true)))
+  }
+
   // XXX: don't know why the next invocation can't be resolved:
   // `Functor[({type λ[α] = (List[O], Option[α])})#λ]`
   // As a consequence, I have to manually compose functors.
@@ -71,7 +81,7 @@ object Coalgebraz {
       EntityF(obs2, i => g(nxt2(i), true))
     } else {
       lazy val EntityF(obs1, nxt1) = co1(x)
-      lazy val EntityF(obs2, nxt2) = co2(x)
+      lazy val EntityF(_, nxt2) = co2(x)
       EntityF(obs1, f(nxt1)(nxt2))
     }
   }

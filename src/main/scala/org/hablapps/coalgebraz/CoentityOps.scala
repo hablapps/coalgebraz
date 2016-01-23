@@ -24,6 +24,9 @@ class EntityOps[I1, O1, B1, X1](val co1: Entity[I1, O1, B1, X1]) {
   def untilAndThen(f: I1 => Boolean)(co2: Entity[I1, O1, B1, X1]) =
     Coalgebraz.untilAndThen(f)(co1, co2)
 
+  def interleave(co2: Entity[I1, O1, B1, X1]) =
+    Coalgebraz.interleave(co1, co2)
+
   def block = Coalgebraz.block(co1)
 
   def stop = Coalgebraz.stop(co1)
