@@ -10,7 +10,7 @@ import org.hablapps.coalgebraz.test._, PropFramework._
 import org.hablapps.candy._, Cocandy._
 import Nat.Syntax._
 
-import EntityProp.{ always, next, just }
+import EntityProp._
 
 class CandyTest extends FunSpec with ShouldMatchers {
 
@@ -57,5 +57,20 @@ class CandyTest extends FunSpec with ShouldMatchers {
         Interchange((2, 1), East),
         Interchange((2, 2), North),
         Interchange((2, 3), West))) shouldBe DontKnow
+  }
+
+  it("plain counter should be always equal or greater than current") {
+
+    val prop4: EntityProp[Nat] = exists(c1 => next(c2 => just(c2 < c1)))
+
+    satisfied(
+      score(1000))(
+      prop4,
+      0,
+      List(
+        Increase(5),
+        Increase(10),
+        Decrease(5),
+        Increase(30))) shouldBe Yes
   }
 }

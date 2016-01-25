@@ -17,6 +17,12 @@ object PropFramework {
       case (No, No) => No
       case _ => DontKnow
     }
+
+    def negate: Satisfied = this match {
+      case Yes => No
+      case No => Yes
+      case _ => DontKnow
+    }
   }
   case object Yes extends Satisfied
   case object No extends Satisfied
@@ -38,10 +44,11 @@ object PropFramework {
           }
         }
         case And(f1, f2) => {
-          (satisfiedHypertree(ht)(f1(ht.current), input, timeout - 1)
-            and satisfiedHypertree(ht)(f2(ht.current), input, timeout - 1))
+          (satisfiedHypertree(ht)(f1(ht.current), input, timeout)
+            and satisfiedHypertree(ht)(f2(ht.current), input, timeout))
         }
-        case _ => ??? // TODO
+        case Negate(f) =>
+          satisfiedHypertree(ht)(f(ht.current), input, timeout).negate
       }
     }
   }

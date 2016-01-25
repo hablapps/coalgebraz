@@ -39,5 +39,5 @@ object EntityProp {
   def or[A](
       f1: A => EntityProp[A],
       f2: A => EntityProp[A]): EntityProp[A] =
-    and(_ => negate(f1), _ => negate(f2))
+    negate(_ => and(_ => negate(f1), _ => negate(f2)))
 }
