@@ -47,7 +47,7 @@ object PropFramework {
           (satisfiedHypertree(ht)(f1(ht.current), input, timeout)
             and satisfiedHypertree(ht)(f2(ht.current), input, timeout))
         }
-        case Negate(f) =>
+        case Not(f) =>
           satisfiedHypertree(ht)(f(ht.current), input, timeout).negate
       }
     }

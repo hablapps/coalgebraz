@@ -10,7 +10,7 @@ import org.hablapps.coalgebraz._
 sealed trait EntityProp[A]
 case class Pred[A](f: A => Boolean) extends EntityProp[A]
 case class Next[A](f: A => EntityProp[A]) extends EntityProp[A]
-case class Negate[A](f: A => EntityProp[A]) extends EntityProp[A]
+case class Not[A](f: A => EntityProp[A]) extends EntityProp[A]
 case class And[A](
   f1: A => EntityProp[A],
   f2: A => EntityProp[A]) extends EntityProp[A]
@@ -21,7 +21,7 @@ object EntityProp {
 
   def next[A](f: A => EntityProp[A]): EntityProp[A] = Next(f)
 
-  def negate[A](f: A => EntityProp[A]): EntityProp[A] = Negate(f)
+  def not[A](f: A => EntityProp[A]): EntityProp[A] = Not(f)
 
   def just[A](b: Boolean): EntityProp[A] = pred(const(b))
 
@@ -39,5 +39,5 @@ object EntityProp {
   def or[A](
       f1: A => EntityProp[A],
       f2: A => EntityProp[A]): EntityProp[A] =
-    negate(_ => and(_ => negate(f1), _ => negate(f2)))
+    not(_ => and(_ => not(f1), _ => not(f2)))
 }
