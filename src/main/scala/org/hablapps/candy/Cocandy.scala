@@ -64,7 +64,8 @@ object Cocandy {
     })
   }
 
-  def game(target: Nat): Entity[BoardIn, CounterOut, Game, (Board, Random, Nat)] =
+  def level(
+      target: Nat): Entity[BoardIn, CounterOut, Game, (Board, Random, Nat)] =
     (board.routeOut[CounterIn] |->| score(target))
       .withState[(Board, Random, Nat)]
       .withObservable(To { case ((b, r), n) => (b, n) })

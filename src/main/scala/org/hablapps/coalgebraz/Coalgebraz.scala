@@ -38,17 +38,17 @@ object Coalgebraz {
     EntityF(obs, i => if(f(i)) (g(obs)(i), None) else nxt(i))
   }
 
-  def untilAndThen[I, O, B, X](
+  def untilAndNext[I, O, B, X](
       f: I => Boolean)(
       co1: Entity[I, O, B, X],
       co2: Entity[I, O, B, X]): Entity[I, O, B, (X, Boolean)] =
-    xAndThen[I, O, B, X](nxt1 => nxt2 => i =>
+    xAndNext[I, O, B, X](nxt1 => nxt2 => i =>
       f(i).fold(g(nxt2(i), true), g(nxt1(i), false)))(co1, co2)
 
   def andthen[I, O, B, X](
       co1: Entity[I, O, B, X],
       co2: Entity[I, O, B, X]): Entity[I, O, B, (X, Boolean)] = {
-    xAndThen[I, O, B, X](nxt1 => nxt2 => i => {
+    xAndNext[I, O, B, X](nxt1 => nxt2 => i => {
       val t@(os, ox) = nxt1(i)
       ox.fold(g(nxt2(i), true).swap.map(os ++ _).swap)(_ => g(t, false))
     })(co1, co2)
@@ -72,7 +72,7 @@ object Coalgebraz {
       b: Boolean): (List[O], Option[(X, Boolean)]) =
     Functor[({type λ[α] = (List[O], α)})#λ].compose[Option].apply(t)((_, b))
 
-  private def xAndThen[I, O, B, X](
+  private def xAndNext[I, O, B, X](
       f: Next[I, O, X] => Next[I, O, X] => Next[I, O, (X, Boolean)])(
       co1: Entity[I, O, B, X],
       co2: Entity[I, O, B, X]): Entity[I, O, B, (X, Boolean)] = { case (x, s) =>

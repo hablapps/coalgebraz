@@ -15,7 +15,7 @@ import EntityProp._
 class CandyTest extends FunSpec with ShouldMatchers {
 
   // Just a game that takes only the counter (ignoring board) as observation.
-  val co = game(100).withObservable[Nat](To(_._2))
+  val co = level(100).withObservable[Nat](To(_._2))
 
   it("counter should be always equal or greater than zero") {
     val prop: EntityProp[Nat] = always(n => just(n >= 0))
