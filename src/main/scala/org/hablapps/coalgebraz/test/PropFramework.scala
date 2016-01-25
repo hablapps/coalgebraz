@@ -4,7 +4,20 @@ import org.hablapps.coalgebraz._, Driver._
 
 object PropFramework {
 
-  sealed trait Satisfied
+  sealed trait Satisfied {
+
+    def and(other: => Satisfied): Satisfied = (this, other) match {
+      case (No, _) | (_, No) => No
+      case (Yes, Yes) => Yes
+      case _ => DontKnow
+    }
+
+    def or(other: => Satisfied): Satisfied = (this, other) match {
+      case (Yes, _) | (_, Yes) => Yes
+      case (No, No) => No
+      case _ => DontKnow
+    }
+  }
   case object Yes extends Satisfied
   case object No extends Satisfied
   case object DontKnow extends Satisfied
@@ -18,15 +31,17 @@ object PropFramework {
       DontKnow
     } else {
       prop match {
-        case Now(f) if f(ht.current) => Yes
-        case Now(_) => No
-        case an: AndNext[B] if an.now.f(ht.current) => {
-          val (_, ox) = ht.transition(input.head)
-          ox.fold[Satisfied](Yes) { ht2 =>
-            satisfiedHypertree(ht2)(an.nxt(()), input.tail, timeout - 1)
+        case Pred(f) => if (f(ht.current)) Yes else No
+        case Next(f) => {
+          ht.transition(input.head)._2.fold[Satisfied](No) { ht2 =>
+            satisfiedHypertree(ht2)(f(ht2.current), input.tail, timeout - 1)
           }
         }
-        case _ => No
+        case And(f1, f2) => {
+          (satisfiedHypertree(ht)(f1(ht.current), input, timeout - 1)
+            and satisfiedHypertree(ht)(f2(ht.current), input, timeout - 1))
+        }
+        case _ => ??? // TODO
       }
     }
   }

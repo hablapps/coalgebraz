@@ -1,33 +1,43 @@
 package org.hablapps.coalgebraz.test
 
 import scala.language.higherKinds
+import scala.language.implicitConversions
 
 import Function.const
 
 import org.hablapps.coalgebraz._
 
-sealed trait EntityProp[B] {
-  def andNext(nxt: Unit => EntityProp[B]): EntityProp[B] = this match {
-    case AndNext(now, nxt2) => now andNext (_ => nxt2(()) andNext nxt)
-    case now: Now[B] => AndNext(now, nxt)
-  }
-}
-case class Now[B](f: B => Boolean) extends EntityProp[B]
-case class AndNext[B](
-  val now: Now[B],
-  val nxt: Unit => EntityProp[B]) extends EntityProp[B]
+sealed trait EntityProp[A]
+case class Pred[A](f: A => Boolean) extends EntityProp[A]
+case class Next[A](f: A => EntityProp[A]) extends EntityProp[A]
+case class Negate[A](f: A => EntityProp[A]) extends EntityProp[A]
+case class And[A](
+  f1: A => EntityProp[A],
+  f2: A => EntityProp[A]) extends EntityProp[A]
 
 object EntityProp {
 
-  def now[B](f: B => Boolean): EntityProp[B] = Now(f)
+  def pred[A](f: A => Boolean): EntityProp[A] = Pred(f)
 
-  def ignore[B]: EntityProp[B] = now(const(true))
+  def next[A](f: A => EntityProp[A]): EntityProp[A] = Next(f)
 
-  def next[B](f: B => Boolean): EntityProp[B] =
-    ignore andNext (_ => now(f))
+  def negate[A](f: A => EntityProp[A]): EntityProp[A] = Negate(f)
 
-  def always[B](f: B => Boolean): EntityProp[B] =
-    Now(f) andNext (_ => always(f))
+  def just[A](b: Boolean): EntityProp[A] = pred(const(b))
 
-  def never[B](f: B => Boolean): EntityProp[B] = always(! f(_))
+  def always[A](f: A => EntityProp[A]): EntityProp[A] =
+    and(f, _ => next(_ => always(f)))
+
+  def exists[A](f: A => EntityProp[A]): EntityProp[A] =
+    or(f, _ => next(_ => exists(f)))
+
+  def and[A](
+      p1: A => EntityProp[A],
+      p2: A => EntityProp[A]): EntityProp[A] =
+    And(p1, p2)
+
+  def or[A](
+      f1: A => EntityProp[A],
+      f2: A => EntityProp[A]): EntityProp[A] =
+    and(_ => negate(f1), _ => negate(f2))
 }

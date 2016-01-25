@@ -10,11 +10,13 @@ import org.hablapps.coalgebraz.test._, PropFramework._
 import org.hablapps.candy._, Cocandy._
 import Nat.Syntax._
 
+import EntityProp.{ always, next, just }
+
 class CandyTest extends FunSpec with ShouldMatchers {
 
   it("counter should be always equal or greater than zero") {
 
-    val prop1: EntityProp[Nat] = EntityProp.always(_ >= 0)
+    val prop1: EntityProp[Nat] = always(n => just(n >= 0))
 
     satisfied(
       game(1000).withObservable[Nat](To(_._2)))(
@@ -29,7 +31,7 @@ class CandyTest extends FunSpec with ShouldMatchers {
 
   it("counter in next state should be equal or greater than zero") {
 
-    val prop2: EntityProp[Nat] = EntityProp.next(_ >= 0)
+    val prop2: EntityProp[Nat] = next(n => just(n >= 0))
 
     satisfied(
       game(1000).withObservable[Nat](To(_._2)))(
@@ -43,6 +45,17 @@ class CandyTest extends FunSpec with ShouldMatchers {
   }
 
   it("counter in next state should be always equal or greater than current") {
-    pending
+
+    val prop3: EntityProp[Nat] = always(c1 => next(c2 => just(c2 >= c1)))
+
+    satisfied(
+      game(1000).withObservable[Nat](To(_._2)))(
+      prop3,
+      (Board(8, List(Candy("one", Lemon, (1, 1)))), new Random(), 0),
+      List(
+        Interchange((1, 1), South),
+        Interchange((2, 1), East),
+        Interchange((2, 2), North),
+        Interchange((2, 3), West))) shouldBe DontKnow
   }
 }
