@@ -6,6 +6,34 @@ import scalaz._, Scalaz._
 
 class EntityOps[I1, O1, B1, X1](val co1: Entity[I1, O1, B1, X1]) {
 
+  def |~|(
+      f: I1 => Boolean,
+      g: B1 => I1 => List[O1] = (_: B1) => (_: I1) => List.empty[O1]) =
+    Coalgebraz.untilOut(f, g)(co1)
+
+  def andthen(co2: Entity[I1, O1, B1, X1]) =
+    Coalgebraz.andthen(co1, co2)
+
+  def until(f: I1 => Boolean) = Coalgebraz.until(f)(co1)
+
+  def untilOut(
+      f: I1 => Boolean,
+      g: B1 => I1 => List[O1] = (_: B1) => (_: I1) => List.empty[O1]) =
+    Coalgebraz.untilOut(f, g)(co1)
+
+  def untilAndNext(f: I1 => Boolean)(co2: Entity[I1, O1, B1, X1]) =
+    Coalgebraz.untilAndNext(f)(co1, co2)
+
+  def interleave(co2: Entity[I1, O1, B1, X1]) =
+    Coalgebraz.interleave(co1, co2)
+
+  def block = Coalgebraz.block(co1)
+
+  def stop = Coalgebraz.stop(co1)
+
+  def stopOut(f: B1 => I1 => List[O1]) =
+    Coalgebraz.stopOut(f)(co1)
+
   def withState[X2](implicit ev0: X1 <-> X2) =
     Coalgebraz.withState(co1)
 

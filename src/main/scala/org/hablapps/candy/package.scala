@@ -6,8 +6,6 @@ import scalaz._, Scalaz._
 
 package object candy {
 
-  type CandyIn = CandyIn1 \/ CandyIn2
-
   type Game = (Board, Nat)
 
   // XXX: consider using `ScalaCheck` gens to avoid this crap

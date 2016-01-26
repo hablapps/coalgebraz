@@ -10,12 +10,12 @@ import org.hablapps.coalgebraz.StoreF
 import Coalgebraz._, EntityOps._
 import Sq.someOrNone
 import Nat.Syntax._
-import Isos.{ isoCandy, isoBoard }
+import Isos.{ isoCandy, isoBoard }, To.eqTo
 import Routing._
 
 object Cocandy {
 
-  val key: Entity[Void, Void, String, String] = blocked[String]
+  val key: Entity[Void, Void, String, String] = blocked(eqTo)
 
   val flavour: IStore[FlavourIn, Flavour, Flavour] =
     s => IStoreF(s, _ match {
@@ -29,25 +29,17 @@ object Cocandy {
     })
   }
 
-  val candy1: Entity[CandyIn1, Void, Candy, Candy] =
-    (key |*| flavour |*| position)
+  val candy: Entity[CandyIn, CandyOut, Candy, Candy] =
+    ((key |*| flavour |*| position)
       .withState[Candy]
       .withObservable[Candy]
-      .routeIn[CandyIn1]
-
-  val candy2: Entity[CandyIn2, CandyOut, Candy, Candy] = {
-    case c: Candy => EntityF(c, _ => (List(ByeCandy), None))
-  }
-
-  // XXX: I'm not a big fan of this implementation, perhaps there's a cleaner
-  // way to achieve `candy`.
-  val candy: Entity[CandyIn, CandyOut, Candy, Candy] =
-    (candy1 \*/ candy2) withObservable (To { case (c1, _) => c1 })
+      .routeIn[CandyIn]
+      .routeOut[CandyOut]) |~| (_ == Crush, _ => _ => List(ByeCandy))
 
   val candies: EntitySeq[CandyIn, CandyOut, Candy, Candy] =
     candy.toCoseq
 
-  val size: Entity[Void, Void, Int, Int] = blocked[Int]
+  val size: Entity[Void, Void, Int, Int] = blocked(eqTo)
 
   // XXX: side-effecting random. It'll be nice to use a pure one!
   val factory: IStream[Candy, Random] = { rnd =>
@@ -72,7 +64,8 @@ object Cocandy {
     })
   }
 
-  def game(target: Nat): Entity[BoardIn, CounterOut, Game, (Board, Random, Nat)] =
+  def level(
+      target: Nat): Entity[BoardIn, CounterOut, Game, (Board, Random, Nat)] =
     (board.routeOut[CounterIn] |->| score(target))
       .withState[(Board, Random, Nat)]
       .withObservable(To { case ((b, r), n) => (b, n) })

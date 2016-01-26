@@ -3,20 +3,102 @@ package org.hablapps.coalgebraz
 import scala.language.higherKinds
 import scala.language.implicitConversions
 
+import Function.const
+
 import scalaz._, Scalaz._
 
 object Coalgebraz {
 
-  def always[I, B, X](v: B): Entity[I, Void, B, X] = { x =>
-    EntityF(v, _ => (List.empty, Option(x)))
+  def always[I, O, B, X](b: B): Entity[I, O, B, X] = { x =>
+    EntityF(b, _ => (List.empty, Option(x)))
   }
 
-  def until[I, B, X](v: B, f: I => Boolean): Entity[I, Void, B, X] = { x =>
-    EntityF(v, i => if (f(i)) (List.empty, None) else (List.empty, Option(x)))
+  def til[I, O, B, X](b: B, f: I => Boolean): Entity[I, O, B, X] = { x =>
+    EntityF(b, i => if (f(i)) (List.empty, None) else (List.empty, Option(x)))
   }
 
-  def blocked[A]: Entity[Void, Void, A, A] =
-    s => EntityF(s, _ => ??? /* does never happen */)
+  def blocked[O, B, X](to: X -> B): Entity[Void, O, B, X] = { x =>
+    EntityF(to.to(x), _ => ??? /* does never happen */)
+  }
+
+  def once[I, O, B, X](b: B): Entity[I, O, B, X] = { x =>
+    EntityF(b, _ => (List.empty, None))
+  }
+
+  def until[I, O, B, X](
+      f: I => Boolean)(
+      co: Entity[I, O, B, X]): Entity[I, O, B, X] =
+    untilOut[I, O, B, X](f)(co)
+
+  def untilOut[I, O, B, X](
+      f: I => Boolean,
+      g: B => I => List[O] = (_: B) => (_: I) => List.empty[O])(
+      co: Entity[I, O, B, X]): Entity[I, O, B, X] = { x =>
+    val EntityF(obs, nxt) = co(x)
+    EntityF(obs, i => if(f(i)) (g(obs)(i), None) else nxt(i))
+  }
+
+  def untilAndNext[I, O, B, X](
+      f: I => Boolean)(
+      co1: Entity[I, O, B, X],
+      co2: Entity[I, O, B, X]): Entity[I, O, B, (X, Boolean)] =
+    xAndNext[I, O, B, X](nxt1 => nxt2 => i =>
+      f(i).fold(g(nxt2(i), true), g(nxt1(i), false)))(co1, co2)
+
+  def andthen[I, O, B, X](
+      co1: Entity[I, O, B, X],
+      co2: Entity[I, O, B, X]): Entity[I, O, B, (X, Boolean)] = {
+    xAndNext[I, O, B, X](nxt1 => nxt2 => i => {
+      val t@(os, ox) = nxt1(i)
+      ox.fold(g(nxt2(i), true).swap.map(os ++ _).swap)(_ => g(t, false))
+    })(co1, co2)
+  }
+
+  def interleave[I, O, B, X](
+      co1: Entity[I, O, B, X],
+      co2: Entity[I, O, B, X]): Entity[I, O, B, (X, Boolean)] = { case (x, s) =>
+    lazy val EntityF(obs1, nxt1) = co1(x)
+    lazy val EntityF(obs2, nxt2) = co2(x)
+    s.fold(
+      EntityF(obs2, i => g(nxt1(i), false)),
+      EntityF(obs1, i => g(nxt2(i), true)))
+  }
+
+  // XXX: don't know why the next invocation can't be resolved:
+  // `Functor[({type λ[α] = (List[O], Option[α])})#λ]`
+  // As a consequence, I have to manually compose functors.
+  private def g[I, O, X](
+      t: (List[O], Option[X]),
+      b: Boolean): (List[O], Option[(X, Boolean)]) =
+    Functor[({type λ[α] = (List[O], α)})#λ].compose[Option].apply(t)((_, b))
+
+  private def xAndNext[I, O, B, X](
+      f: Next[I, O, X] => Next[I, O, X] => Next[I, O, (X, Boolean)])(
+      co1: Entity[I, O, B, X],
+      co2: Entity[I, O, B, X]): Entity[I, O, B, (X, Boolean)] = { case (x, s) =>
+    if (s) {
+      val EntityF(obs2, nxt2) = co2(x)
+      EntityF(obs2, i => g(nxt2(i), true))
+    } else {
+      lazy val EntityF(obs1, nxt1) = co1(x)
+      lazy val EntityF(_, nxt2) = co2(x)
+      EntityF(obs1, f(nxt1)(nxt2))
+    }
+  }
+
+  def block[I, O, B, X](co: Entity[I, O, B, X]): Entity[(I, Void), O, B, X] =
+    routeIn(co)(_ => _ => ???)
+
+  // XXX: Is `unblock` even possible?
+  // def unblock[I, O, B, X](
+  //   nxt: I => (List[O], Option[X]))(
+  //   co: Entity[(I, Void), O, B, X]): Entity[I, O, B, X]
+
+  def stop[I, O, B, X](co: Entity[I, O, B, X]): Entity[I, O, B, X] =
+    until(const[Boolean, I](true))(co)
+
+  def stopOut[I, O, B, X](f: B => I => List[O])(co: Entity[I, O, B, X]) =
+    untilOut(const(true), f)(co)
 
   def withState[I, O, B, X, X2](
       co: Entity[I, O, B, X])(implicit
