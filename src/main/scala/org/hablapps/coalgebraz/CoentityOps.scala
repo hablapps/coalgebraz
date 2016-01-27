@@ -32,11 +32,13 @@ class EntityOps[I1, O1, B1, X1](val co1: Entity[I1, O1, B1, X1]) {
 
   def stopOut(f: B1 => I1 => List[O1]) = Coalgebraz.stopOut(f)(co1)
 
-  def carrier[X2](implicit ev0: X1 <-> X2) = Coalgebraz.carrier(co1)
+  def carrier[X2](implicit ev0: X1 <-> X2): Entity[I1, O1, B1, X2] =
+    Coalgebraz.carrier(co1)
 
-  def observe[B2](implicit ev0: B1 -> B2) = Coalgebraz.observe(co1)
+  def observe[B2](implicit ev0: B1 -> B2): Entity[I1, O1, B2, X1] =
+    Coalgebraz.observe(co1)
 
-  def in[I2](implicit r: Router[B1, I2, I1]): Entity[I2, O1, B1, X1] = 
+  def in[I2](implicit r: Router[B1, I2, I1]): Entity[I2, O1, B1, X1] =
     Coalgebraz.in(co1)
 
   def out[O2](implicit r: Router[B1, O1, O2]): Entity[I1, O2, B1, X1] =

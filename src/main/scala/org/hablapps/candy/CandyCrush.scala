@@ -11,16 +11,18 @@ import Coalgebraz._, EntityOps._
 import Sq.someOrNone
 import Nat.Syntax._
 import Isos.{ isoCandy, isoBoard }, To.eqTo
+import Adapt._
 import Routing._
 
 object CandyCrush {
 
   val key: Entity[Void, Void, String, String] = blocked(eqTo)
 
-  val flavour: IStore[FlavourIn, Flavour, Flavour] =
-    s => IStoreF(s, _ match {
+  val flavour: IStore[FlavourIn, Flavour, Flavour] = { x =>
+    IStoreF(x, _ match {
       case Become(flavour) => flavour
     })
+  }
 
   val position: IStore[PositionIn, (Int, Int), (Int, Int)] = {
     case s@(x, y) => IStoreF(s, _ match {
@@ -29,12 +31,11 @@ object CandyCrush {
     })
   }
 
+  val icandy: Entity[CandyIn, CandyOut, Candy, Candy] =
+    key |*| flavour |*| position
+
   val candy: Entity[CandyIn, CandyOut, Candy, Candy] =
-    ((key |*| flavour |*| position)
-      .carrier[Candy]
-      .observe[Candy]
-      .in[CandyIn]
-      .out[CandyOut]) |~| (_ == Crush, _ => _ => List(ByeCandy))
+    icandy |~| (_ == Crush, _ => _ => List(ByeCandy))
 
   val candies: EntitySeq[CandyIn, CandyOut, Candy, Candy] =
     candy.toCoseq
@@ -46,15 +47,11 @@ object CandyCrush {
     IStreamF(intToCandy(rnd.nextInt), rnd)
   }
 
+  val passiveBoard: Entity[BoardIn, BoardOut, (Board, Candy), (Board, Random)] =
+    size |*| candies |*| factory
+
   val board: Entity[BoardIn, BoardOut, (Board, Candy), (Board, Random)] =
-    ((size |*| candies)
-      .carrier[Board]
-      .observe[Board]
-      |*| factory)
-        .in[BoardIn]
-        .out[BoardOut]
-        .inside(observeForReaction)
-        .back(routeBackBoard)
+    passiveBoard.inside(observeForReaction).back(routeBackBoard)
 
   def score(limit: Nat): Entity[CounterIn, CounterOut, Nat, Nat] = { x =>
     EntityF(x, _ match {
@@ -66,7 +63,5 @@ object CandyCrush {
 
   def level(
       target: Nat): Entity[BoardIn, CounterOut, Game, (Board, Random, Nat)] =
-    (board |->| score(target))
-      .carrier[(Board, Random, Nat)]
-      .observe(To { case ((b, r), n) => (b, n) })
+    board |->| score(target)
 }
