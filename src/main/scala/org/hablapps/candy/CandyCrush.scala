@@ -66,7 +66,7 @@ object CandyCrush {
 
   def level(
       target: Nat): Entity[BoardIn, CounterOut, Game, (Board, Random, Nat)] =
-    (board.out[CounterIn] |->| score(target))
+    (board |->| score(target))
       .carrier[(Board, Random, Nat)]
       .observe(To { case ((b, r), n) => (b, n) })
 }

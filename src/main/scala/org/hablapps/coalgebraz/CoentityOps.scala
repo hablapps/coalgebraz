@@ -36,9 +36,11 @@ class EntityOps[I1, O1, B1, X1](val co1: Entity[I1, O1, B1, X1]) {
 
   def observe[B2](implicit ev0: B1 -> B2) = Coalgebraz.observe(co1)
 
-  def in[I2](implicit r: Router[B1, I2, I1]) = Coalgebraz.in(co1)
+  def in[I2](implicit r: Router[B1, I2, I1]): Entity[I2, O1, B1, X1] = 
+    Coalgebraz.in(co1)
 
-  def out[O2](implicit r: Router[B1, O1, O2]) = Coalgebraz.out(co1)
+  def out[O2](implicit r: Router[B1, O1, O2]): Entity[I1, O2, B1, X1] =
+    Coalgebraz.out(co1)
 
   def back(implicit r: Router[B1, O1, I1]) = Coalgebraz.back(co1)
 

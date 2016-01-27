@@ -62,9 +62,9 @@ object Routing {
     case _ => List.empty
   }
 
-  implicit def routeOutBoard2(
-      obs: (Board, Candy))(
-      out: BoardOut): List[CounterIn] = out match {
+  implicit def routeInScore(
+      obs: Nat)(
+      in: BoardOut): List[CounterIn] = in match {
     case Popped(n) => List(Increase(n))
     case _ => List.empty
   }
