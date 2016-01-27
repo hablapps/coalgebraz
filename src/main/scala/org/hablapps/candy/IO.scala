@@ -6,7 +6,7 @@ import scalaz._, Scalaz._
 
 import org.hablapps.coalgebraz._
 import Driver.runIO
-import Cocandy._
+import CandyCrush._
 
 object IO extends App {
 

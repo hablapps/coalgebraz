@@ -34,20 +34,20 @@ class EntityOps[I1, O1, B1, X1](val co1: Entity[I1, O1, B1, X1]) {
   def stopOut(f: B1 => I1 => List[O1]) =
     Coalgebraz.stopOut(f)(co1)
 
-  def withState[X2](implicit ev0: X1 <-> X2) =
-    Coalgebraz.withState(co1)
+  def carrier[X2](implicit ev0: X1 <-> X2) =
+    Coalgebraz.carrier(co1)
 
-  def withObservable[B2](implicit ev0: B1 -> B2) =
-    Coalgebraz.withObservable(co1)
+  def observe[B2](implicit ev0: B1 -> B2) =
+    Coalgebraz.observe(co1)
 
-  def routeIn[I2](implicit r: Router[B1, I2, I1]) =
-    Coalgebraz.routeIn(co1)
+  def in[I2](implicit r: Router[B1, I2, I1]) =
+    Coalgebraz.in(co1)
 
-  def routeOut[O2](implicit r: Router[B1, O1, O2]) =
-    Coalgebraz.routeOut(co1)
+  def out[O2](implicit r: Router[B1, O1, O2]) =
+    Coalgebraz.out(co1)
 
-  def routeBack(implicit r: Router[B1, O1, I1]) =
-    Coalgebraz.routeBack(co1)
+  def back(implicit r: Router[B1, O1, I1]) =
+    Coalgebraz.back(co1)
 
   def outputFromBehaviour(f: B1 => List[O1]) =
     Coalgebraz.outputFromBehaviour(co1)(f)

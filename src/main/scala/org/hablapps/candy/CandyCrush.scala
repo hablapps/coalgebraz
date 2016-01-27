@@ -13,7 +13,7 @@ import Nat.Syntax._
 import Isos.{ isoCandy, isoBoard }, To.eqTo
 import Routing._
 
-object Cocandy {
+object CandyCrush {
 
   val key: Entity[Void, Void, String, String] = blocked(eqTo)
 
@@ -31,10 +31,10 @@ object Cocandy {
 
   val candy: Entity[CandyIn, CandyOut, Candy, Candy] =
     ((key |*| flavour |*| position)
-      .withState[Candy]
-      .withObservable[Candy]
-      .routeIn[CandyIn]
-      .routeOut[CandyOut]) |~| (_ == Crush, _ => _ => List(ByeCandy))
+      .carrier[Candy]
+      .observe[Candy]
+      .in[CandyIn]
+      .out[CandyOut]) |~| (_ == Crush, _ => _ => List(ByeCandy))
 
   val candies: EntitySeq[CandyIn, CandyOut, Candy, Candy] =
     candy.toCoseq
@@ -48,13 +48,13 @@ object Cocandy {
 
   val board: Entity[BoardIn, BoardOut, (Board, Candy), (Board, Random)] =
     ((size |*| candies)
-      .withState[Board]
-      .withObservable[Board]
+      .carrier[Board]
+      .observe[Board]
       |*| factory)
-        .routeIn[BoardIn]
-        .routeOut[BoardOut]
+        .in[BoardIn]
+        .out[BoardOut]
         .outputFromBehaviour(observeForReaction)
-        .routeBack(routeBackBoard)
+        .back(routeBackBoard)
 
   def score(limit: Nat): Entity[CounterIn, CounterOut, Nat, Nat] = { x =>
     EntityF(x, _ match {
@@ -66,7 +66,7 @@ object Cocandy {
 
   def level(
       target: Nat): Entity[BoardIn, CounterOut, Game, (Board, Random, Nat)] =
-    (board.routeOut[CounterIn] |->| score(target))
-      .withState[(Board, Random, Nat)]
-      .withObservable(To { case ((b, r), n) => (b, n) })
+    (board.out[CounterIn] |->| score(target))
+      .carrier[(Board, Random, Nat)]
+      .observe(To { case ((b, r), n) => (b, n) })
 }
