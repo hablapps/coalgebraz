@@ -173,7 +173,7 @@ object Coalgebraz {
     })
   }
 
-  def outputFromBehaviour[I, O, B, X](
+  def inside[I, O, B, X](
       co: Entity[I, O, B, X])(
       f: B => List[O]): Entity[I, O, B, X] = { x =>
     val EntityF(obs, nxt) = co(x)

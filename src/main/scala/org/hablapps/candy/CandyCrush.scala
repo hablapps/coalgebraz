@@ -53,7 +53,7 @@ object CandyCrush {
       |*| factory)
         .in[BoardIn]
         .out[BoardOut]
-        .outputFromBehaviour(observeForReaction)
+        .inside(observeForReaction)
         .back(routeBackBoard)
 
   def score(limit: Nat): Entity[CounterIn, CounterOut, Nat, Nat] = { x =>

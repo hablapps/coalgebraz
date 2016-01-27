@@ -24,33 +24,25 @@ class EntityOps[I1, O1, B1, X1](val co1: Entity[I1, O1, B1, X1]) {
   def untilAndNext(f: I1 => Boolean)(co2: Entity[I1, O1, B1, X1]) =
     Coalgebraz.untilAndNext(f)(co1, co2)
 
-  def interleave(co2: Entity[I1, O1, B1, X1]) =
-    Coalgebraz.interleave(co1, co2)
+  def interleave(co2: Entity[I1, O1, B1, X1]) = Coalgebraz.interleave(co1, co2)
 
   def block = Coalgebraz.block(co1)
 
   def stop = Coalgebraz.stop(co1)
 
-  def stopOut(f: B1 => I1 => List[O1]) =
-    Coalgebraz.stopOut(f)(co1)
+  def stopOut(f: B1 => I1 => List[O1]) = Coalgebraz.stopOut(f)(co1)
 
-  def carrier[X2](implicit ev0: X1 <-> X2) =
-    Coalgebraz.carrier(co1)
+  def carrier[X2](implicit ev0: X1 <-> X2) = Coalgebraz.carrier(co1)
 
-  def observe[B2](implicit ev0: B1 -> B2) =
-    Coalgebraz.observe(co1)
+  def observe[B2](implicit ev0: B1 -> B2) = Coalgebraz.observe(co1)
 
-  def in[I2](implicit r: Router[B1, I2, I1]) =
-    Coalgebraz.in(co1)
+  def in[I2](implicit r: Router[B1, I2, I1]) = Coalgebraz.in(co1)
 
-  def out[O2](implicit r: Router[B1, O1, O2]) =
-    Coalgebraz.out(co1)
+  def out[O2](implicit r: Router[B1, O1, O2]) = Coalgebraz.out(co1)
 
-  def back(implicit r: Router[B1, O1, I1]) =
-    Coalgebraz.back(co1)
+  def back(implicit r: Router[B1, O1, I1]) = Coalgebraz.back(co1)
 
-  def outputFromBehaviour(f: B1 => List[O1]) =
-    Coalgebraz.outputFromBehaviour(co1)(f)
+  def inside(f: B1 => List[O1]) = Coalgebraz.inside(co1)(f)
 
   def toCoseq(implicit sq: Sq[List, Option]) =
     Coalgebraz.toCoseq(co1)
