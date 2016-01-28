@@ -47,11 +47,13 @@ object CandyCrush {
     IStreamF(intToCandy(rnd.nextInt), rnd)
   }
 
-  val passiveBoard: Entity[BoardIn, BoardOut, (Board, Candy), (Board, Random)] =
+  val stableBoard: Entity[BoardIn, BoardOut, (Board, Candy), (Board, Random)] =
     size |*| candies |*| factory
 
   val board: Entity[BoardIn, BoardOut, (Board, Candy), (Board, Random)] =
-    passiveBoard.inside(observeForReaction).back(routeBackBoard)
+    stableBoard
+      .inside(observeForReaction)
+      .back(routeBackBoard)
 
   def score(limit: Nat): Entity[CounterIn, CounterOut, Nat, Nat] = { x =>
     EntityF(x, _ match {
