@@ -11,16 +11,18 @@ import Coalgebraz._, EntityOps._
 import Sq.someOrNone
 import Nat.Syntax._
 import Isos.{ isoCandy, isoBoard }, To.eqTo
+import Adapt._
 import Routing._
 
-object Cocandy {
+object CandyCrush {
 
   val key: Entity[Void, Void, String, String] = blocked(eqTo)
 
-  val flavour: IStore[FlavourIn, Flavour, Flavour] =
-    s => IStoreF(s, _ match {
+  val flavour: IStore[FlavourIn, Flavour, Flavour] = { x =>
+    IStoreF(x, _ match {
       case Become(flavour) => flavour
     })
+  }
 
   val position: IStore[PositionIn, (Int, Int), (Int, Int)] = {
     case s@(x, y) => IStoreF(s, _ match {
@@ -29,12 +31,11 @@ object Cocandy {
     })
   }
 
+  val icandy: Entity[CandyIn, CandyOut, Candy, Candy] =
+    key |*| flavour |*| position
+
   val candy: Entity[CandyIn, CandyOut, Candy, Candy] =
-    ((key |*| flavour |*| position)
-      .withState[Candy]
-      .withObservable[Candy]
-      .routeIn[CandyIn]
-      .routeOut[CandyOut]) |~| (_ == Crush, _ => _ => List(ByeCandy))
+    icandy |~| (_ == Crush, _ => _ => List(ByeCandy))
 
   val candies: EntitySeq[CandyIn, CandyOut, Candy, Candy] =
     candy.toCoseq
@@ -46,15 +47,13 @@ object Cocandy {
     IStreamF(intToCandy(rnd.nextInt), rnd)
   }
 
+  val stableBoard: Entity[BoardIn, BoardOut, (Board, Candy), (Board, Random)] =
+    size |*| candies |*| factory
+
   val board: Entity[BoardIn, BoardOut, (Board, Candy), (Board, Random)] =
-    ((size |*| candies)
-      .withState[Board]
-      .withObservable[Board]
-      |*| factory)
-        .routeIn[BoardIn]
-        .routeOut[BoardOut]
-        .outputFromBehaviour(observeForReaction)
-        .routeBack(routeBackBoard)
+    stableBoard
+      .inside(observeForReaction)
+      .back(routeBackBoard)
 
   def score(limit: Nat): Entity[CounterIn, CounterOut, Nat, Nat] = { x =>
     EntityF(x, _ match {
@@ -66,7 +65,5 @@ object Cocandy {
 
   def level(
       target: Nat): Entity[BoardIn, CounterOut, Game, (Board, Random, Nat)] =
-    (board.routeOut[CounterIn] |->| score(target))
-      .withState[(Board, Random, Nat)]
-      .withObservable(To { case ((b, r), n) => (b, n) })
+    board |->| score(target)
 }

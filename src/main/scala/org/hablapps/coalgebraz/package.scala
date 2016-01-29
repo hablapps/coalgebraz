@@ -1,10 +1,13 @@
 package org.hablapps
 
 import scala.language.higherKinds
+import scala.language.implicitConversions
 
-import scalaz._, Scalaz._, Isomorphism.<=>
+import scalaz._, Scalaz._
 
 package object coalgebraz {
+
+  import EntityOps._
 
   /* Shared aliases */
 
@@ -41,9 +44,32 @@ package object coalgebraz {
 
   type Next[I, O, X] = I => (List[O], Option[X])
 
+  /* Implicit converters */
+
+  implicit def idRouter[B, A]: Router[B, A, A] = _ => List(_)
+
+  object Adapt extends AdaptLowPriorityImplicits {
+    implicit def adapt2[I1, I2, O1, O2, B1, B2, X1, X2](
+        co:  Entity[I1, O1, B1, X1])(implicit
+        ev0: Router[B2, I2, I1],
+        ev1: Router[B2, O1, O2],
+        ev2: B1  -> B2,
+        ev3: X1 <-> X2): Entity[I2, O2, B2, X2] =
+      co.observe(ev2).in(ev0).out(ev1).carrier(ev3)
+  }
+
+  trait AdaptLowPriorityImplicits {
+    implicit def adapt[I1, I2, O1, O2, B1, B2, X1, X2](
+        co:  Entity[I1, O1, B1, X1])(implicit
+        ev0: Router[B1, I2, I1],
+        ev1: Router[B1, O1, O2],
+        ev2: B1  -> B2,
+        ev3: X1 <-> X2): Entity[I2, O2, B2, X2] =
+      co.in(ev0).out(ev1).observe(ev2).carrier(ev3)
+  }
+
   /* Generic combinators */
 
-  // XXX: seems like a comonad!?!?
   implicit class Tuple2Helper[A, B](t2: Tuple2[A, B]) {
     def extend[C](f: Tuple2[A, B] => C): Tuple2[A, C] = t2 match {
       case (a, _) => (a, f(t2))

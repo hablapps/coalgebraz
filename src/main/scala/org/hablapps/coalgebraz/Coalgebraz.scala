@@ -87,7 +87,7 @@ object Coalgebraz {
   }
 
   def block[I, O, B, X](co: Entity[I, O, B, X]): Entity[(I, Void), O, B, X] =
-    routeIn(co)(_ => _ => ???)
+    in(co)(_ => _ => ???)
 
   // XXX: Is `unblock` even possible?
   // def unblock[I, O, B, X](
@@ -100,14 +100,14 @@ object Coalgebraz {
   def stopOut[I, O, B, X](f: B => I => List[O])(co: Entity[I, O, B, X]) =
     untilOut(const(true), f)(co)
 
-  def withState[I, O, B, X, X2](
+  def carrier[I, O, B, X, X2](
       co: Entity[I, O, B, X])(implicit
       iso: X <-> X2): Entity[I, O, B, X2] = { x2 =>
     val EntityF(obs, nxt) = co(iso.from(x2))
     EntityF(obs, i => nxt(i).map(_ map iso.to))
   }
 
-  def withObservable[I, O, B, X, B2](
+  def observe[I, O, B, X, B2](
       co: Entity[I, O, B, X])(implicit
       ev0: B -> B2): Entity[I, O, B2, X] = { x =>
     val EntityF(obs, nxt) = co(x)
@@ -132,7 +132,7 @@ object Coalgebraz {
 
   // Adapts a system to map input broader events into smaller ones, given a
   // mapper function.
-  def routeIn[I, O, B, X, I2](
+  def in[I, O, B, X, I2](
       co: Entity[I, O, B, X])(implicit
       r: Router[B, I2, I]): Entity[I2, O, B, X] = { x =>
     val EntityF(obs, nxt) = co(x)
@@ -141,14 +141,14 @@ object Coalgebraz {
 
   // Adapts a system to map output smaller events into broader ones, given a
   // mapper function.
-  def routeOut[I, O, B, X, O2](
+  def out[I, O, B, X, O2](
       co: Entity[I, O, B, X])(implicit
       r: Router[B, O, O2]): Entity[I, O2, B, X] = { x =>
     val EntityF(obs, nxt) = co(x)
     EntityF(obs, i => nxt(i).swap.map(_ flatMap r(obs)).swap)
   }
 
-  def routeBack[I, O, B, X](
+  def back[I, O, B, X](
       co: Entity[I, O, B, X])(implicit
       r: B => O => List[I]): Entity[I, O, B, X] = { x =>
     type Out = (List[O], Option[X])
@@ -173,7 +173,7 @@ object Coalgebraz {
     })
   }
 
-  def outputFromBehaviour[I, O, B, X](
+  def inside[I, O, B, X](
       co: Entity[I, O, B, X])(
       f: B => List[O]): Entity[I, O, B, X] = { x =>
     val EntityF(obs, nxt) = co(x)
