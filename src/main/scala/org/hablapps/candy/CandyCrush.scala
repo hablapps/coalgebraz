@@ -55,13 +55,12 @@ object CandyCrush {
       .inside(observeForReaction)
       .back(routeBackBoard)
 
-  def score(limit: Nat): Entity[CounterIn, CounterOut, Nat, Nat] = { x =>
-    EntityF(x, _ match {
+  def score(limit: Nat): Entity[CounterIn, CounterOut, Nat, Nat] =
+    raw(identity, x => _ match {
       case Increase(n) if x + n > limit => (List(Done), None)
       case Increase(n) => (List.empty, Option(x + n))
       case Decrease(n) => (List.empty, Option(x - n))
     })
-  }
 
   def level(
       target: Nat): Entity[BoardIn, CounterOut, Game, (Board, Random, Nat)] =
