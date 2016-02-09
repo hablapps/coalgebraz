@@ -3,7 +3,7 @@ package org.hablapps.candy
 import scala.util.Random
 import Function.const
 
-import scalaz._, Scalaz._, Isomorphism.<=>
+import scalaz._, Scalaz._
 
 import org.hablapps.coalgebraz._
 import org.hablapps.coalgebraz.StoreF
