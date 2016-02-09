@@ -9,6 +9,12 @@ import scalaz._, Scalaz._
 
 object Coalgebraz {
 
+  def raw[I, O, B, X](
+      pi1: X => B,
+      pi2: X => I => (List[O], Option[X])): Entity[I, O, B, X] = { x =>
+    EntityF(pi1(x), pi2(x))
+  }
+
   def always[I, O, B, X](b: B): Entity[I, O, B, X] = { x =>
     EntityF(b, _ => (List.empty, Option(x)))
   }
