@@ -1,4 +1,4 @@
-package org.hablapps.geofenze
+package org.hablapps.geofence
 
 import org.hablapps.coalgebraz._
 

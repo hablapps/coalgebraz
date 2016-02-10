@@ -193,12 +193,28 @@ object Coalgebraz {
   }
 
   def index[I, O, B, X, N](
-      co: Entity[I, O, B, X])(f: X => N): IndexedEntity[I, O, B, X, N] = { x =>
-    val n = f(x)
-    val EntityF(obs, nxt) = co(x)
-    EntityF((n, obs), {
-      case (`n`, i) => nxt(i).swap.map(_ map ((n, _))).swap
-      case _ => (List(), Option(x)) // ignores inputs labelled with another `n`
+      co: Entity[I, O, B, X])(
+      f: B => N): IndexedEntity[I, O, B, X, N] = { xs =>
+
+    def rm[A](a: A, as: List[A]): List[A] =
+      as.zipWithIndex.filter(_._2 != as.indexOf(a)).map(_._1)
+
+    val all = xs.map(x => (f(co(x).observe), x, co(x)))
+    val obs = all.map(t => (t._1, t._3.observe))
+    EntityF(obs, {
+      case Attach(x) => (List(Attached(x)), Option(x :: xs))
+      case Detach(x) => (List(Detached(x)), Option(rm(x, xs)))
+      case WrapIn((n, i)) => {
+        all.find(_._1 == n).fold(
+          (List[IndexOut[O, X, N]](UnknownIndex(n)), Option(xs))) {
+            case (n, x, e) => {
+              val (os, ox) = e.next(i)
+              val m = xs.indexOf(x)
+              (os.map(o => WrapOut[O, X, N]((n, o))), Option(ox.fold(
+                rm(x, xs))(xs.updated(m, _))))
+            }
+          }
+      }
     })
   }
 

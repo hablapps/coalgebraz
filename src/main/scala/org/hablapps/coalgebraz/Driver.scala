@@ -8,14 +8,14 @@ object Driver {
 
   def behaviour[I, O, B, X](
       co: Entity[I, O, B, X], x: X, in: List[I]): List[B] =
-    run(co, x, in).map(_._2)
+    run(co)(x, in).map(_._2)
 
   def output[I, O, B, X](
       co: Entity[I, O, B, X], x: X, in: List[I]): List[O] =
-    run(co, x, in).map(_._1).flatten
+    run(co)(x, in).map(_._1).flatten
 
   def run[I, O, B, X](
-      co: Entity[I, O, B, X], x: X, in: List[I]): List[(List[O], B)] =
+      co: Entity[I, O, B, X])(x: X, in: List[I]): List[(List[O], B)] =
     runHypertree(unfold(co, x), in)
 
   def runHypertree[I, O, B](

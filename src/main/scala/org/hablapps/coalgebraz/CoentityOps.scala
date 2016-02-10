@@ -48,7 +48,7 @@ class EntityOps[I1, O1, B1, X1](val co1: Entity[I1, O1, B1, X1]) {
 
   def inside(f: B1 => List[O1]) = Coalgebraz.inside(co1)(f)
 
-  def index[N](f: X1 => N) = Coalgebraz.index(co1)(f)
+  def index[N](f: B1 => N) = Coalgebraz.index(co1)(f)
 
   def toCoseq(implicit sq: Sq[List, Option]) =
     Coalgebraz.toCoseq(co1)
@@ -75,18 +75,7 @@ class EntityOps[I1, O1, B1, X1](val co1: Entity[I1, O1, B1, X1]) {
     Coalgebraz.flow(co1, co2)
 }
 
-class IndexedEntityOps[I1, O1, B1, X1, N1](
-    val co1: IndexedEntity[I1, O1, B1, X1, N1]) {
-  def |>?>|[I2, O2, B2, X2, N2](co2: IndexedEntity[I2, O2, B2, X2, N2]) =
-      Coalgebraz.pubsub(co1, co2)
-}
-
 object EntityOps {
-
-  implicit def toIndexedEntityOps[I, O, B, X, N](
-      co: IndexedEntity[I, O, B, X, N]): IndexedEntityOps[I, O, B, X, N] =
-    new IndexedEntityOps(co)
-
   implicit def toEntityOps[I, O, B, X](
     co: Entity[I, O, B, X]): EntityOps[I, O, B, X] = new EntityOps(co)
 }
