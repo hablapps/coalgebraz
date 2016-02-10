@@ -196,14 +196,14 @@ object Coalgebraz {
       co: Entity[I, O, B, X])(
       f: B => N): IndexedEntity[I, O, B, X, N] = { xs =>
 
-    def rm[A](a: A, as: List[A]): List[A] =
+    def rm[A](as: List[A])(a: A): List[A] =
       as.zipWithIndex.filter(_._2 != as.indexOf(a)).map(_._1)
 
     val all = xs.map(x => (f(co(x).observe), x, co(x)))
     val obs = all.map(t => (t._1, t._3.observe))
     EntityF(obs, {
       case Attach(x) => (List(Attached(x)), Option(x :: xs))
-      case Detach(x) => (List(Detached(x)), Option(rm(x, xs)))
+      case Detach(x) => (List(Detached(x)), Option(rm(xs)(x)))
       case WrapIn((n, i)) => {
         all.find(_._1 == n).fold(
           (List[IndexOut[O, X, N]](UnknownIndex(n)), Option(xs))) {
@@ -211,7 +211,7 @@ object Coalgebraz {
               val (os, ox) = e.next(i)
               val m = xs.indexOf(x)
               (os.map(o => WrapOut[O, X, N]((n, o))), Option(ox.fold(
-                rm(x, xs))(xs.updated(m, _))))
+                rm(xs)(x))(xs.updated(m, _))))
             }
           }
       }
@@ -299,22 +299,4 @@ object Coalgebraz {
       (o2s, (ox1 |@| ox2)(ev1(_, _)))
     })
   }
-
-  // sealed trait PubsubIn[P <: Indexed, S <: Indexed]
-  // case class AddPublisher[P <: Indexed, S <: Indexed](p: P)
-  //   extends PubsubIn[P, S]
-  // case class AddSubscriber[P <: Indexed, S <: Indexed](s: S)
-  //   extends PubsubIn[P, S]
-  // case class RemPublisher[P <: Indexed, S <: Indexed](p: P)
-  //   extends PubsubIn[P, S]
-  // case class RemSubscriber[P <: Indexed, S <: Indexed](s: S)
-  //   extends PubsubIn[P, S]
-
-  def pubsub[I1, O1, B1, X1, N1, I2, O2, B2, X2, N2](
-    co1: IndexedEntity[I1, O1, B1, X1, N1],
-    co2: IndexedEntity[I2, O2, B2, X2, N2]): Entity[
-      (N1, I1),
-      List[(N2, O2)],
-      (List[(N1, B1)], List[(N2, B2)]),
-      (List[X1], List[X2])] = ???
 }

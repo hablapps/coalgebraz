@@ -3,6 +3,8 @@ package org.hablapps.geofence
 import org.hablapps.coalgebraz._
 import Coalgebraz._, EntityOps._
 
+import Routing._
+
 object Geomonitor {
 
   val geoentity: Entity[GeoentityIn, GeoentityOut, Geoentity, Geoentity] =
@@ -21,7 +23,6 @@ object Geomonitor {
         (List(Left(id)), Option(x.copy(elements = x.elements - id)))
     })
 
-  // Publishers
   val geoentities: Entity[
       IndexIn[GeoentityIn, Geoentity, String],
       IndexOut[GeoentityOut, Geoentity, String],
@@ -29,7 +30,6 @@ object Geomonitor {
       List[Geoentity]] =
     geoentity.index(_.id)
 
-  // Subscribers
   val geofences: Entity[
       IndexIn[GeofenceIn, Geofence, String],
       IndexOut[GeofenceOut, Geofence, String],
@@ -37,13 +37,13 @@ object Geomonitor {
       List[Geofence]] =
     geofence.index(_.id)
 
-  // val monitor: Entity[
-  //     (String, GeoentityIn),
-  //     List[(String, GeofenceOut)],
-  //     (List[(String, Geoentity)], List[(String, Geofence)]),
-  //     (List[Geoentity], List[Geofence])] =
-  //    // TODO: needs a subscription pattern!
-  //   geoentity.index(_.id) |>?>| geofence.index(_.id)
+  val monitor: Entity[
+      IndexIn[GeoentityIn, Geoentity, String],
+      IndexOut[GeofenceOut, Geofence, String],
+      (List[(String, Geoentity)], List[(String, Geofence)]),
+      (List[Geoentity], List[Geofence])] =
+    geoentities |>|
+      geofences.in[IndexOut[GeoentityOut, Geoentity, String]]
 
   // val clock: Entity[Unit, ClockOut, Int, Int] =
   //   raw(identity, x => _ => (List(Tick(x + 1)), Option(x + 1)))
