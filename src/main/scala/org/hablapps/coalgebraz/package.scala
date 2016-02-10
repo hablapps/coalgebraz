@@ -44,6 +44,8 @@ package object coalgebraz {
 
   type Next[I, O, X] = I => (List[O], Option[X])
 
+  type IndexedEntity[I, O, B, X, N] = Entity[(N, I), (N, O), (N, B), X]
+
   /* Implicit converters */
 
   implicit def idRouter[B, A]: Router[B, A, A] = _ => List(_)

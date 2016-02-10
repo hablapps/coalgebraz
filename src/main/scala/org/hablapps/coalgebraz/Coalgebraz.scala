@@ -192,6 +192,16 @@ object Coalgebraz {
     })
   }
 
+  def index[I, O, B, X, N](
+      co: Entity[I, O, B, X])(f: X => N): IndexedEntity[I, O, B, X, N] = { x =>
+    val n = f(x)
+    val EntityF(obs, nxt) = co(x)
+    EntityF((n, obs), {
+      case (`n`, i) => nxt(i).swap.map(_ map ((n, _))).swap
+      case _ => (List(), Option(x)) // ignores inputs labelled with another `n`
+    })
+  }
+
   // Turns a single coalgebra with its associated state into a coalgebra which
   // handles a list of such states. The input for the new system is `CoseqIn`, a
   // type of event which lets the programmer to add new elements or alter the
@@ -273,4 +283,22 @@ object Coalgebraz {
       (o2s, (ox1 |@| ox2)(ev1(_, _)))
     })
   }
+
+  // sealed trait PubsubIn[P <: Indexed, S <: Indexed]
+  // case class AddPublisher[P <: Indexed, S <: Indexed](p: P)
+  //   extends PubsubIn[P, S]
+  // case class AddSubscriber[P <: Indexed, S <: Indexed](s: S)
+  //   extends PubsubIn[P, S]
+  // case class RemPublisher[P <: Indexed, S <: Indexed](p: P)
+  //   extends PubsubIn[P, S]
+  // case class RemSubscriber[P <: Indexed, S <: Indexed](s: S)
+  //   extends PubsubIn[P, S]
+
+  def pubsub[I1, O1, B1, X1, N1, I2, O2, B2, X2, N2](
+    co1: IndexedEntity[I1, O1, B1, X1, N1],
+    co2: IndexedEntity[I2, O2, B2, X2, N2]): Entity[
+      (N1, I1),
+      List[(N2, O2)],
+      (List[(N1, B1)], List[(N2, B2)]),
+      (List[X1], List[X2])] = ???
 }

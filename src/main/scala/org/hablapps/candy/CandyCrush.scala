@@ -64,5 +64,5 @@ object CandyCrush {
 
   def level(
       target: Nat): Entity[BoardIn, CounterOut, Game, (Board, Random, Nat)] =
-    board |->| score(target)
+    board |>| score(target)
 }
