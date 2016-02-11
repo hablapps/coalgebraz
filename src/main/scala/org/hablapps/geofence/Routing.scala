@@ -7,6 +7,7 @@ import scalaz._, Scalaz._
 import org.hablapps.coalgebraz._
 
 object Routing {
+  
   // TODO: sooo ugly, mainly because of type inference limitations with pattern
   // matching. Is there a canononical way to improve it?
   implicit def routeInGeofences(

@@ -37,21 +37,23 @@ object IO extends App {
     }
   }
 
-  implicit val readMonitorIn = new Read[Unit \/ IndexIn[GeoentityIn, Geoentity, String]] {
-    def read(s: String) = {
-      s.split(" ") match {
-        case Array("Tick") => Option(-\/(()))
-        case Array("Geoentity", id) => Option(\/-(Attach(Geoentity(id, (1, 1)))))
-        case Array("Halt", id) => Option(\/-(WrapIn((id, Halt))))
-        case Array("Move", id, a, b) => {
-          (Read[Int].read(a) |@| Read[Int].read(b)) { (x, y) =>
-            \/-(WrapIn((id, Move((x, y)))))
+  implicit val readMonitorIn =
+    new Read[Unit \/ IndexIn[GeoentityIn, Geoentity, String]] {
+      def read(s: String) = {
+        s.split(" ") match {
+          case Array("Tick") => Option(-\/(()))
+          case Array("Geoentity", id) =>
+            Option(\/-(Attach(Geoentity(id, (1, 1)))))
+          case Array("Halt", id) => Option(\/-(WrapIn((id, Halt))))
+          case Array("Move", id, a, b) => {
+            (Read[Int].read(a) |@| Read[Int].read(b)) { (x, y) =>
+              \/-(WrapIn((id, Move((x, y)))))
+            }
           }
+          case _ => None
         }
-        case _ => None
       }
     }
-  }
 
   /* Move around! */
 
