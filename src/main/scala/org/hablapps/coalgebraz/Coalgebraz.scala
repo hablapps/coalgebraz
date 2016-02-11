@@ -203,7 +203,13 @@ object Coalgebraz {
     val obs = all.map(t => (t._1, t._3.observe))
     EntityF(obs, {
       case Attach(x) => (List(Attached(x)), Option(x :: xs))
-      case Detach(x) => (List(Detached(x)), Option(rm(xs)(x)))
+      case Detach(n) => {
+        all.find(_._1 == n)
+          .map(_._2)
+          .fold((List[IndexOut[O, X, N]](UnknownIndex(n)), Option(xs))) { x =>
+            (List(Detached(n)), Option(rm(xs)(x)))
+          }
+      }
       case WrapIn((n, i)) => {
         all.find(_._1 == n).fold(
           (List[IndexOut[O, X, N]](UnknownIndex(n)), Option(xs))) {
