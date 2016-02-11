@@ -17,6 +17,8 @@ initialCommands in console := """
   | import Coalgebraz._, EntityOps._
   | import org.hablapps.coalgebraz.test._, PropFramework._
   | import org.hablapps.candy._
-  | import Cocandy._
+  | import CandyCrush._
   | import scala.util.Random
+  | import org.hablapps.geofence._
+  | import Geomonitor._
   |""".stripMargin

@@ -7,50 +7,53 @@ import scalaz._, Scalaz._
 object Driver {
 
   def behaviour[I, O, B, X](
-      co: Entity[I, O, B, X], x: X, in: List[I]): List[B] =
-    run(co, x, in).map(_._2)
+      co: Entity[I, O, B, X])(x: X, in: List[I]): List[B] =
+    run(co)(x, in).map(_._2)
 
   def output[I, O, B, X](
-      co: Entity[I, O, B, X], x: X, in: List[I]): List[O] =
-    run(co, x, in).map(_._1).flatten
+      co: Entity[I, O, B, X])(x: X, in: List[I]): List[O] =
+    run(co)(x, in).map(_._1).flatten
 
   def run[I, O, B, X](
-      co: Entity[I, O, B, X], x: X, in: List[I]): List[(List[O], B)] =
-    runHypertree(unfold(co, x), in)
+      co: Entity[I, O, B, X])(x: X, in: List[I]): List[(List[O], B)] =
+    runHypertree(unfold(co, x))(in)
 
   def runHypertree[I, O, B](
-      ht: Hypertree[I, O, B],
+      ht: Hypertree[I, O, B])(
       in: List[I]): List[(List[O], B)] = in match {
     case (i::is) => {
       val (os, ox) = ht.transition(i)
       val v = List((os, ht.current))
-      ox.fold(v)(ht2 => v ++ runHypertree(ht2, is))
+      ox.fold(v)(ht2 => v ++ runHypertree(ht2)(is))
     }
     case Nil => List((List.empty, ht.current))
   }
 
   def runIO[I: Read, O, B, X](
-      co: Entity[I, O, B, X],
+      co: Entity[I, O, B, X])(
       x: X,
-      eff: B => Unit): Unit =
-    runHypertreeIO(unfold(co, x), eff)
+      eff: B => Unit,
+      efo: List[O] => Unit): Unit =
+    runHypertreeIO(unfold(co, x))(eff, efo)
 
   def runHypertreeIO[I: Read, O, B](
-      ht: Hypertree[I, O, B],
-      eff: B => Unit): Unit = {
+      ht: Hypertree[I, O, B])(
+      eff: B => Unit,
+      efo: List[O] => Unit): Unit = {
     eff(ht.current)
     val s = readLine("$ ")
     val oi = Read[I].read(s)
     oi.fold(s match {
-      case "" => runHypertreeIO(ht, eff)
+      case "" => runHypertreeIO(ht)(eff, efo)
       case "exit" => println("Bye!")
       case _ => {
         println(s"unknown input: '$s'")
-        runHypertreeIO(ht, eff)
+        runHypertreeIO(ht)(eff, efo)
       }
     }) { i =>
       val (os, ox) = ht.transition(i)
-      ox.fold(println("Done!"))(ht2 => runHypertreeIO(ht2, eff))
+      efo(os)
+      ox.fold(println("Done!"))(ht2 => runHypertreeIO(ht2)(eff, efo))
     }
   }
 

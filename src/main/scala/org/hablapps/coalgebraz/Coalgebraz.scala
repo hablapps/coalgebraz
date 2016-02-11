@@ -192,6 +192,38 @@ object Coalgebraz {
     })
   }
 
+  def index[I, O, B, X, N](
+      co: Entity[I, O, B, X])(
+      f: B => N): IndexedEntity[I, O, B, X, N] = { xs =>
+
+    def rm[A](as: List[A])(a: A): List[A] =
+      as.zipWithIndex.filter(_._2 != as.indexOf(a)).map(_._1)
+
+    val all = xs.map(x => (f(co(x).observe), x, co(x)))
+    val obs = all.map(t => (t._1, t._3.observe)).toMap
+    EntityF(obs, {
+      case Attach(x) => (List(Attached(x)), Option(x :: xs))
+      case Detach(n) => {
+        all.find(_._1 == n)
+          .map(_._2)
+          .fold((List[IndexOut[O, X, N]](UnknownIndex(n)), Option(xs))) { x =>
+            (List(Detached(n)), Option(rm(xs)(x)))
+          }
+      }
+      case WrapIn((n, i)) => {
+        all.find(_._1 == n).fold(
+          (List[IndexOut[O, X, N]](UnknownIndex(n)), Option(xs))) {
+            case (n, x, e) => {
+              val (os, ox) = e.next(i)
+              val m = xs.indexOf(x)
+              (os.map(o => WrapOut[O, X, N]((n, o))), Option(ox.fold(
+                rm(xs)(x))(xs.updated(m, _))))
+            }
+          }
+      }
+    })
+  }
+
   // Turns a single coalgebra with its associated state into a coalgebra which
   // handles a list of such states. The input for the new system is `CoseqIn`, a
   // type of event which lets the programmer to add new elements or alter the

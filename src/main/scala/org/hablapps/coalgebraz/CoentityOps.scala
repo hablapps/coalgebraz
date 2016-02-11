@@ -48,6 +48,8 @@ class EntityOps[I1, O1, B1, X1](val co1: Entity[I1, O1, B1, X1]) {
 
   def inside(f: B1 => List[O1]) = Coalgebraz.inside(co1)(f)
 
+  def index[N](f: B1 => N) = Coalgebraz.index(co1)(f)
+
   def toCoseq(implicit sq: Sq[List, Option]) =
     Coalgebraz.toCoseq(co1)
 
@@ -66,7 +68,7 @@ class EntityOps[I1, O1, B1, X1](val co1: Entity[I1, O1, B1, X1]) {
       ev2: ClearProduct.Aux[B1, B2, B]) =
     Coalgebraz.fusion(co1, co2)
 
-  def |->|[O2, B, B2, X, X2](
+  def |>|[O2, B, B2, X, X2](
       co2: Entity[O1, O2, B2, X2])(implicit
       ev0: ClearProduct.Aux[B1, B2, B],
       ev1: ClearProduct.Aux[X1, X2, X]) =
