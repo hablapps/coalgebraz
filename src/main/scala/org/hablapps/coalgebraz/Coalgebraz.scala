@@ -200,7 +200,7 @@ object Coalgebraz {
       as.zipWithIndex.filter(_._2 != as.indexOf(a)).map(_._1)
 
     val all = xs.map(x => (f(co(x).observe), x, co(x)))
-    val obs = all.map(t => (t._1, t._3.observe))
+    val obs = all.map(t => (t._1, t._3.observe)).toMap
     EntityF(obs, {
       case Attach(x) => (List(Attached(x)), Option(x :: xs))
       case Detach(n) => {

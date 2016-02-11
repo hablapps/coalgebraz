@@ -8,7 +8,7 @@ import org.hablapps.coalgebraz._
 
 object Routing {
   implicit def routeInGeofences(
-    obs: List[(String, Geofence)])(
+    obs: Map[String, Geofence])(
     i: IndexOut[GeoentityOut, Geoentity, String]):
       List[IndexIn[GeofenceIn, Geofence, String]] = i match {
     case WrapOut((n, out)) => out match {
@@ -18,14 +18,14 @@ object Routing {
             (t._2.elements contains n) == cnt && t._2.covers(pos) == cvr
           }.map { t =>
             WrapIn((t._1, ev(n))): IndexIn[GeofenceIn, Geofence, String]
-          }
+          }.toList
         }
         f(true, false, Leave.apply) ++ f(false, true, Join.apply)
       }
       case Halted => {
         obs.filter(_._2.elements contains n).map { t =>
           WrapIn((t._1, Leave(n))): IndexIn[GeofenceIn, Geofence, String]
-        }
+        }.toList
       }
     }
     case _ => List.empty

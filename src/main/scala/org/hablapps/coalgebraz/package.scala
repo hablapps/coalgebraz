@@ -47,7 +47,7 @@ package object coalgebraz {
   /* Index Stuff (perhaps should be moved) */
 
   type IndexedEntity[I, O, B, X, N] =
-    Entity[IndexIn[I, X, N], IndexOut[O, X, N], List[(N, B)], List[X]]
+    Entity[IndexIn[I, X, N], IndexOut[O, X, N], Map[N, B], List[X]]
 
   sealed trait IndexIn[I, X, N]
   case class Attach[I, X, N](v: X) extends IndexIn[I, X, N]

@@ -43,8 +43,9 @@ object Geomonitor {
   // Entity[
   //   IndexIn[GeoentityIn, Geoentity, String],
   //   IndexOut[GeofenceOut, Geofence, String],
-  //   (List[(String, Geoentity)], List[(String, Geofence)]),
-  //   (List[Geoentity], List[Geofence])] =
+  //   (Map[String, Geoentity], Map[String, Geofence]),
+  //   (List[Geoentity], List[Geofence])]
+
   val monitor = geoentities |>| geofences.in
 
   // val clock: Entity[Unit, ClockOut, Int, Int] =

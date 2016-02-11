@@ -11,7 +11,7 @@ import Geomonitor._
 object IO extends App {
 
   def printMonitor(
-      obs: (List[(String, Geoentity)], List[(String, Geofence)])): Unit = {
+      obs: (Map[String, Geoentity], Map[String, Geofence])): Unit = {
     val (entities, fences) = obs
     println("GEOENTITIES")
     println("-----------")
