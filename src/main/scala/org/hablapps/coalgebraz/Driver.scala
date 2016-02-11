@@ -7,11 +7,11 @@ import scalaz._, Scalaz._
 object Driver {
 
   def behaviour[I, O, B, X](
-      co: Entity[I, O, B, X], x: X, in: List[I]): List[B] =
+      co: Entity[I, O, B, X])(x: X, in: List[I]): List[B] =
     run(co)(x, in).map(_._2)
 
   def output[I, O, B, X](
-      co: Entity[I, O, B, X], x: X, in: List[I]): List[O] =
+      co: Entity[I, O, B, X])(x: X, in: List[I]): List[O] =
     run(co)(x, in).map(_._1).flatten
 
   def run[I, O, B, X](

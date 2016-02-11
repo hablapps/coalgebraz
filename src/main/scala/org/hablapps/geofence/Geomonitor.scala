@@ -42,8 +42,7 @@ object Geomonitor {
       IndexOut[GeofenceOut, Geofence, String],
       (List[(String, Geoentity)], List[(String, Geofence)]),
       (List[Geoentity], List[Geofence])] =
-    geoentities |>|
-      geofences.in[IndexOut[GeoentityOut, Geoentity, String]]
+    geoentities |>| geofences.in[IndexOut[GeoentityOut, Geoentity, String]]
 
   // val clock: Entity[Unit, ClockOut, Int, Int] =
   //   raw(identity, x => _ => (List(Tick(x + 1)), Option(x + 1)))
