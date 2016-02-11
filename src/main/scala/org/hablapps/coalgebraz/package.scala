@@ -51,6 +51,7 @@ package object coalgebraz {
 
   sealed trait IndexIn[I, X, N]
   case class Attach[I, X, N](v: X) extends IndexIn[I, X, N]
+  // TODO: detach with identifier!
   case class Detach[I, X, N](v: X) extends IndexIn[I, X, N]
   case class WrapIn[I, X, N](i: (N, I)) extends IndexIn[I, X, N]
 

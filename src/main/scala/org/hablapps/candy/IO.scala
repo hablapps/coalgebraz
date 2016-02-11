@@ -67,7 +67,8 @@ object IO extends App {
   println(s"### TARGET: $target points ###\n")
 
   runIO(
-    level(target),
+    level(target))(
     (Board(8, List(Candy("one", Lemon, (1, 1)))), new Random(), Nat(0)),
-    printGame)
+    printGame,
+    _ => ())
 }
