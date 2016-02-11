@@ -11,14 +11,15 @@ import Geomonitor._
 object IO extends App {
 
   def printMonitor(
-      obs: (Map[String, Geoentity], Map[String, Geofence])): Unit = {
-    val (entities, fences) = obs
+      obs: ((Int, Map[String, Geoentity]), Map[String, Geofence])): Unit = {
+    val ((ticks, entities), fences) = obs
     println("GEOENTITIES")
     println("-----------")
     entities.foreach(e => println(s"> $e"))
     println("\nGEOFENCES")
     println("---------")
     fences.foreach(f => println(s"> $f"))
+    println(s"\nTICKS: $ticks")
     println
   }
 
@@ -26,8 +27,8 @@ object IO extends App {
     if (out.nonEmpty) {
       println
       out.foreach(_ match {
-        case WrapOut((id1, Left(id2))) =>
-          println(s"=> '$id2' is leaving '$id1'")
+        case WrapOut((id1, Left(id2, after))) =>
+          println(s"=> '$id2' is leaving '$id1' after '$after' ticks")
         case WrapOut((id1, Joined(id2))) =>
           println(s"=> '$id2' is entering '$id1'")
         case _ => ()
@@ -36,14 +37,15 @@ object IO extends App {
     }
   }
 
-  implicit val readMonitorIn = new Read[IndexIn[GeoentityIn, Geoentity, String]] {
+  implicit val readMonitorIn = new Read[Unit \/ IndexIn[GeoentityIn, Geoentity, String]] {
     def read(s: String) = {
       s.split(" ") match {
-        case Array("Geoentity", id) => Option(Attach(Geoentity(id, (1, 1))))
-        case Array("Halt", id) => Option(WrapIn((id, Halt)))
+        case Array("Tick") => Option(-\/(()))
+        case Array("Geoentity", id) => Option(\/-(Attach(Geoentity(id, (1, 1)))))
+        case Array("Halt", id) => Option(\/-(WrapIn((id, Halt))))
         case Array("Move", id, a, b) => {
           (Read[Int].read(a) |@| Read[Int].read(b)) { (x, y) =>
-            WrapIn((id, Move((x, y))))
+            \/-(WrapIn((id, Move((x, y)))))
           }
         }
         case _ => None
@@ -63,10 +65,10 @@ object IO extends App {
     |""".stripMargin)
 
   runIO(monitor)(
-    (List(Geoentity("jesus", (4, 4))),
+    ((0, List(Geoentity("jesus", (4, 4)))),
      List(
        Geofence("guadarrama", (2, 5), 0),
-       Geofence("mostoles", (3, 4), 1, Set("jesus")),
+       Geofence("mostoles", (3, 4), 1, Set(("jesus", 0))),
        Geofence("leganes", (9, 3), 1),
        Geofence("alcorcon", (6, 2), 1))),
      printMonitor,

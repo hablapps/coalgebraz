@@ -1,5 +1,7 @@
 package org.hablapps.geofence
 
+import scalaz._, Scalaz._
+
 import org.hablapps.coalgebraz._
 import Coalgebraz._, EntityOps._
 
@@ -15,25 +17,41 @@ object Geomonitor {
       case _ => (List.empty, Option(x))
     })
 
-  val geofence: Entity[GeofenceIn, GeofenceOut, Geofence, Geofence] =
+  val geofence: Entity[ClockOut \/ GeofenceIn, GeofenceOut, Geofence, Geofence] =
     raw(identity, x => _ match {
-      case Join(id) =>
-        (List(Joined(id)), Option(x.copy(elements = x.elements + id)))
-      case Leave(id) =>
-        (List(Left(id)), Option(x.copy(elements = x.elements - id)))
+      case -\/(Tick) =>
+        (List(), Option(x.copy(relation = x.relation.map(_.map(_ + 1)))))
+      case \/-(Join(id)) =>
+        (List(Joined(id)), Option(x.copy(relation = x.relation + (id -> 0))))
+      case \/-(Leave(id)) => {
+        x.relation.find(_._1 == id).fold(
+          (List.empty[GeofenceOut], Option(x))) { t =>
+          (List(Left(id, t._2)), Option(x.copy(relation = x.relation - t)))
+        }
+      }
     })
+
+  val clock: Entity[Unit, ClockOut, Int, Int] =
+    raw(identity, x => _ => (List(Tick), Option(x + 1)))
 
   // Entity[
   //   IndexIn[GeoentityIn, Geoentity, String],
   //   IndexOut[GeoentityOut, Geoentity, String],
-  //   List[(String, Geoentity)],
+  //   Map[String, Geoentity],
   //   List[Geoentity]]
   val geoentities = geoentity.index(_.id)
 
   // Entity[
+  //   Unit \/ IndexIn[GeoentityIn, Geoentity, String],
+  //   ClockOut \/ IndexOut[GeoentityOut, Geoentity, String],
+  //   (Int, Map[String, Geoentity]),
+  //   (Int, List[Geoentity])]
+  val clockAndGeoentities = clock |*| geoentities
+
+  // Entity[
   //   IndexIn[GeofenceIn, Geofence, String],
   //   IndexOut[GeofenceOut, Geofence, String],
-  //   List[(String, Geofence)],
+  //   Map[String, Geofence],
   //   List[Geofence]]
   val geofences = geofence.index(_.id)
 
@@ -45,9 +63,5 @@ object Geomonitor {
   //   IndexOut[GeofenceOut, Geofence, String],
   //   (Map[String, Geoentity], Map[String, Geofence]),
   //   (List[Geoentity], List[Geofence])]
-
-  val monitor = geoentities |>| geofences.in
-
-  // val clock: Entity[Unit, ClockOut, Int, Int] =
-  //   raw(identity, x => _ => (List(Tick(x + 1)), Option(x + 1)))
+  val monitor = clockAndGeoentities |>| geofences.in
 }
