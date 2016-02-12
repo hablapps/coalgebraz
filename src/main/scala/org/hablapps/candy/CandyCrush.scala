@@ -18,7 +18,9 @@ object CandyCrush {
   val key: Entity[Void, Void, String, String] = blocked(eqTo)
 
   val flavour: Entity[FlavourIn, Void, Flavour, Flavour] =
-    next(implicit x => { case Become(flavour) => flavour })
+    next(implicit x => {
+      case Become(flavour) => flavour
+    })
 
   val position: Entity[PositionIn, Void, (Int, Int), (Int, Int)] =
     next(implicit xy => {
@@ -38,9 +40,11 @@ object CandyCrush {
   val size: Entity[Void, Void, Int, Int] = blocked(eqTo)
 
   // XXX: side-effecting random. It'll be nice to use a pure one!
-  // XXX: ops, type inference is not working!
+  // XXX: ops, a little help with type inference is required!
   val factory: Entity[Unit, Void, Candy, Random] =
-    next[Unit, Void, Random](implicit x => { case _ => skip })
+    next[Unit, Void, Random](implicit x => {
+      case _ => skip
+    })
 
   val stableBoard: Entity[BoardIn, BoardOut, (Board, Candy), (Board, Random)] =
     size |*| candies |*| factory
