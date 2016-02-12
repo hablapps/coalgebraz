@@ -8,9 +8,8 @@ import scalaz._, Scalaz._
 import org.hablapps.coalgebraz._
 import org.hablapps.coalgebraz.StoreF
 import Coalgebraz._, EntityOps._
-import Sq.someOrNone
 import Nat.Syntax._
-import Isos.{ isoCandy, isoBoard }, To.eqTo
+import Isos.{ isoCandy, isoBoard, isoBoard2 }, To.eqTo
 import Adapt._
 import Routing._
 
@@ -37,8 +36,8 @@ object CandyCrush {
   val candy: Entity[CandyIn, CandyOut, Candy, Candy] =
     icandy |~| (_ == Crush, _ => _ => List(ByeCandy))
 
-  val candies: EntitySeq[CandyIn, CandyOut, Candy, Candy] =
-    candy.toCoseq
+  val candies: IndexedEntity[CandyIn, CandyOut, Candy, Candy, String] =
+    candy.index(_.key)
 
   val size: Entity[Void, Void, Int, Int] = blocked(eqTo)
 

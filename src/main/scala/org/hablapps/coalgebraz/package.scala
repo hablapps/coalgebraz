@@ -34,9 +34,6 @@ package object coalgebraz {
   // problems with implicit resolutions when `Nothing` is involved.
   final class Void { ??? } // non-instantiable!
 
-  type EntitySeq[I, O, B, X] =
-    Entity[CoseqIn[I, B, X], CoseqOut[O, X], List[B], List[X]]
-
   type  ->[A, B] = To[A, B]
   type <->[A, B] = Iso[A, B]
 
@@ -48,17 +45,6 @@ package object coalgebraz {
 
   type IndexedEntity[I, O, B, X, N] =
     Entity[IndexIn[I, X, N], IndexOut[O, X, N], Map[N, B], List[X]]
-
-  sealed trait IndexIn[I, X, N]
-  case class Attach[I, X, N](v: X) extends IndexIn[I, X, N]
-  case class Detach[I, X, N](n: N) extends IndexIn[I, X, N]
-  case class WrapIn[I, X, N](i: (N, I)) extends IndexIn[I, X, N]
-
-  sealed trait IndexOut[O, X, N]
-  case class Attached[O, X, N](v: X) extends IndexOut[O, X, N]
-  case class Detached[O, X, N](n: N) extends IndexOut[O, X, N]
-  case class WrapOut[O, X, N](os: (N, O)) extends IndexOut[O, X, N]
-  case class UnknownIndex[O, X, N](n: N) extends IndexOut[O, X, N]
 
   /* Implicit converters */
 

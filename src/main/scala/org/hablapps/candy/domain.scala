@@ -69,7 +69,7 @@ case class Decrease(n: Nat) extends CounterIn
 sealed trait CounterOut
 case object Done extends CounterOut
 
-case class Board(size: Int, candies: List[Candy] = List.empty)
+case class Board(size: Int, candies: Map[String, Candy] = Map.empty)
 
 sealed trait BoardIn
 case class Transform(key: String, flavour: Flavour) extends BoardIn

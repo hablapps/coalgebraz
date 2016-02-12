@@ -224,43 +224,6 @@ object Coalgebraz {
     })
   }
 
-  // Turns a single coalgebra with its associated state into a coalgebra which
-  // handles a list of such states. The input for the new system is `CoseqIn`, a
-  // type of event which lets the programmer to add new elements or alter the
-  // states individually. Removal is not covered since we're working with
-  // `EntityF` which is able to stop by its own.
-  //
-  // XXX: this implementation is quite ugly, I'm sure it can be cleaned up,
-  // though there are other priorities right now.
-  def toCoseq[I, O, B, X](
-      co: Entity[I, O, B, X])(implicit
-      sq: Sq[List, Option]): EntitySeq[I, O, B, X] = { xs =>
-    val es = xs map (co(_))
-    val bs = es map (_.observe)
-    val nx = es map (_.next)
-    EntityF(bs, _ match {
-      case Elem(f) => {
-        val emp = List.empty[CoseqOut[O, X]]
-        val ts: List[(List[CoseqOut[O, X]], Option[X])] =
-          zip3(xs, nx, bs map f) map {
-            case (x, _, None) => (emp, Option(x))
-            case (x, nxt, Some(i)) => {
-              ((nxt(i).swap.map { os =>
-                List(os.toNel.map(WrappedOut.apply[O, X]))
-                  .sequence
-                  .getOrElse(emp)
-              }).extend {
-                case (None, os) => Removed[O, X](x) :: os
-                case (_, os)    => os
-              }).swap
-            }
-          }
-        ts.unzip.swap.map(_.flatten).swap.map(sq(_))
-      }
-      case Prepend(x) => (List(Prepended(x)), Option(x :: xs))
-    })
-  }
-
   def coexist[I1, I2, I, O1, O2, O, B1, B2, B, X1, X2, X](
       co1: Entity[I1, O1, B1, X1],
       co2: Entity[I2, O2, B2, X2])(implicit

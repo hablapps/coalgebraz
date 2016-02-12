@@ -50,9 +50,6 @@ class EntityOps[I1, O1, B1, X1](val co1: Entity[I1, O1, B1, X1]) {
 
   def index[N](f: B1 => N) = Coalgebraz.index(co1)(f)
 
-  def toCoseq(implicit sq: Sq[List, Option]) =
-    Coalgebraz.toCoseq(co1)
-
   def |*|[I2, I, O2, O, B2, B, X2, X](
       co2: Entity[I2, O2, B2, X2])(implicit
       ev0: ClearSum.Aux[I1, I2, I],
