@@ -68,10 +68,9 @@ object IO extends App {
 
   runIO(
     level(target))(
-    (Board(8, Map(
-      "one" -> Candy("one", Lemon, (1, 1)),
-      "two" -> Candy("two", Banana, (2, 1)))),
-      new Random(), Nat(0)),
+    (Board(8, Map("one" -> Candy("one", Lemon, (1, 1)))),
+      new Random(),
+      Nat(0)),
     printGame,
     _ => ())
 }

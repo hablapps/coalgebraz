@@ -29,13 +29,11 @@ object Routing {
     case Transform(k, fl) => List(-\/(WrapIn((k, Mutate(fl)))))
     case Interchange(pos, dir) => {
       val candies = obs._1.candies.values
-      def f(p: (Int, Int)): Option[String] =
-        candies.find(_.position == p).map(_.key)
-      (f(pos) |@| f(dir(pos))) { (k1, k2) =>
-        List[IndexIn[CandyIn, Candy, String] \/ Unit](
-          -\/(WrapIn((k1, Slide(dir)))),
-          -\/(WrapIn((k2, Slide(dir.opposite)))))
-      }.getOrElse(List.empty)
+      def f(
+          p: (Int, Int),
+          d: Direction): Option[IndexIn[CandyIn, Candy, String] \/ Unit] =
+        candies.find(_.position == p).map(c => -\/(WrapIn((c.key, Slide(d)))))
+      f(pos, dir).toList ++ f(dir(pos), dir.opposite).toList
     }
     case NewCandy(candy) => List(-\/(Attach(candy)), \/-(()))
     case CrushThem(keys) => keys.toList.map { k =>
