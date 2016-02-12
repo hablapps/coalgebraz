@@ -1,10 +1,16 @@
 package org.hablapps.candy
 
+import scala.util.Random
+
 import scalaz._, Scalaz._
 
 import org.hablapps.coalgebraz._
 
 object Isos {
+
+  implicit val toCandy = new (Random -> Candy) {
+    val to: Random => Candy = rnd => intToCandy(rnd.nextInt)
+  }
 
   implicit val isoCandy = new ((String, Flavour, (Int, Int)) <-> Candy) {
     val to: ((String, Flavour, (Int, Int))) => Candy = {

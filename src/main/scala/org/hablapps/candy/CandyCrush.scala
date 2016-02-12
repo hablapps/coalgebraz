@@ -9,7 +9,7 @@ import org.hablapps.coalgebraz._
 import org.hablapps.coalgebraz.StoreF
 import Coalgebraz._, dsl._, EntityOps._
 import Nat.Syntax._
-import Isos.{ isoCandy, isoBoard, isoBoard2 }, To.eqTo
+import Isos.{ toCandy, isoCandy, isoBoard, isoBoard2 }, To.eqTo
 import Adapt._
 import Routing._
 
@@ -20,7 +20,6 @@ object CandyCrush {
   val flavour: Entity[FlavourIn, Void, Flavour, Flavour] =
     next(implicit x => { case Become(flavour) => flavour })
 
-  // XXX: tuple format `(x, y)` is broken here , so using `x -> y` instead
   val position: Entity[PositionIn, Void, (Int, Int), (Int, Int)] =
     next(implicit xy => {
       case OverX(f) => xy.swap.map(f).swap
@@ -39,9 +38,9 @@ object CandyCrush {
   val size: Entity[Void, Void, Int, Int] = blocked(eqTo)
 
   // XXX: side-effecting random. It'll be nice to use a pure one!
-  val factory: IStream[Candy, Random] = { rnd =>
-    IStreamF(intToCandy(rnd.nextInt), rnd)
-  }
+  // XXX: ops, type inference is not working!
+  val factory: Entity[Unit, Void, Candy, Random] =
+    next[Unit, Void, Random](implicit x => { case _ => skip })
 
   val stableBoard: Entity[BoardIn, BoardOut, (Board, Candy), (Board, Random)] =
     size |*| candies |*| factory
