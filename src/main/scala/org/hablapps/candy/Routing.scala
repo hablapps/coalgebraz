@@ -25,31 +25,28 @@ object Routing {
 
   implicit def routeInBoard(
       obs: (Board, Candy))(
-      in: BoardIn): List[CoseqIn[CandyIn, Candy, Candy] \/ Unit] = in match {
-    case Transform(key, flavour) => List(-\/(Elem {
-      case Candy(`key`, _, _) => Option(Mutate(flavour))
-      case _ => None
-    }))
-    case Interchange(pos, dir) => List(-\/(Elem {
-      case Candy(_, _, `pos`) => Option(Slide(dir))
-      case Candy(_, _, pos2) if dir(pos) == pos2 =>
-        Option(Slide(dir.opposite))
-      case _ => None
-    }))
-    case NewCandy(candy) => List(-\/(Prepend(candy)), \/-(()))
-    case CrushThem(keys) => List(-\/(Elem {
-      case Candy(k, _, _) if keys.toList contains k => Option(Crush)
-      case _ => None
-    }))
+      in: BoardIn): List[IndexIn[CandyIn, Candy, String] \/ Unit] = in match {
+    case Transform(k, fl) => List(-\/(WrapIn((k, Mutate(fl)))))
+    case Interchange(pos, dir) => {
+      val candies = obs._1.candies.values
+      def f(p: (Int, Int)): Option[String] =
+        candies.find(_.position == p).map(_.key)
+      (f(pos) |@| f(dir(pos))) { (k1, k2) =>
+        List[IndexIn[CandyIn, Candy, String] \/ Unit](
+          -\/(WrapIn((k1, Slide(dir)))),
+          -\/(WrapIn((k2, Slide(dir.opposite)))))
+      }.getOrElse(List.empty)
+    }
+    case NewCandy(candy) => List(-\/(Attach(candy)), \/-(()))
+    case CrushThem(keys) => keys.toList.map { k =>
+      -\/(WrapIn((k, Crush))): IndexIn[CandyIn, Candy, String] \/ Unit
+    }
   }
 
   implicit def routeOutBoard(
       obs: (Board, Candy))(
-      out: CoseqOut[CandyOut, Candy]): List[BoardOut] = out match {
-    case WrappedOut(os) => {
-      val n = os.list.foldLeft(0)((acc, ByeCandy) => acc + 1)
-      if (n > 0) List(Popped(n)) else List.empty
-    }
+      out: IndexOut[CandyOut, Candy, String]): List[BoardOut] = out match {
+    case WrapOut((_, ByeCandy)) => List(Popped(1))
     case _ => List.empty
   }
 
@@ -77,8 +74,8 @@ object Routing {
       .toList
 
   private def observeForGravitate(board: Board): Option[Suspended] =
-    board.candies.find { c1 =>
-      c1.position._2 != board.size && (! board.candies.exists { c2 =>
+    board.candies.values.find { c1 =>
+      c1.position._2 != board.size && (! board.candies.values.exists { c2 =>
         c2.position == c1.position.map(_ + 1)
       })
     }.map(c => Suspended(c.position))
@@ -87,7 +84,7 @@ object Routing {
     val Board(size, candies) = board
     (1 to size).toStream
       .map((_, 1))
-      .find(pos => ! candies.exists(_.position == pos))
+      .find(pos => ! candies.values.exists(_.position == pos))
       .map(Inhabitated(_))
   }
 
@@ -95,7 +92,7 @@ object Routing {
   private def observeForCrush(board: Board): Option[Aligned] = {
 
     def align(f: Candy => Int, g: Candy => Int): List[Candy] =
-      board.candies
+      board.candies.values.toList
         .groupBy(f)
         .mapValues { vs =>
           vs.sortWith((c1, c2) => g(c1) < g(c2))

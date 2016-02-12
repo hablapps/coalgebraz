@@ -17,9 +17,18 @@ object Isos {
 
   implicit val isoBoard = new ((Int, List[Candy]) <-> Board) {
     val to: ((Int, List[Candy])) => Board = {
-      case (size, candies) => Board(size, candies)
+      case (size, candies) => Board(size, candies.map(c => (c.key, c)).toMap)
     }
     val from: Board => (Int, List[Candy]) = {
+      case Board(size, candies) => (size, candies.values.toList)
+    }
+  }
+
+  implicit val isoBoard2 = new ((Int, Map[String, Candy]) <-> Board) {
+    val to: ((Int, Map[String, Candy])) => Board = {
+      case (size, candies) => Board(size, candies)
+    }
+    val from: Board => (Int, Map[String, Candy]) = {
       case Board(size, candies) => (size, candies)
     }
   }

@@ -16,7 +16,7 @@ object IO extends App {
     (1 to game._1.size) foreach { y =>
       print(s"$y ")
       print(((1 to game._1.size) map { x =>
-        game._1.candies.find(_.position == (x, y)).fold("-")(_.toString)
+        game._1.candies.values.find(_.position == (x, y)).fold("-")(_.toString)
       }).mkString(" "))
       println()
     }
@@ -68,7 +68,10 @@ object IO extends App {
 
   runIO(
     level(target))(
-    (Board(8, List(Candy("one", Lemon, (1, 1)))), new Random(), Nat(0)),
+    (Board(8, Map(
+      "one" -> Candy("one", Lemon, (1, 1)),
+      "two" -> Candy("two", Banana, (2, 1)))),
+      new Random(), Nat(0)),
     printGame,
     _ => ())
 }

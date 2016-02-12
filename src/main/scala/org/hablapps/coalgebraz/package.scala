@@ -34,9 +34,6 @@ package object coalgebraz {
   // problems with implicit resolutions when `Nothing` is involved.
   final class Void { ??? } // non-instantiable!
 
-  type EntitySeq[I, O, B, X] =
-    Entity[CoseqIn[I, B, X], CoseqOut[O, X], List[B], List[X]]
-
   type  ->[A, B] = To[A, B]
   type <->[A, B] = Iso[A, B]
 
