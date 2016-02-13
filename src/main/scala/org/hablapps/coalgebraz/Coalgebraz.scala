@@ -219,7 +219,7 @@ object Coalgebraz {
             case (n, x, e) => {
               val (os, ox) = e.next(i)
               val m = xs.indexOf(x)
-              (os.map(o => WrapOut[O, X, N]((n, o))), Option(ox.fold(
+              (os.map(o => WrapOut((n, o))), Option(ox.fold(
                 rm(xs)(x))(xs.updated(m, _))))
             }
           }

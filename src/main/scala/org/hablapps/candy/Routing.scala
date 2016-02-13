@@ -8,6 +8,7 @@ import scala.util.Random
 import scalaz._, Scalaz._
 
 import org.hablapps.coalgebraz._
+import wrap.dsl._
 
 object Routing {
 
@@ -27,20 +28,16 @@ object Routing {
       BoardIn,
       IndexIn[CandyIn, Candy, String] \/ Unit] = obs => {
     case Transform(k, fl) =>
-      List(WrapIn[CandyIn, Candy, String]((k, Mutate(fl))).left)
+      List((k, Mutate(fl)).wrap.left)
     case Interchange(pos, dir) => {
       val candies = obs._1.candies.values
-      def f(
-          p: (Int, Int),
-          d: Direction): Option[IndexIn[CandyIn, Candy, String] \/ Unit] =
-        candies.find(_.position == p).map {
-          c => WrapIn[CandyIn, Candy, String]((c.key, Slide(d))).left
-        }
+      def f(p: (Int, Int), d: Direction) =
+        candies.find(_.position == p).map(c => (c.key, Slide(d)).wrap.left)
       f(pos, dir).toList ++ f(dir(pos), dir.opposite).toList
     }
     case NewCandy(candy) => List(Attach(candy).left, ().right)
     case CrushThem(keys) => keys.toList.map { k =>
-      WrapIn[CandyIn, Candy, String]((k, Crush)).left
+      (k, Crush).wrap.left
     }
   }
 
