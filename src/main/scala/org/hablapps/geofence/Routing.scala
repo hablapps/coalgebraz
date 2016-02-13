@@ -7,34 +7,28 @@ import scalaz._, Scalaz._
 import org.hablapps.coalgebraz._
 
 object Routing {
-  
-  // TODO: sooo ugly, mainly because of type inference limitations with pattern
-  // matching. Is there a canononical way to improve it?
-  implicit def routeInGeofences(
-    obs: Map[String, Geofence])(
-    i: ClockOut \/ IndexOut[GeoentityOut, Geoentity, String]):
-      List[IndexIn[ClockOut \/ GeofenceIn, Geofence, String]] = i match {
+
+  implicit val routeInGeofences: Router[
+      Map[String, Geofence],
+      ClockOut \/ IndexOut[GeoentityOut, Geoentity, String],
+      IndexIn[ClockOut \/ GeofenceIn, Geofence, String]] = obs => {
     case -\/(Tick) => obs.toList.map { t =>
-      WrapIn((t._1, -\/(Tick))): IndexIn[ClockOut \/ GeofenceIn, Geofence, String]
+      WrapIn[ClockOut \/ GeofenceIn, Geofence, String]((t._1, Tick.left))
     }
     case \/-(WrapOut((n, out))) => out match {
       case Moved(pos) => {
-        def f(
-            cnt: Boolean,
-            cvr: Boolean,
-            ev: String => ClockOut \/ GeofenceIn) = {
-          obs.filter { t =>
-            (t._2.elements contains n) == cnt && t._2.covers(pos) == cvr
+        def f(cn: Boolean, cv: Boolean, e: String => ClockOut \/ GeofenceIn) = {
+          obs.toList.filter { t =>
+            (t._2.elements contains n) == cn && t._2.covers(pos) == cv
           }.map { t =>
-            WrapIn((t._1, ev(n))): IndexIn[ClockOut \/ GeofenceIn, Geofence, String]
-          }.toList
+            WrapIn[ClockOut \/ GeofenceIn, Geofence, String]((t._1, e(n)))
+          }
         }
-        f(true, false, n => \/-(Leave(n))) ++ f(false, true, n => \/-(Join(n)))
+        f(true, false, n => \/-(Leave(n))) ++
+          f(false, true, n => Join(n).right)
       }
-      case Halted => {
-        obs.filter(_._2.elements contains n).map { t =>
-          WrapIn((t._1, \/-(Leave(n)))): IndexIn[ClockOut \/ GeofenceIn, Geofence, String]
-        }.toList
+      case Halted => obs.toList.filter(_._2.elements contains n).map { t =>
+        WrapIn[ClockOut \/ GeofenceIn, Geofence, String]((t._1, Leave(n).right))
       }
     }
     case _ => List.empty
