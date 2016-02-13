@@ -11,55 +11,58 @@ import org.hablapps.coalgebraz._
 
 object Routing {
 
-  implicit def routeInCandy(
-      candy: Candy)(
-      in: CandyIn): List[FlavourIn \/ PositionIn] = in match {
-    case Fall(n)    => List(OverY(_ + n).right)
-    case Slide(dir) => List(dir.toPositionIn.right)
-    case Mutate(fl) => List(Become(fl).left)
-    case _          => List.empty
-  }
+  implicit val routeInCandy: Router[Candy, CandyIn, FlavourIn \/ PositionIn] =
+    candy => {
+      case Fall(n)    => List(OverY(_ + n).right)
+      case Slide(dir) => List(dir.toPositionIn.right)
+      case Mutate(fl) => List(Become(fl).left)
+      case _          => List.empty
+    }
 
-  implicit def routeOutCandy(candy: Candy)(in: Void): List[CandyOut] =
-    List.empty
+  implicit val routeOutCandy: Router[Candy, Void, CandyOut] =
+    _ => _ => List.empty
 
-  implicit def routeInBoard(
-      obs: (Board, Candy))(
-      in: BoardIn): List[IndexIn[CandyIn, Candy, String] \/ Unit] = in match {
-    case Transform(k, fl) => List(-\/(WrapIn((k, Mutate(fl)))))
+  implicit val routeInBoard: Router[
+      (Board, Candy),
+      BoardIn,
+      IndexIn[CandyIn, Candy, String] \/ Unit] = obs => {
+    case Transform(k, fl) =>
+      List(WrapIn[CandyIn, Candy, String]((k, Mutate(fl))).left)
     case Interchange(pos, dir) => {
       val candies = obs._1.candies.values
       def f(
           p: (Int, Int),
           d: Direction): Option[IndexIn[CandyIn, Candy, String] \/ Unit] =
-        candies.find(_.position == p).map(c => -\/(WrapIn((c.key, Slide(d)))))
+        candies.find(_.position == p).map {
+          c => WrapIn[CandyIn, Candy, String]((c.key, Slide(d))).left
+        }
       f(pos, dir).toList ++ f(dir(pos), dir.opposite).toList
     }
-    case NewCandy(candy) => List(-\/(Attach(candy)), \/-(()))
+    case NewCandy(candy) => List(Attach(candy).left, ().right)
     case CrushThem(keys) => keys.toList.map { k =>
-      -\/(WrapIn((k, Crush))): IndexIn[CandyIn, Candy, String] \/ Unit
+      WrapIn[CandyIn, Candy, String]((k, Crush)).left
     }
   }
 
-  implicit def routeOutBoard(
-      obs: (Board, Candy))(
-      out: IndexOut[CandyOut, Candy, String]): List[BoardOut] = out match {
+  implicit val routeOutBoard: Router[
+      (Board, Candy),
+      IndexOut[CandyOut, Candy, String],
+      BoardOut] = obs => {
     case WrapOut((_, ByeCandy)) => List(Popped(1))
     case _ => List.empty
   }
 
-  implicit def routeBackBoard(
-      obs: (Board, Candy))(
-      out: BoardOut): List[BoardIn] = out match {
+  implicit val routeBackBoard: Router[
+      (Board, Candy),
+      BoardOut,
+      BoardIn] = obs => {
     case Aligned(keys)    => List(CrushThem(keys))
     case Suspended(pos)   => List(Interchange(pos, South))
     case Inhabitated(pos) => List(NewCandy(obs._2.copy(position = pos)))
     case _ => List.empty
   }
 
-  implicit def routeInScore(
-      obs: Nat)(
-      in: BoardOut): List[CounterIn] = in match {
+  implicit val routeInScore: Router[Nat, BoardOut, CounterIn] = obs => {
     case Popped(n) => List(Increase(n))
     case _ => List.empty
   }
