@@ -15,6 +15,9 @@ object Coalgebraz {
     EntityF(pi1(x), pi2(x))
   }
 
+  def next[I, O, X](f: X => I => (List[O], Option[X])): Entity[I, O, X, X] =
+    raw(identity, f)
+
   def always[I, O, B, X](b: B): Entity[I, O, B, X] = { x =>
     EntityF(b, _ => (List.empty, Option(x)))
   }
@@ -216,7 +219,7 @@ object Coalgebraz {
             case (n, x, e) => {
               val (os, ox) = e.next(i)
               val m = xs.indexOf(x)
-              (os.map(o => WrapOut[O, X, N]((n, o))), Option(ox.fold(
+              (os.map(o => WrapOut((n, o))), Option(ox.fold(
                 rm(xs)(x))(xs.updated(m, _))))
             }
           }
@@ -267,5 +270,27 @@ object Coalgebraz {
       val (o2s, ox2) = feed(co2, o1s, x2)
       (o2s, (ox1 |@| ox2)(ev1(_, _)))
     })
+  }
+
+  object dsl {
+
+    implicit class Result[O, X](v: (List[O], Option[X])) {
+      def ~>(os: O*): (List[O], Option[X]) =
+        v.swap.map(_ ++ os.toList).swap
+    }
+
+    def skip[O, X](implicit x: X): (List[O], Option[X]) =
+      (List.empty, Option(x))
+
+    def warn[O, X](os: O*)(implicit x: X): (List[O], Option[X]) =
+      (os.toList, Option(x))
+
+    implicit def fresh[O, X](x: X): (List[O], Option[X]) =
+      (List.empty, Option(x))
+
+    implicit def freshR[O, X](x: X): Result[O, X] = Result(fresh(x))
+
+    def halt[O, X]: (List[O], Option[X]) =
+      (List.empty, Option.empty)
   }
 }

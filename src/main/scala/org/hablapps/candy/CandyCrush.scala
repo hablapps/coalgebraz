@@ -7,9 +7,9 @@ import scalaz._, Scalaz._
 
 import org.hablapps.coalgebraz._
 import org.hablapps.coalgebraz.StoreF
-import Coalgebraz._, EntityOps._
+import Coalgebraz._, dsl._, EntityOps._
 import Nat.Syntax._
-import Isos.{ isoCandy, isoBoard, isoBoard2 }, To.eqTo
+import Isos.{ toCandy, isoCandy, isoBoard, isoBoard2 }, To.eqTo
 import Adapt._
 import Routing._
 
@@ -17,18 +17,16 @@ object CandyCrush {
 
   val key: Entity[Void, Void, String, String] = blocked(eqTo)
 
-  val flavour: IStore[FlavourIn, Flavour, Flavour] = { x =>
-    IStoreF(x, _ match {
+  val flavour: Entity[FlavourIn, Void, Flavour, Flavour] =
+    next(implicit x => {
       case Become(flavour) => flavour
     })
-  }
 
-  val position: IStore[PositionIn, (Int, Int), (Int, Int)] = {
-    case s@(x, y) => IStoreF(s, _ match {
-      case OverX(f) => (f(x), y)
-      case OverY(f) => (x, f(y))
+  val position: Entity[PositionIn, Void, (Int, Int), (Int, Int)] =
+    next(implicit xy => {
+      case OverX(f) => xy.swap.map(f).swap
+      case OverY(f) => xy map f
     })
-  }
 
   val icandy: Entity[CandyIn, CandyOut, Candy, Candy] =
     key |*| flavour |*| position
@@ -42,9 +40,11 @@ object CandyCrush {
   val size: Entity[Void, Void, Int, Int] = blocked(eqTo)
 
   // XXX: side-effecting random. It'll be nice to use a pure one!
-  val factory: IStream[Candy, Random] = { rnd =>
-    IStreamF(intToCandy(rnd.nextInt), rnd)
-  }
+  // XXX: ops, a little help with type inference is required!
+  val factory: Entity[Unit, Void, Candy, Random] =
+    next[Unit, Void, Random](implicit x => {
+      case _ => skip
+    })
 
   val stableBoard: Entity[BoardIn, BoardOut, (Board, Candy), (Board, Random)] =
     size |*| candies |*| factory
@@ -55,10 +55,10 @@ object CandyCrush {
       .back(routeBackBoard)
 
   def score(limit: Nat): Entity[CounterIn, CounterOut, Nat, Nat] =
-    raw(identity, x => _ match {
-      case Increase(n) if x + n > limit => (List(Done), None)
-      case Increase(n) => (List.empty, Option(x + n))
-      case Decrease(n) => (List.empty, Option(x - n))
+    next(implicit x => {
+      case Increase(n) if x + n > limit => halt ~> Done
+      case Increase(n) => x + n
+      case Decrease(n) => x - n
     })
 
   def level(
