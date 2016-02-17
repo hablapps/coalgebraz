@@ -79,7 +79,7 @@ object Coalgebraz {
   private def g[I, O, X](
       t: (List[O], Option[X]),
       b: Boolean): (List[O], Option[(X, Boolean)]) =
-    Functor[({type λ[α] = (List[O], α)})#λ].compose[Option].apply(t)((_, b))
+    Functor[Tuple2[List[O], ?]].compose[Option].apply(t)((_, b))
 
   private def xAndNext[I, O, B, X](
       f: Next[I, O, X] => Next[I, O, X] => Next[I, O, (X, Boolean)])(

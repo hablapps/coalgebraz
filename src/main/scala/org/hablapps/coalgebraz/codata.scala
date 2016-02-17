@@ -88,35 +88,35 @@ case class IEntityF[I, O, B, X](observe: B, next: I => (List[O], X)) {
 
 object Codata {
 
-  implicit def StreamFFunctor[H] = new Functor[({type λ[α] = StreamF[H, α]})#λ] {
+  implicit def StreamFFunctor[H] = new Functor[StreamF[H, ?]] {
     def map[A, B](r: StreamF[H, A])(f: A => B) = r map f
   }
 
-  implicit def IStreamFFunctor[H] = new Functor[({type λ[α] = IStreamF[H, α]})#λ] {
+  implicit def IStreamFFunctor[H] = new Functor[IStreamF[H, ?]] {
     def map[A, B](r: IStreamF[H, A])(f: A => B) = r map f
   }
 
-  implicit def AutomataFFunctor[I, O] = new Functor[({type λ[α] = AutomataF[I, O, α]})#λ] {
+  implicit def AutomataFFunctor[I, O] = new Functor[AutomataF[I, O, ?]] {
     def map[A, B](r: AutomataF[I, O, A])(f: A => B) = r map f
   }
 
-  implicit def IAutomataFFunctor[I, O] = new Functor[({type λ[α] = IAutomataF[I, O, α]})#λ] {
+  implicit def IAutomataFFunctor[I, O] = new Functor[IAutomataF[I, O, ?]] {
     def map[A, B](r: IAutomataF[I, O, A])(f: A => B) = r map f
   }
 
-  implicit def StoreFFunctor[K, V] = new Functor[({type λ[α] = StoreF[K, V, α]})#λ] {
+  implicit def StoreFFunctor[K, V] = new Functor[StoreF[K, V, ?]] {
     def map[A, B](r: StoreF[K, V, A])(f: A => B) = r map f
   }
 
-  implicit def IStoreFFunctor[K, V] = new Functor[({type λ[α] = IStoreF[K, V, α]})#λ] {
+  implicit def IStoreFFunctor[K, V] = new Functor[IStoreF[K, V, ?]] {
     def map[A, B](r: IStoreF[K, V, A])(f: A => B) = r map f
   }
 
-  implicit def EntityFFunctor[I, O, C] = new Functor[({type λ[α] = EntityF[I, O, C, α]})#λ] {
+  implicit def EntityFFunctor[I, O, C] = new Functor[EntityF[I, O, C, ?]] {
     def map[A, B](r: EntityF[I, O, C, A])(f: A => B) = r map f
   }
 
-  implicit def IEntityFFunctor[I, O, C] = new Functor[({type λ[α] = IEntityF[I, O, C, α]})#λ] {
+  implicit def IEntityFFunctor[I, O, C] = new Functor[IEntityF[I, O, C, ?]] {
     def map[A, B](r: IEntityF[I, O, C, A])(f: A => B) = r map f
   }
 }

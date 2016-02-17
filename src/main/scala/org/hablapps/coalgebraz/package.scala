@@ -13,22 +13,22 @@ package object coalgebraz {
 
   type Coalgebra[F[_], S] = S => F[S]
 
-  type Stream[H, X] = Coalgebra[({type λ[α] = StreamF[H, α]})#λ, X]
+  type Stream[H, X] = Coalgebra[StreamF[H, ?], X]
 
-  type IStream[H, X] = Coalgebra[({type λ[α] = IStreamF[H, α]})#λ, X]
+  type IStream[H, X] = Coalgebra[IStreamF[H, ?], X]
 
-  type Automata[I, O, X] = Coalgebra[({type λ[α] = AutomataF[I, O, α]})#λ, X]
+  type Automata[I, O, X] = Coalgebra[AutomataF[I, O, ?], X]
 
-  type IAutomata[I, O, X] = Coalgebra[({type λ[α] = IAutomataF[I, O, α]})#λ, X]
+  type IAutomata[I, O, X] = Coalgebra[IAutomataF[I, O, ?], X]
 
-  type Store[K, V, X] = Coalgebra[({type λ[α] = StoreF[K, V, α]})#λ, X]
+  type Store[K, V, X] = Coalgebra[StoreF[K, V, ?], X]
 
-  type IStore[K, V, X] = Coalgebra[({type λ[α] = IStoreF[K, V, α]})#λ, X]
+  type IStore[K, V, X] = Coalgebra[IStoreF[K, V, ?], X]
 
   // XXX: is there a better name for `B`, more related to oBservable
-  type Entity[I, O, B, X] = Coalgebra[({type λ[α] = EntityF[I, O, B, α]})#λ, X]
+  type Entity[I, O, B, X] = Coalgebra[EntityF[I, O, B, ?], X]
 
-  type IEntity[I, O, B, X] = Coalgebra[({type λ[α] = IEntityF[I, O, B, α]})#λ, X]
+  type IEntity[I, O, B, X] = Coalgebra[IEntityF[I, O, B, ?], X]
 
   // XXX: using `type Void = Nothing` resulted in multiple errors because of the
   // problems with implicit resolutions when `Nothing` is involved.
