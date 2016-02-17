@@ -1,7 +1,5 @@
 package org.hablapps.candy
 
-import scala.language.implicitConversions
-
 import scala.collection.immutable.Stream
 import scala.util.Random
 

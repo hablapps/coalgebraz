@@ -2,15 +2,15 @@ package org.hablapps.geofence
 
 import org.hablapps.coalgebraz._
 
-case class Geoentity(id: String, pos: (Int, Int))
+case class Geolocation(id: String, pos: (Int, Int))
 
-sealed trait GeoentityIn
-case class Move(pos: (Int, Int)) extends GeoentityIn
-case object Halt extends GeoentityIn
+sealed trait GeolocationIn // geopositionin
+case class Move(pos: (Int, Int)) extends GeolocationIn
+case object Halt extends GeolocationIn
 
-sealed trait GeoentityOut
-case class Moved(pos: (Int, Int)) extends GeoentityOut
-case object Halted extends GeoentityOut
+sealed trait GeolocationOut // ""out
+case class Moved(pos: (Int, Int)) extends GeolocationOut
+case object Halted extends GeolocationOut
 
 case class Geofence(
     id: String,

@@ -1,7 +1,5 @@
 package org.hablapps.geofence
 
-import scala.language.implicitConversions
-
 import scalaz._, Scalaz._
 
 import org.hablapps.coalgebraz._
@@ -11,7 +9,7 @@ object Routing {
 
   implicit val routeInGeofences: Router[
       Map[String, Geofence],
-      ClockOut \/ IndexOut[GeoentityOut, Geoentity, String],
+      ClockOut \/ IndexOut[GeolocationOut, Geolocation, String],
       IndexIn[ClockOut \/ GeofenceIn, Geofence, String]] = obs => {
     case -\/(Tick) => obs.toList.map { t =>
       (t._1, Tick.left).wrap

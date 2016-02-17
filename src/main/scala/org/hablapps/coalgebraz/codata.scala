@@ -1,7 +1,5 @@
 package org.hablapps.coalgebraz
 
-import scala.language.implicitConversions
-
 import scalaz._, Scalaz._
 
 case class StreamF[H, X](head: H, tail: Option[X]) {

@@ -11,7 +11,7 @@ import Geomonitor._
 object IO extends App {
 
   def printMonitor(
-      obs: ((Int, Map[String, Geoentity]), Map[String, Geofence])): Unit = {
+      obs: ((Int, Map[String, Geolocation]), Map[String, Geofence])): Unit = {
     val ((ticks, entities), fences) = obs
     println("GEOENTITIES")
     println("-----------")
@@ -38,12 +38,12 @@ object IO extends App {
   }
 
   implicit val readMonitorIn =
-    new Read[Unit \/ IndexIn[GeoentityIn, Geoentity, String]] {
+    new Read[Unit \/ IndexIn[GeolocationIn, Geolocation, String]] {
       def read(s: String) = {
         s.split(" ") match {
           case Array("Tick") => Option(-\/(()))
-          case Array("Geoentity", id) =>
-            Option(\/-(Attach(Geoentity(id, (1, 1)))))
+          case Array("Geolocation", id) =>
+            Option(\/-(Attach(Geolocation(id, (1, 1)))))
           case Array("Halt", id) => Option(\/-(WrapIn((id, Halt))))
           case Array("Move", id, a, b) => {
             (Read[Int].read(a) |@| Read[Int].read(b)) { (x, y) =>
@@ -67,7 +67,7 @@ object IO extends App {
     |""".stripMargin)
 
   runIO(monitor)(
-    ((0, List(Geoentity("jesus", (4, 4)))),
+    ((0, List(Geolocation("jesus", (4, 4)))),
      List(
        Geofence("guadarrama", (2, 5), 0),
        Geofence("mostoles", (3, 4), 1, Set(("jesus", 0))),

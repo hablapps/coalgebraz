@@ -1,8 +1,5 @@
 package org.hablapps.coalgebraz
 
-import scala.language.higherKinds
-import scala.language.implicitConversions
-
 import Function.const
 
 import scalaz._, Scalaz._

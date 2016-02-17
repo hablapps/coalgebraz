@@ -1,7 +1,5 @@
 package org.hablapps.candy
 
-import scala.language.implicitConversions
-
 case class Nat(us: List[Unit]) {
   def asInt: Int = us.length
   override def toString = asInt.toString
