@@ -197,7 +197,7 @@ object Coalgebraz {
 
   def index[I, O, B, X, N](
       co: Entity[I, O, B, X])(
-      f: B => N): IndexedEntity[I, O, B, X, N] = { xs =>
+      f: B => N, g: B => X): IndexedEntity[I, O, B, X, N] = { xs =>
 
     def rm[A](as: List[A])(a: A): List[A] =
       as.zipWithIndex.filter(_._2 != as.indexOf(a)).map(_._1)
@@ -205,17 +205,17 @@ object Coalgebraz {
     val all = xs.map(x => (f(co(x).observe), x, co(x)))
     val obs = all.map(t => (t._1, t._3.observe)).toMap
     EntityF(obs, {
-      case Attach(x) => (List(Attached(x)), Option(x :: xs))
+      case Attach(b) => (List(Attached(b)), Option(g(b) :: xs))
       case Detach(n) => {
         all.find(_._1 == n)
           .map(_._2)
-          .fold((List[IndexOut[O, X, N]](UnknownIndex(n)), Option(xs))) { x =>
+          .fold((List[IndexOut[O, B, N]](UnknownIndex(n)), Option(xs))) { x =>
             (List(Detached(n)), Option(rm(xs)(x)))
           }
       }
       case WrapIn((n, i)) => {
         all.find(_._1 == n).fold(
-          (List[IndexOut[O, X, N]](UnknownIndex(n)), Option(xs))) {
+          (List[IndexOut[O, B, N]](UnknownIndex(n)), Option(xs))) {
             case (n, x, e) => {
               val (os, ox) = e.next(i)
               val m = xs.indexOf(x)

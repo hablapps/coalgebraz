@@ -35,7 +35,7 @@ object CandyCrush {
     icandy |~| (_ == Crush, _ => _ => List(ByeCandy))
 
   val candies: IndexedEntity[CandyIn, CandyOut, Candy, Candy, String] =
-    candy.index(_.key)
+    candy.index(_.key, identity)
 
   val size: Entity[Void, Void, Int, Int] = blocked(eqTo)
 
