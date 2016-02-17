@@ -1,12 +1,12 @@
 package org.hablapps.coalgebraz
 
-sealed trait IndexIn[+I, +X, +N]
-case class Attach[X](v: X) extends IndexIn[Nothing, X, Nothing]
+sealed trait IndexIn[+I, +B, +N]
+case class Attach[B](v: B) extends IndexIn[Nothing, B, Nothing]
 case class Detach[N](n: N) extends IndexIn[Nothing, Nothing, N]
 case class WrapIn[I, N](i: (N, I)) extends IndexIn[I, Nothing, N]
 
-sealed trait IndexOut[+O, +X, +N]
-case class Attached[X](v: X) extends IndexOut[Nothing, X, Nothing]
+sealed trait IndexOut[+O, +B, +N]
+case class Attached[B](v: B) extends IndexOut[Nothing, B, Nothing]
 case class Detached[N](n: N) extends IndexOut[Nothing, Nothing, N]
 case class WrapOut[O, N](os: (N, O)) extends IndexOut[O, Nothing, N]
 case class UnknownIndex[N](n: N) extends IndexOut[Nothing, Nothing, N]

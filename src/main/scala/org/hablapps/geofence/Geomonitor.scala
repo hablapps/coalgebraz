@@ -36,7 +36,7 @@ object Geomonitor {
   //   IndexOut[GeoentityOut, Geoentity, String],
   //   Map[String, Geoentity],
   //   List[Geoentity]]
-  val geoentities = geoentity.index(_.id)
+  val geoentities = geoentity.index(_.id, identity)
 
   // Entity[
   //   Unit \/ IndexIn[GeoentityIn, Geoentity, String],
@@ -50,7 +50,7 @@ object Geomonitor {
   //   IndexOut[GeofenceOut, Geofence, String],
   //   Map[String, Geofence],
   //   List[Geofence]]
-  val geofences = geofence.index(_.id)
+  val geofences = geofence.index(_.id, identity)
 
   // FIXME: It's required to invoke `in` to force `geofences` to adapt its
   // input. Can this be avoided?

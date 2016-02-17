@@ -44,7 +44,7 @@ package object coalgebraz {
   /* Index Stuff (perhaps should be moved) */
 
   type IndexedEntity[I, O, B, X, N] =
-    Entity[IndexIn[I, X, N], IndexOut[O, X, N], Map[N, B], List[X]]
+    Entity[IndexIn[I, B, N], IndexOut[O, B, N], Map[N, B], List[X]]
 
   /* Implicit converters */
 
