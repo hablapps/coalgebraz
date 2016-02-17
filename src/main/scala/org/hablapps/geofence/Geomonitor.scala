@@ -5,9 +5,7 @@ import scalaz._, Scalaz._
 import org.hablapps.coalgebraz._
 import Coalgebraz._, dsl._, EntityOps._
 
-import Routing._
-
-object Geomonitor {
+object Geomonitor extends Domain with Routing {
 
   val geoentity: Entity[GeolocationIn, GeolocationOut, Geolocation, Geolocation] =
     next(implicit x => {
@@ -16,50 +14,13 @@ object Geomonitor {
       case _ => skip
     })
 
-  /**************************/
-
-  // trait Positionable
-  //
-  // trait Geoentitizable[A] {
-  //   def getPos(a: A): (Int, Int)
-  //   def setPos(a: A)(pos: (Int, Int)): A
-  //   def obs(a: A): Geoentity
-  // }
-  //
-  // object Geoentitizable {
-  //
-  //   def apply[A](implicit ev: Geoentitizable[A]): Geoentitizable[A] = ev
-  //
-  //   implicit val geoentitizableGeoentity = new Geoentitizable[Geoentity] {
-  //     def getPos(a: Geoentity) = a.pos
-  //     def setPos(a: Geoentity)(_pos: (Int, Int)) = a.copy(pos = _pos)
-  //     def obs(a: Geoentity) = a
-  //   }
-  // }
-  //
-  // class GeoentitizableOps[A](val a: A)(implicit P: Geoentitizable[A]) {
-  //   def getPos: (Int, Int) = P.getPos(a)
-  //   def setPos(pos: (Int, Int)): A = P.setPos(a)(pos)
-  //   def obs: Geoentity  = P.obs(a)
-  // }
-  //
-  // object GeoentitizableOps {
-  //   implicit def toGeoentitizableOps[A: Geoentitizable](a: A): GeoentitizableOps[A] =
-  //     new GeoentitizableOps(a)
-  // }
-  //
-  // import GeoentitizableOps._
-  //
-  // def geoentity2[X: Geoentitizable]: Entity[GeoentityIn, GeoentityOut, Geoentity, X] =
-  //   implicit x => {
-  //     EntityF(x.obs, {
-  //       case Move(pos2) if (x.getPos != pos2) => x.setPos(pos2) ~> Moved(pos2)
-  //       case Halt => halt ~> Halted
-  //       case _ => skip
-  //     })
-  //   }
-
-  /**************************/
+  def geoentity2[X : Positionable : Identifiable]
+      : Entity[GeolocationIn, GeolocationOut, (String, (Int, Int)), X]=
+    raw(x => (x.id, x.position), implicit x => {
+      case Move(p) if (x.position != p) => (x.position = p) ~> Moved(p)
+      case Halt => halt ~> Halted
+      case _ => skip
+    })
 
   val geofence: Entity[ClockOut \/ GeofenceIn, GeofenceOut, Geofence, Geofence] =
     next(implicit x => {
@@ -73,8 +34,21 @@ object Geomonitor {
       }
     })
 
-  val clock: Entity[Unit, ClockOut, Int, Int] =
+  def geofence2[X : Tickable : Joinable]
+      : Entity[ClockOut \/ GeofenceIn, GeofenceOut, X, X] =
+    next(implicit x => {
+      case -\/(Tick) => x.tick
+      case \/-(Join(id)) => x.join(id) ~> Joined(id)
+      case \/-(Leave(id)) => x.find(id).fold(skip[GeofenceOut, X]) { t =>
+        x.leave(id) ~> Left(id, t._2.toSeconds.toInt)
+      }
+    })
+
+  val timer: Entity[Unit, ClockOut, Int, Int] =
     next(implicit x => _ => (x + 1) ~> Tick)
+
+  def timer2[X: Tickable]: Entity[Unit, ClockOut, X, X] =
+    next(implicit x => _ => x.tick ~> Tick)
 
   // Entity[
   //   IndexIn[GeoentityIn, Geoentity, String],
@@ -88,7 +62,7 @@ object Geomonitor {
   //   ClockOut \/ IndexOut[GeoentityOut, Geoentity, String],
   //   (Int, Map[String, Geoentity]),
   //   (Int, List[Geoentity])]
-  val clockAndGeoentities = clock |*| geoentities
+  val timerAndGeoentities = timer |*| geoentities
 
   // Entity[
   //   IndexIn[GeofenceIn, Geofence, String],
@@ -105,5 +79,5 @@ object Geomonitor {
   //   IndexOut[GeofenceOut, Geofence, String],
   //   (Map[String, Geoentity], Map[String, Geofence]),
   //   (List[Geoentity], List[Geofence])]
-  val monitor = clockAndGeoentities |>| geofences.in
+  val monitor = timerAndGeoentities |>| geofences.in
 }
