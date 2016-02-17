@@ -7,7 +7,7 @@ import org.scalatest._
 import org.hablapps.coalgebraz._, EntityOps._
 import org.hablapps.coalgebraz.test._, PropFramework._
 
-import org.hablapps.candy._, Cocandy._
+import org.hablapps.candy._, CandyCrush._
 import Nat.Syntax._
 
 import EntityProp._
@@ -15,7 +15,7 @@ import EntityProp._
 class CandyTest extends FunSpec with ShouldMatchers {
 
   // Just a game that takes only the counter (ignoring board) as observation.
-  val co = level(100).withObservable[Nat](To(_._2))
+  val co = level(100).observe[Nat](To(_._2))
 
   it("counter should be always equal or greater than zero") {
     val prop: EntityProp[Nat] = always(n => just(n >= 0))
@@ -37,7 +37,11 @@ class CandyTest extends FunSpec with ShouldMatchers {
   // state and input generators.
   implicit class SatisfiedHelper(prop: EntityProp[Nat]) {
 
-    val s = (Board(8, List(Candy("one", Lemon, (1, 1)))), new Random(), Nat(0))
+    val s = (
+      Board(8, Map("one" -> Candy("one", Lemon, (1, 1)))),
+      new Random(),
+      Nat(0))
+
     val input = List(
       Interchange((1, 1), South),
       Interchange((2, 1), East),
