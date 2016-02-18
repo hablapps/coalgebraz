@@ -1,6 +1,5 @@
-package org.hablapps.geofence.state
+package org.hablapps.coalgebraz
 
-// XXX: seems like a candidate to be located in `coalgebraz`
 trait Observable[B, A] {
   def observe(a: A): B
 }

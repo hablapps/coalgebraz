@@ -3,8 +3,7 @@ package org.hablapps.geofence.state
 trait State extends ToPositionableOps
     with ToIdentifiableOps
     with ToTickableOps
-    with ToJoinableOps
-    with ToObservableOps {
+    with ToJoinableOps {
 
   sealed trait GeolocationIn
   case class Move(pos: (Int, Int)) extends GeolocationIn
