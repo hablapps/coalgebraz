@@ -4,7 +4,7 @@ trait State extends ToPositionableOps
     with ToIdentifiableOps
     with ToTickableOps
     with ToJoinableOps {
-      
+
   sealed trait GeolocationIn
   case class Move(pos: (Int, Int)) extends GeolocationIn
   case object Halt extends GeolocationIn
@@ -19,7 +19,7 @@ trait State extends ToPositionableOps
 
   sealed trait GeofenceOut
   case class Joined(id: String) extends GeofenceOut
-  case class Left(id: String, after: Int) extends GeofenceOut
+  case class Left(id: String, after: Long) extends GeofenceOut
 
   sealed trait ClockOut
   case object Tick extends ClockOut

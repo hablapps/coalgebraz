@@ -9,7 +9,8 @@ scalacOptions ++= Seq(
   "-deprecation",
   "-feature",
   "-language:higherKinds",
-  "-language:implicitConversions")
+  "-language:implicitConversions",
+  "-language:postfixOps")
 
 resolvers += Resolver.sonatypeRepo("releases")
 

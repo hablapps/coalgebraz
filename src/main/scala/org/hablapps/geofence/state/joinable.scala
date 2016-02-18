@@ -1,18 +1,16 @@
 package org.hablapps.geofence.state
 
-import scala.concurrent.duration._
-
 trait Joinable[A] {
   def join(a: A)(id: String): A
   def leave(a: A)(id: String): A
-  // XXX: duration? yeap, suits `Joinable` perfectly! </ironic>
-  def find(a: A)(id: String): Option[(String, Duration)]
+  // XXX: duration (Long)? yeap, suits `Joinable` perfectly! </ironic>
+  def find(a: A)(id: String): Option[(String, Long)]
 }
 
 class JoinableOps[A](val a: A)(implicit J: Joinable[A]) {
   def join(id: String): A = J.join(a)(id)
   def leave(id: String): A = J.leave(a)(id)
-  def find(id: String): Option[(String, Duration)] = J.find(a)(id)
+  def find(id: String): Option[(String, Long)] = J.find(a)(id)
 }
 
 trait ToJoinableOps {

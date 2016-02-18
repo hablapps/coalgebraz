@@ -1,12 +1,12 @@
-package org.hablapps.geofence
+package org.hablapps.geofence.io
 
 import scalaz._, Scalaz._
 
 import org.hablapps.coalgebraz._
 import Driver.runIO
 
-import org.hablapps.geofence._
-import Geomonitor._, state._
+import org.hablapps.geofence._, Geomonitor._
+import org.hablapps.geofence.state._
 
 object IO extends App {
 
@@ -66,13 +66,13 @@ object IO extends App {
     |         \/     \/                \/     \/     \/    \/
     |""".stripMargin)
 
-  runIO(monitor)(
-    ((0, List(Geolocation("jesus", (4, 4)))),
-     List(
-       Geofence("guadarrama", (2, 5), 0),
-       Geofence("mostoles", (3, 4), 1, Set(("jesus", 0))),
-       Geofence("leganes", (9, 3), 1),
-       Geofence("alcorcon", (6, 2), 1))),
-     printMonitor,
-     printOutput)
+  // runIO(monitor)(
+  //   ((0, List(Geolocation("jesus", (4, 4)))),
+  //    List(
+  //      Geofence("guadarrama", (2, 5), 0),
+  //      Geofence("mostoles", (3, 4), 1, Set(("jesus", 0))),
+  //      Geofence("leganes", (9, 3), 1),
+  //      Geofence("alcorcon", (6, 2), 1))),
+  //    printMonitor,
+  //    printOutput)
 }
