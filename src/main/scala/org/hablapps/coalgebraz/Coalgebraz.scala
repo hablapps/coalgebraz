@@ -6,14 +6,14 @@ import scalaz._, Scalaz._
 
 object Coalgebraz {
 
-  def raw[I, O, B, X](
+  def entity[I, O, B, X](
       pi1: X => B,
       pi2: X => I => (List[O], Option[X])): Entity[I, O, B, X] = { x =>
     EntityF(pi1(x), pi2(x))
   }
 
   def next[I, O, X](f: X => I => (List[O], Option[X])): Entity[I, O, X, X] =
-    raw(identity, f)
+    entity(identity, f)
 
   def always[I, O, B, X](b: B): Entity[I, O, B, X] = { x =>
     EntityF(b, _ => (List.empty, Option(x)))
@@ -71,7 +71,7 @@ object Coalgebraz {
   }
 
   // XXX: don't know why the next invocation can't be resolved:
-  // `Functor[({type λ[α] = (List[O], Option[α])})#λ]`
+  // `Functor[(List[O], Option[?])]`
   // As a consequence, I have to manually compose functors.
   private def g[I, O, X](
       t: (List[O], Option[X]),

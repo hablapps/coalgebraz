@@ -11,7 +11,7 @@ object Geolocation {
     def position_=(a: Geolocation)(p: (Int, Int)) = a.copy(pos = p)
   }
 
-  implicit val geolocationIdentifiable = new Identifiable[String, Geolocation] {
-    def id(a: Geolocation) = a.id
+  implicit val geolocationObservable = new Observable[(String, (Int, Int)), Geolocation] {
+    def observe(a: Geolocation) = (a.id, a.pos)
   }
 }

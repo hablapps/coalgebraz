@@ -22,8 +22,6 @@ object Geofence {
 
   implicit val geofenceTickable = new Tickable[Geofence] {
     def tick(a: Geofence) = a.copy(relation = a.relation.map(_.map(_ + 1)))
-    // XXX: we won't be using this method
-    def total(a: Geofence) = ???
   }
 
   implicit val geofenceJoinable = new Joinable[Geofence] {
