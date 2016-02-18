@@ -6,7 +6,7 @@ import org.hablapps.coalgebraz._
 import Driver.runIO
 
 import org.hablapps.geofence._
-import Geomonitor._
+import Geomonitor._, state._
 
 object IO extends App {
 

@@ -5,7 +5,9 @@ import scalaz._, Scalaz._
 import org.hablapps.coalgebraz._
 import Coalgebraz._, dsl._, EntityOps._
 
-object Geomonitor extends Domain with Routing {
+import state._
+
+object Geomonitor extends state.State with Routing {
 
   val geoentity: Entity[GeolocationIn, GeolocationOut, Geolocation, Geolocation] =
     next(implicit x => {

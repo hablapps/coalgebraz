@@ -5,7 +5,9 @@ import scalaz._, Scalaz._
 import org.hablapps.coalgebraz._
 import wrap.dsl._
 
-trait Routing {
+import state._
+
+trait Routing { this: state.State =>
 
   implicit val routeInGeofences: Router[
       Map[String, Geofence],
