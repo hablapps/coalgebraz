@@ -4,7 +4,7 @@ import scalaz._, Scalaz._
 
 package object coalgebraz {
 
-  import EntityOps._
+  import Coalgebraz._
 
   /* Shared aliases */
 

@@ -4,7 +4,7 @@ import Function.const
 
 import scalaz._, Scalaz._
 
-object Coalgebraz extends ToObservableOps {
+object Coalgebraz extends ToEntityOps with ToObservableOps with ToMappableOps {
 
   def entity[I, O, B, X](
       pi1: X => B,
@@ -189,6 +189,30 @@ object Coalgebraz extends ToObservableOps {
         val EntityF(b, _) = co(x2)
         (os ++ f(b), Option(x2))
       }
+    })
+  }
+
+  type IndexedEntity2[I, O, F[_], B, X, N] =
+    Entity[IndexIn[I, B, N], IndexOut[O, B, N], F[B], F[X]]
+
+  def index2[I, O, F[_], B, X, N](
+      co: Entity[I, O, B, X])(implicit
+      ev0: Observable[B, X],
+      ev1: Indexable[N, X],
+      ev2: Functor[F],
+      ev3: Mappable[F]): IndexedEntity2[I, O, F, B, X, N] = { xs =>
+
+    EntityF(xs.map(co(_).observe), {
+      // TODO: how do we turn a B into a valid X?
+      case Attach(b) => (List(Attached(b)), Option(???))
+      case Detach(n) if xs contains n => (List(Detached(n)), Option(xs - n))
+      case Detach(n) => (List(UnknownIndex(n)), Option(xs))
+      case WrapIn((n, i)) if xs contains n => {
+        (xs get n).map { x =>
+          co(x).next(i).bimap(_.map(o => WrapOut((n, o))), _.map(xs + _))
+        }.getOrElse(List(UnknownIndex(n)), Option(xs)) // should never happen!
+      }
+      case WrapIn((n, _)) => (List(UnknownIndex(n)), Option(xs))
     })
   }
 

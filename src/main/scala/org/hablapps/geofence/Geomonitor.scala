@@ -3,7 +3,7 @@ package org.hablapps.geofence
 import scalaz._, Scalaz._
 
 import org.hablapps.coalgebraz._
-import Coalgebraz._, dsl._, EntityOps._
+import Coalgebraz._, dsl._
 
 import state._
 
@@ -30,34 +30,38 @@ object Geomonitor extends state.State with Routing {
   def timer[B, X : Observable[B, ?] : Tickable]: Entity[Unit, ClockOut, B, X] =
     entity(_.observe, implicit x => _ => x.tick ~> Tick)
 
-  // Entity[
-  //   IndexIn[GeoentityIn, Geoentity, String],
-  //   IndexOut[GeoentityOut, Geoentity, String],
-  //   Map[String, Geoentity],
-  //   List[Geoentity]]
-  // val geoentities = geoentity.index(_.id, identity)
+  def geoentities[
+      F[_] : Functor : Mappable,
+      B,
+      X : Observable[B, ?] : Indexable[N, ?] : Positionable,
+      N]: IndexedEntity2[GeolocationIn, GeolocationOut, F, B, X, N] =
+    geoentity.index2[F, N]
 
-  // Entity[
-  //   Unit \/ IndexIn[GeoentityIn, Geoentity, String],
-  //   ClockOut \/ IndexOut[GeoentityOut, Geoentity, String],
-  //   (Int, Map[String, Geoentity]),
-  //   (Int, List[Geoentity])]
-  // val timerAndGeoentities = timer |*| geoentities
+  def timerAndGeoentities[
+      B1,
+      X1 : Observable[B1, ?] : Tickable,
+      F2[_] : Functor : Mappable,
+      B2,
+      X2 : Observable[B2, ?] : Indexable[N2, ?] : Positionable,
+      N2] =
+    timer[B1, X1] |*| geoentities[F2, B2, X2, N2]
 
-  // Entity[
-  //   IndexIn[GeofenceIn, Geofence, String],
-  //   IndexOut[GeofenceOut, Geofence, String],
-  //   Map[String, Geofence],
-  //   List[Geofence]]
-  // val geofences = geofence.index(_.id, identity)
+  def geofences[
+      F[_] : Functor : Mappable,
+      B,
+      X : Observable[B, ?] : Indexable[N, ?] : Tickable : Joinable,
+      N] =
+    geofence.index2[F, N]
 
-  // FIXME: It's required to invoke `in` to force `geofences` to adapt its
-  // input. Can this be avoided?
-  //
-  // Entity[
-  //   IndexIn[GeoentityIn, Geoentity, String],
-  //   IndexOut[GeofenceOut, Geofence, String],
-  //   (Map[String, Geoentity], Map[String, Geofence]),
-  //   (List[Geoentity], List[Geofence])]
-  // val monitor = timerAndGeoentities |>| geofences.in
+  def monitor[
+      B1,
+      X1 : Observable[B1, ?] : Tickable,
+      F[_] : Functor : Mappable,
+      B2,
+      X2 : Observable[B2, ?] : Indexable[N2, ?] : Positionable,
+      N2,
+      B3 : Indexable[N3, ?],
+      X3 : Observable[B3, ?] : Indexable[N3, ?] : Tickable : Joinable,
+      N3] =
+    timerAndGeoentities[B1, X1, F, B2, X2, N2] |>| geofences[F, B3, X3, N3].in
 }

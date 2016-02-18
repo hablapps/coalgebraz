@@ -48,6 +48,12 @@ class EntityOps[I1, O1, B1, X1](val co1: Entity[I1, O1, B1, X1]) {
 
   def index[N](f: B1 => N, g: B1 => X1) = Coalgebraz.index(co1)(f, g)
 
+  def index2[F[_], N](implicit
+    ev0: Functor[F],
+    ev1: Mappable[F],
+    ev2: Observable[B1, X1],
+    ev3: Indexable[N, X1]) = Coalgebraz.index2[I1, O1, F, B1, X1, N](co1)
+
   def |*|[I2, I, O2, O, B2, B, X2, X](
       co2: Entity[I2, O2, B2, X2])(implicit
       ev0: ClearSum.Aux[I1, I2, I],
@@ -70,7 +76,7 @@ class EntityOps[I1, O1, B1, X1](val co1: Entity[I1, O1, B1, X1]) {
     Coalgebraz.flow(co1, co2)
 }
 
-object EntityOps {
+trait ToEntityOps {
   implicit def toEntityOps[I, O, B, X](
     co: Entity[I, O, B, X]): EntityOps[I, O, B, X] = new EntityOps(co)
 }
