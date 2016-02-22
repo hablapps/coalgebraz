@@ -200,6 +200,8 @@ object Coalgebraz extends ToEntityOps
     })
   }
 
+  import dsl._
+
   type IndexedEntity2[I, O, F[_, _], B, X, N] =
     Entity[IndexIn[I, B, N], IndexOut[O, B, N], F[N, B], F[N, X]]
 
@@ -209,17 +211,17 @@ object Coalgebraz extends ToEntityOps
       ev1: Functor[F[N, ?]],
       ev2: Mappable[F],
       ev3: To[B, X]): IndexedEntity2[I, O, F, B, X, N] = { xs =>
-    import dsl._
     EntityF(xs.map(co(_).observe), {
       case Attach((n, b)) => (xs + (n, ev3.to(b))) ~> Attached((n, b))
-      case Detach(n) if xs contains n => (xs - n) ~> Detached(n)
-      case Detach(n) => xs ~> UnknownIndex(n)
-      case WrapIn((n, i)) if xs contains n => {
-        (xs get n).map { x =>
-          co(x).next(i).bimap(_.map(o => WrapOut((n, o))), _.map(xs + (n, _)))
-        }.getOrElse(xs ~> UnknownIndex(n)) // should never happen!
+      case Detach(n) => (xs contains n).fold(
+        (xs - n) ~> Detached(n),
+        xs ~> UnknownIndex(n))
+      case WrapIn((n, i)) => {
+        (xs get n).fold[(List[IndexOut[O, B, N]], Option[F[N, X]])](
+          xs ~> UnknownIndex(n)) { x =>
+            co(x).next(i).bimap(_.map(o => WrapOut((n, o))), _.map(xs + (n, _)))
+          }
       }
-      case WrapIn((n, _)) => xs ~> UnknownIndex(n)
     })
   }
 
