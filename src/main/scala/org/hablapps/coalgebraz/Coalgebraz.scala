@@ -4,7 +4,10 @@ import Function.const
 
 import scalaz._, Scalaz._
 
-object Coalgebraz extends ToEntityOps with ToObservableOps with ToMappableOps {
+object Coalgebraz extends ToEntityOps
+    with ToObservableOps
+    with ToMappableOps
+    with ToIndexableOps {
 
   def entity[I, O, B, X](
       pi1: X => B,

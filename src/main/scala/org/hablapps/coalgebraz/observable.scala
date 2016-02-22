@@ -4,6 +4,12 @@ trait Observable[B, A] {
   def observe(a: A): B
 }
 
+object Observable {
+  implicit def identityObservable[A] = new Observable[A, A] {
+    def observe(a: A): A = a
+  }
+}
+
 class ObservableOps[K, A](val a: A)(implicit O: Observable[K, A]) {
   def observe: K = O.observe(a)
 }

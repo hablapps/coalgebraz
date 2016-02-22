@@ -11,7 +11,7 @@ import org.hablapps.geofence.state._
 object IO extends App {
 
   def printMonitor(
-      obs: ((Int, Map[String, Geolocation]), Map[String, Geofence])): Unit = {
+      obs: ((Long, List[Geolocation]), List[Geofence])): Unit = {
     val ((ticks, entities), fences) = obs
     println("GEOENTITIES")
     println("-----------")
@@ -66,13 +66,24 @@ object IO extends App {
     |         \/     \/                \/     \/     \/    \/
     |""".stripMargin)
 
-  // runIO(monitor)(
-  //   ((0, List(Geolocation("jesus", (4, 4)))),
-  //    List(
-  //      Geofence("guadarrama", (2, 5), 0),
-  //      Geofence("mostoles", (3, 4), 1, Set(("jesus", 0))),
-  //      Geofence("leganes", (9, 3), 1),
-  //      Geofence("alcorcon", (6, 2), 1))),
-  //    printMonitor,
-  //    printOutput)
+  val system = monitor[
+    Long,
+    Long,
+    List,
+    Geolocation,
+    Geolocation,
+    String,
+    Geofence,
+    Geofence,
+    String]
+
+  runIO(system)(
+    ((0, List(Geolocation("jesus", (4, 4)))),
+     List(
+       Geofence("guadarrama", (2, 5), 0),
+       Geofence("mostoles", (3, 4), 1, Set(("jesus", 0))),
+       Geofence("leganes", (9, 3), 1),
+       Geofence("alcorcon", (6, 2), 1))),
+     printMonitor,
+     printOutput)
 }

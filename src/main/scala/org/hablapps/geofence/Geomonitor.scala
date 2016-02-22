@@ -60,7 +60,7 @@ object Geomonitor extends state.State with Routing {
       B2,
       X2 : Observable[B2, ?] : Indexable[N2, ?] : Positionable,
       N2,
-      B3 : Indexable[N3, ?],
+      B3 : Indexable[N3, ?] : Joinable : Coverable,
       X3 : Observable[B3, ?] : Indexable[N3, ?] : Tickable : Joinable,
       N3] =
     timerAndGeoentities[B1, X1, F, B2, X2, N2] |>| geofences[F, B3, X3, N3].in

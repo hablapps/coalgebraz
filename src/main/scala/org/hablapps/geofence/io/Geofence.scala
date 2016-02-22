@@ -2,6 +2,8 @@ package org.hablapps.geofence.io
 
 import scalaz._, Scalaz._
 
+import org.hablapps.coalgebraz._, Coalgebraz._
+
 import org.hablapps.geofence.state._
 
 case class Geofence(
@@ -35,5 +37,13 @@ object Geofence {
 
     def find(a: Geofence)(id: String) =
       a.relation.find(_._1 == id)
+  }
+
+  implicit val geofenceIndexable = new Indexable[String, Geofence] {
+    def index(a: Geofence): String = a.id
+  }
+
+  implicit val geofenceCoverable = new Coverable[Geofence] {
+    def covers(a: Geofence)(pos: (Int, Int)) = a.covers(pos)
   }
 }
