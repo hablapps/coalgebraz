@@ -6,8 +6,6 @@ import scalaz._, Scalaz._
 
 object Coalgebraz extends ToEntityOps
     with ToObservableOps
-    // with ToMappableOps
-    // with ToIndexableOps
     with ToMappableOps {
 
   def entity[I, O, B, X](
@@ -217,10 +215,10 @@ object Coalgebraz extends ToEntityOps
         (xs - n) ~> Detached(n),
         xs ~> UnknownIndex(n))
       case WrapIn((n, i)) => {
-        (xs get n).fold[(List[IndexOut[O, B, N]], Option[F[N, X]])](
-          xs ~> UnknownIndex(n)) { x =>
-            co(x).next(i).bimap(_.map(o => WrapOut((n, o))), _.map(xs + (n, _)))
-          }
+        type Out = (List[IndexOut[O, B, N]], Option[F[N, X]])
+        (xs get n).fold[Out](xs ~> UnknownIndex(n)) { x =>
+          co(x).next(i).bimap(_.map(o => WrapOut((n, o))), _.map(xs + (n, _)))
+        }
       }
     })
   }
