@@ -11,7 +11,7 @@ import org.hablapps.geofence.state._
 object IO extends App {
 
   def printMonitor(
-      obs: ((Long, List[Geolocation]), List[Geofence])): Unit = {
+      obs: ((Long, Map[String, Geolocation]), Map[String, Geofence])): Unit = {
     val ((ticks, entities), fences) = obs
     println("GEOENTITIES")
     println("-----------")
@@ -43,7 +43,7 @@ object IO extends App {
         s.split(" ") match {
           case Array("Tick") => Option(-\/(()))
           case Array("Geolocation", id) =>
-            Option(\/-(Attach(Geolocation(id, (1, 1)))))
+            Option(\/-(Attach((id, Geolocation(id, (1, 1))))))
           case Array("Halt", id) => Option(\/-(WrapIn((id, Halt))))
           case Array("Move", id, a, b) => {
             (Read[Int].read(a) |@| Read[Int].read(b)) { (x, y) =>
@@ -69,7 +69,7 @@ object IO extends App {
   val system = monitor[
     Long,
     Long,
-    List,
+    Map,
     Geolocation,
     Geolocation,
     String,
@@ -78,12 +78,12 @@ object IO extends App {
     String]
 
   runIO(system)(
-    ((0, List(Geolocation("jesus", (4, 4)))),
-     List(
-       Geofence("guadarrama", (2, 5), 0),
-       Geofence("mostoles", (3, 4), 1, Set(("jesus", 0))),
-       Geofence("leganes", (9, 3), 1),
-       Geofence("alcorcon", (6, 2), 1))),
+    ((0, Map("jesus" -> Geolocation("jesus", (4, 4)))),
+     Map(
+       "guadarrama" -> Geofence("guadarrama", (2, 5), 0),
+       "mostoles"   -> Geofence("mostoles", (3, 4), 1, Set(("jesus", 0))),
+       "leganes"    -> Geofence("leganes", (9, 3), 1),
+       "alcorcon"   -> Geofence("alcorcon", (6, 2), 1))),
      printMonitor,
      printOutput)
 }

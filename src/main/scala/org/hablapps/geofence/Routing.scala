@@ -10,25 +10,26 @@ import state._
 trait Routing { this: state.State =>
 
   implicit def routeInGeofences[
-    F[_] : Functor : Mappable, B1, B2 : Indexable[N2, ?] : Joinable : Coverable, N1, N2]
+    F[_, _] : Mappable, B1, B2 : Joinable : Coverable, N1, N2](implicit
+      ev0: Functor[F[N2, ?]])
       : Router[
-        F[B2],
+        F[N2, B2],
         ClockOut \/ IndexOut[GeolocationOut, B1, N1],
         IndexIn[ClockOut \/ GeofenceIn, B2, N2]] = obs => {
-    case -\/(Tick) => toMappableOps(obs).keys.map(k => (k, Tick.left).wrap)
+    case -\/(Tick) => obs.map(_ => Tick.left).toList.map(_.wrap)
     case \/-(WrapOut((n, out))) => out match {
       case Moved(pos) => {
         def f(cn: Boolean, cv: Boolean, e: String => ClockOut \/ GeofenceIn) = {
-          obs.filter { (k, v) =>
-            (v.contains(n.toString) == cn) && (v.covers(pos) == cv)
-          }.keys.map(k => (k, e(n.toString)).wrap)
+          obs.filter { kv =>
+            (kv._2.contains(n.toString) == cn) && (kv._2.covers(pos) == cv)
+          }.map(_ => e(n.toString)).toList.map(_.wrap)
         }
         f(true, false, n => Leave(n).right) ++
           f(false, true, n => Join(n).right)
       }
-      case Halted => obs.filter((_, v) => v.contains(n.toString)).keys.map { k =>
-        (k, Leave(n.toString).right).wrap
-      }
+      case Halted => obs.filter(kv => kv._2.contains(n.toString)).map { _ =>
+        Leave(n.toString).right
+      }.toList.map(_.wrap)
     }
     case _ => List.empty
   }

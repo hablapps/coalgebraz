@@ -2,64 +2,55 @@ package org.hablapps.coalgebraz
 
 import Coalgebraz._
 
-trait Mappable[F[_]] {
+trait Mappable[F[_, _]] {
 
-  def +[I, A: Indexable[I, ?]](fa: F[A])(a: A): F[A]
+  def +[K, V](fa: F[K, V])(kv: (K, V)): F[K, V]
 
-  def -[I, A: Indexable[I, ?]](fa: F[A])(i: I): F[A]
+  def -[K, V](fa: F[K, V])(k: K): F[K, V]
 
-  def get[I, A: Indexable[I, ?]](fa: F[A])(i: I): Option[A]
+  def get[K, V](fa: F[K, V])(k: K): Option[V]
 
-  // XXX: weak link, we are returning a `List`!
-  def keys[I, A: Indexable[I, ?]](fa: F[A]): List[I]
+  def toList[K, V](fa: F[K, V]): List[(K, V)]
 
-  def filter[I, A: Indexable[I, ?]](fa: F[A])(f: (I, A) => Boolean): F[A]
+  def filter[K, V](fa: F[K, V])(f: ((K, V)) => Boolean): F[K, V]
 
-  def contains[I, A: Indexable[I, ?]](fa: F[A])(i: I): Boolean =
-    get[I, A](fa)(i).isDefined
+  def contains[K, V](fa: F[K, V])(k: K): Boolean = get[K, V](fa)(k).isDefined
 }
 
 object Mappable {
 
-  implicit def mappableList = new Mappable[List] {
+  implicit def mappableMap = new Mappable[Map] {
 
-    def +[I, A: Indexable[I, ?]](fa: List[A])(a: A): List[A] =
-      a :: (this.-(fa)(a.index))
+    def +[K, V](fa: Map[K, V])(kv: (K, V)): Map[K, V] = fa + kv
 
-    def -[I, A: Indexable[I, ?]](fa: List[A])(i: I): List[A] =
-      fa.filter(_.index != i)
+    def -[K, V](fa: Map[K, V])(k: K): Map[K, V] = fa - k
 
-    def get[I, A: Indexable[I, ?]](fa: List[A])(i: I): Option[A] =
-      fa.find(_.index == i)
+    def get[K, V](fa: Map[K, V])(k: K): Option[V] = fa get k
 
-    def keys[I, A: Indexable[I, ?]](fa: List[A]): List[I] =
-      fa.map(_.index)
+    def filter[K, V](fa: Map[K, V])(f: ((K, V)) => Boolean): Map[K, V] =
+      fa filter f
 
-    def filter[I, A: Indexable[I, ?]](fa: List[A])(f: (I, A) => Boolean): List[A] =
-      fa.filter(a => f(a.index, a))
+    def toList[K, V](fa: Map[K, V]): List[(K, V)] = fa.toList
   }
 }
 
-class MappableOps[F[_], A, I](val self: F[A])(implicit
-    M: Mappable[F],
-    I: Indexable[I, A]) {
+class MappableOps[F[_, _], K, V](val self: F[K, V])(implicit M: Mappable[F]) {
 
-  def +(a: A): F[A] = M.+(self)(a)
+  def +(kv: (K, V)): F[K, V] = M.+(self)(kv)
 
-  def -(i: I): F[A] = M.-(self)(i)
+  def -(k: K): F[K, V] = M.-(self)(k)
 
-  def get(i: I): Option[A] = M.get(self)(i)
+  def get(k: K): Option[V] = M.get(self)(k)
 
-  def keys: List[I] = M.keys(self)
+  def contains(k: K): Boolean = M.contains(self)(k)
 
-  def filter(f: (I, A) => Boolean): F[A] = M.filter(self)(f)
+  def filter(f: ((K, V)) => Boolean) = M.filter(self)(f)
 
-  def contains(i: I): Boolean = M.contains(self)(i)
+  def toList: List[(K, V)] = M.toList(self)
 }
 
 trait ToMappableOps {
-  implicit def toMappableOps[F[_], A, I](v: F[A])(implicit
-      M: Mappable[F],
-      I: Indexable[I, A]) =
-    new MappableOps[F, A, I](v)(M, I)
+  implicit def toMappableOps[F[_, _], K, V](v: F[K, V])(implicit
+      M: Mappable[F]) =
+    new MappableOps[F, K, V](v)(M)
 }

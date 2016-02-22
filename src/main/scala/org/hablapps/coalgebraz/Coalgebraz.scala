@@ -6,8 +6,9 @@ import scalaz._, Scalaz._
 
 object Coalgebraz extends ToEntityOps
     with ToObservableOps
-    with ToMappableOps
-    with ToIndexableOps {
+    // with ToMappableOps
+    // with ToIndexableOps
+    with ToMappableOps {
 
   def entity[I, O, B, X](
       pi1: X => B,
@@ -199,27 +200,26 @@ object Coalgebraz extends ToEntityOps
     })
   }
 
-  type IndexedEntity2[I, O, F[_], B, X, N] =
-    Entity[IndexIn[I, B, N], IndexOut[O, B, N], F[B], F[X]]
+  type IndexedEntity2[I, O, F[_, _], B, X, N] =
+    Entity[IndexIn[I, B, N], IndexOut[O, B, N], F[N, B], F[N, X]]
 
-  def index2[I, O, F[_], B, X, N](
+  def index2[I, O, F[_, _], B, X, N](
       co: Entity[I, O, B, X])(implicit
       ev0: Observable[B, X],
-      ev1: Indexable[N, X],
-      ev2: Functor[F],
-      ev3: Mappable[F],
-      ev4: To[B, X]): IndexedEntity2[I, O, F, B, X, N] = { xs =>
-
+      ev1: Functor[F[N, ?]],
+      ev2: Mappable[F],
+      ev3: To[B, X]): IndexedEntity2[I, O, F, B, X, N] = { xs =>
+    import dsl._
     EntityF(xs.map(co(_).observe), {
-      case Attach(b) => (List(Attached(b)), Option(xs + ev4.to(b)))
-      case Detach(n) if xs contains n => (List(Detached(n)), Option(xs - n))
-      case Detach(n) => (List(UnknownIndex(n)), Option(xs))
+      case Attach((n, b)) => (xs + (n, ev3.to(b))) ~> Attached((n, b))
+      case Detach(n) if xs contains n => (xs - n) ~> Detached(n)
+      case Detach(n) => xs ~> UnknownIndex(n)
       case WrapIn((n, i)) if xs contains n => {
         (xs get n).map { x =>
-          co(x).next(i).bimap(_.map(o => WrapOut((n, o))), _.map(xs + _))
-        }.getOrElse(List(UnknownIndex(n)), Option(xs)) // should never happen!
+          co(x).next(i).bimap(_.map(o => WrapOut((n, o))), _.map(xs + (n, _)))
+        }.getOrElse(xs ~> UnknownIndex(n)) // should never happen!
       }
-      case WrapIn((n, _)) => (List(UnknownIndex(n)), Option(xs))
+      case WrapIn((n, _)) => xs ~> UnknownIndex(n)
     })
   }
 
@@ -233,7 +233,7 @@ object Coalgebraz extends ToEntityOps
     val all = xs.map(x => (f(co(x).observe), x, co(x)))
     val obs = all.map(t => (t._1, t._3.observe)).toMap
     EntityF(obs, {
-      case Attach(b) => (List(Attached(b)), Option(g(b) :: xs))
+      case Attach(b) => (List(Attached(b)), Option(g(b._2) :: xs))
       case Detach(n) => {
         all.find(_._1 == n)
           .map(_._2)

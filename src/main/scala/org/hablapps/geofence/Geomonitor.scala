@@ -31,37 +31,38 @@ object Geomonitor extends state.State with Routing {
     next2(implicit x => _ => x.tick ~> Tick)
 
   def geoentities[
-      F[_] : Functor : Mappable,
-      B: To[?, X],
-      X : Observable[B, ?] : Indexable[N, ?] : Positionable,
-      N]: IndexedEntity2[GeolocationIn, GeolocationOut, F, B, X, N] =
+    F[_, _] : Mappable,
+    B : To[?, X],
+    X : Observable[B, ?] : Positionable,
+    N](implicit ev0: Functor[F[N, ?]])
+      : IndexedEntity2[GeolocationIn, GeolocationOut, F, B, X, N] =
     geoentity.index2[F, N]
 
   def timerAndGeoentities[
       B1,
       X1 : Observable[B1, ?] : Tickable,
-      F2[_] : Functor : Mappable,
+      F[_, _] : Mappable,
       B2: To[?, X2],
-      X2 : Observable[B2, ?] : Indexable[N2, ?] : Positionable,
-      N2] =
-    timer[B1, X1] |*| geoentities[F2, B2, X2, N2]
+      X2 : Observable[B2, ?] : Positionable,
+      N2](implicit ev0: Functor[F[N2, ?]]) =
+    timer[B1, X1] |*| geoentities[F, B2, X2, N2]
 
   def geofences[
-      F[_] : Functor : Mappable,
+      F[_, _] : Mappable,
       B: To[?, X],
-      X : Observable[B, ?] : Indexable[N, ?] : Tickable : Joinable,
-      N] =
+      X : Observable[B, ?] : Tickable : Joinable,
+      N](implicit ev0: Functor[F[N, ?]]) =
     geofence.index2[F, N]
 
   def monitor[
       B1,
       X1 : Observable[B1, ?] : Tickable,
-      F[_] : Functor : Mappable,
+      F[_, _] : Mappable,
       B2: To[?, X2],
-      X2 : Observable[B2, ?] : Indexable[N2, ?] : Positionable,
+      X2 : Observable[B2, ?] : Positionable,
       N2,
-      B3 : To[?, X3] : Indexable[N3, ?] : Joinable : Coverable,
-      X3 : Observable[B3, ?] : Indexable[N3, ?] : Tickable : Joinable,
-      N3] =
+      B3 : To[?, X3] : Joinable : Coverable,
+      X3 : Observable[B3, ?] : Tickable : Joinable,
+      N3](implicit ev0: Functor[F[N2, ?]], ev1: Functor[F[N3, ?]]) =
     timerAndGeoentities[B1, X1, F, B2, X2, N2] |>| geofences[F, B3, X3, N3].in
 }

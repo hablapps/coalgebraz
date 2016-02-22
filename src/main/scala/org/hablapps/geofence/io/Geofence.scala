@@ -39,10 +39,6 @@ object Geofence {
       a.relation.find(_._1 == id)
   }
 
-  implicit val geofenceIndexable = new Indexable[String, Geofence] {
-    def index(a: Geofence): String = a.id
-  }
-
   implicit val geofenceCoverable = new Coverable[Geofence] {
     def covers(a: Geofence)(pos: (Int, Int)) = a.covers(pos)
   }

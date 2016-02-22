@@ -16,8 +16,4 @@ object Geolocation {
   implicit val geolocationObservable = new Observable[(String, (Int, Int)), Geolocation] {
     def observe(a: Geolocation) = (a.id, a.pos)
   }
-
-  implicit val geolocationIndexable = new Indexable[String, Geolocation] {
-    def index(a: Geolocation): String = a.id
-  }
 }
