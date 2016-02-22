@@ -52,7 +52,8 @@ class EntityOps[I1, O1, B1, X1](val co1: Entity[I1, O1, B1, X1]) {
     ev0: Functor[F],
     ev1: Mappable[F],
     ev2: Observable[B1, X1],
-    ev3: Indexable[N, X1]) = Coalgebraz.index2[I1, O1, F, B1, X1, N](co1)
+    ev3: Indexable[N, X1],
+    ev4: To[B1, X1]) = Coalgebraz.index2[I1, O1, F, B1, X1, N](co1)
 
   def |*|[I2, I, O2, O, B2, B, X2, X](
       co2: Entity[I2, O2, B2, X2])(implicit

@@ -32,7 +32,7 @@ object Geomonitor extends state.State with Routing {
 
   def geoentities[
       F[_] : Functor : Mappable,
-      B,
+      B: To[?, X],
       X : Observable[B, ?] : Indexable[N, ?] : Positionable,
       N]: IndexedEntity2[GeolocationIn, GeolocationOut, F, B, X, N] =
     geoentity.index2[F, N]
@@ -41,14 +41,14 @@ object Geomonitor extends state.State with Routing {
       B1,
       X1 : Observable[B1, ?] : Tickable,
       F2[_] : Functor : Mappable,
-      B2,
+      B2: To[?, X2],
       X2 : Observable[B2, ?] : Indexable[N2, ?] : Positionable,
       N2] =
     timer[B1, X1] |*| geoentities[F2, B2, X2, N2]
 
   def geofences[
       F[_] : Functor : Mappable,
-      B,
+      B: To[?, X],
       X : Observable[B, ?] : Indexable[N, ?] : Tickable : Joinable,
       N] =
     geofence.index2[F, N]
@@ -57,10 +57,10 @@ object Geomonitor extends state.State with Routing {
       B1,
       X1 : Observable[B1, ?] : Tickable,
       F[_] : Functor : Mappable,
-      B2,
+      B2: To[?, X2],
       X2 : Observable[B2, ?] : Indexable[N2, ?] : Positionable,
       N2,
-      B3 : Indexable[N3, ?] : Joinable : Coverable,
+      B3 : To[?, X3] : Indexable[N3, ?] : Joinable : Coverable,
       X3 : Observable[B3, ?] : Indexable[N3, ?] : Tickable : Joinable,
       N3] =
     timerAndGeoentities[B1, X1, F, B2, X2, N2] |>| geofences[F, B3, X3, N3].in

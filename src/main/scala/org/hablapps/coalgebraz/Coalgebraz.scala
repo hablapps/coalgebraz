@@ -203,11 +203,12 @@ object Coalgebraz extends ToEntityOps
       ev0: Observable[B, X],
       ev1: Indexable[N, X],
       ev2: Functor[F],
-      ev3: Mappable[F]): IndexedEntity2[I, O, F, B, X, N] = { xs =>
+      ev3: Mappable[F],
+      ev4: To[B, X]): IndexedEntity2[I, O, F, B, X, N] = { xs =>
 
     EntityF(xs.map(co(_).observe), {
       // TODO: how do we turn a B into a valid X?
-      case Attach(b) => (List(Attached(b)), Option(???))
+      case Attach(b) => (List(Attached(b)), Option(xs + ev4.to(b)))
       case Detach(n) if xs contains n => (List(Detached(n)), Option(xs - n))
       case Detach(n) => (List(UnknownIndex(n)), Option(xs))
       case WrapIn((n, i)) if xs contains n => {
