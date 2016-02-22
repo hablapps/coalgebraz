@@ -11,7 +11,7 @@ object Geomonitor extends state.State with Routing {
 
   def geoentity[B, X : Observable[B, ?] : Positionable]
       : Entity[GeolocationIn, GeolocationOut, B, X] =
-    entity(_.observe, implicit x => {
+    next2(implicit x => {
       case Move(p) if (x.position != p) => (x.position = p) ~> Moved(p)
       case Halt => halt ~> Halted
       case _ => skip
@@ -19,7 +19,7 @@ object Geomonitor extends state.State with Routing {
 
   def geofence[B, X : Observable[B, ?] : Tickable : Joinable]
       : Entity[ClockOut \/ GeofenceIn, GeofenceOut, B, X] =
-    entity(_.observe, implicit x => {
+    next2(implicit x => {
       case -\/(Tick) => x.tick
       case \/-(Join(id)) => x.join(id) ~> Joined(id)
       case \/-(Leave(id)) => x.find(id).fold(skip[GeofenceOut, X]) { t =>
@@ -28,7 +28,7 @@ object Geomonitor extends state.State with Routing {
     })
 
   def timer[B, X : Observable[B, ?] : Tickable]: Entity[Unit, ClockOut, B, X] =
-    entity(_.observe, implicit x => _ => x.tick ~> Tick)
+    next2(implicit x => _ => x.tick ~> Tick)
 
   def geoentities[
       F[_] : Functor : Mappable,

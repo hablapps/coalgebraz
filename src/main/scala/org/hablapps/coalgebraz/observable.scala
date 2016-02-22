@@ -10,11 +10,11 @@ object Observable {
   }
 }
 
-class ObservableOps[K, A](val a: A)(implicit O: Observable[K, A]) {
-  def observe: K = O.observe(a)
+class ObservableOps[B, A](val a: A)(implicit O: Observable[B, A]) {
+  def observe: B = O.observe(a)
 }
 
 trait ToObservableOps {
-  implicit def toObservableOps[K, A](a: A)(implicit I: Observable[K, A]) =
-    new ObservableOps[K, A](a)(I)
+  implicit def toObservableOps[B, A](a: A)(implicit I: Observable[B, A]) =
+    new ObservableOps[B, A](a)(I)
 }

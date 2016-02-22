@@ -18,6 +18,10 @@ object Coalgebraz extends ToEntityOps
   def next[I, O, X](f: X => I => (List[O], Option[X])): Entity[I, O, X, X] =
     entity(identity, f)
 
+  def next2[I, O, B, X: Observable[B, ?]](
+      f: X => I => (List[O], Option[X])): Entity[I, O, B, X] =
+    entity(_.observe, f)
+
   def always[I, O, B, X](b: B): Entity[I, O, B, X] = { x =>
     EntityF(b, _ => (List.empty, Option(x)))
   }
@@ -207,7 +211,6 @@ object Coalgebraz extends ToEntityOps
       ev4: To[B, X]): IndexedEntity2[I, O, F, B, X, N] = { xs =>
 
     EntityF(xs.map(co(_).observe), {
-      // TODO: how do we turn a B into a valid X?
       case Attach(b) => (List(Attached(b)), Option(xs + ev4.to(b)))
       case Detach(n) if xs contains n => (List(Detached(n)), Option(xs - n))
       case Detach(n) => (List(UnknownIndex(n)), Option(xs))
