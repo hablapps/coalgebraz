@@ -1,38 +1,39 @@
 package org.hablapps.coalgebraz
 
-import scala.language.higherKinds
-import scala.language.implicitConversions
-
 import Function.const
 
 import scalaz._, Scalaz._
 
-object Coalgebraz {
+object Coalgebraz extends ToEntityOps
+    with ToObservableOps
+    with ToMappableOps {
 
-  def raw[I, O, B, X](
+  import dsl._
+
+  def entity[I, O, B, X](
       pi1: X => B,
       pi2: X => I => (List[O], Option[X])): Entity[I, O, B, X] = { x =>
     EntityF(pi1(x), pi2(x))
   }
 
   def next[I, O, X](f: X => I => (List[O], Option[X])): Entity[I, O, X, X] =
-    raw(identity, f)
+    entity(identity, f)
 
-  def always[I, O, B, X](b: B): Entity[I, O, B, X] = { x =>
-    EntityF(b, _ => (List.empty, Option(x)))
-  }
+  def next2[I, O, B, X: Observable[B, ?]](
+      f: X => I => (List[O], Option[X])): Entity[I, O, B, X] =
+    entity(_.observe, f)
 
-  def til[I, O, B, X](b: B, f: I => Boolean): Entity[I, O, B, X] = { x =>
-    EntityF(b, i => if (f(i)) (List.empty, None) else (List.empty, Option(x)))
-  }
+  def always[I, O, B, X](b: B): Entity[I, O, B, X] =
+    entity(const(b), x => _ => x)
 
-  def blocked[O, B, X](to: X -> B): Entity[Void, O, B, X] = { x =>
-    EntityF(to.to(x), _ => ??? /* does never happen */)
-  }
+  def til[I, O, B, X](b: B, f: I => Boolean): Entity[I, O, B, X] =
+    entity(const(b), x => i => if (f(i)) halt else x)
 
-  def once[I, O, B, X](b: B): Entity[I, O, B, X] = { x =>
-    EntityF(b, _ => (List.empty, None))
-  }
+  def blocked[O, B, X](to: X -> B): Entity[Void, O, B, X] =
+    entity(to.to(_), _ => _ => ??? /* does never happen */)
+
+  def once[I, O, B, X](b: B): Entity[I, O, B, X] =
+    entity(const(b), _ => _ => halt)
 
   def until[I, O, B, X](
       f: I => Boolean)(
@@ -74,7 +75,7 @@ object Coalgebraz {
   }
 
   // XXX: don't know why the next invocation can't be resolved:
-  // `Functor[({type λ[α] = (List[O], Option[α])})#λ]`
+  // `Functor[(List[O], Option[?])]`
   // As a consequence, I have to manually compose functors.
   private def g[I, O, X](
       t: (List[O], Option[X]),
@@ -129,12 +130,12 @@ object Coalgebraz {
       co: Entity[I, O, B, X],
       in: List[I],
       x: X): (List[O], Option[X]) = in match {
-    case Nil => (List.empty, Option(x))
+    case Nil => x
     case i::is => {
       val EntityF(_, nxt) = co(x)
       nxt(i) match {
         case (os, Some(x2)) => feed(co, is, x2).mapElements(_1 = os ++ _)
-        case (os, None) => (os, None)
+        case (os, None) => halt ~> (os: _*)
       }
     }
   }
@@ -195,6 +196,29 @@ object Coalgebraz {
     })
   }
 
+  type IndexedEntity2[I, O, F[_, _], B, X, N] =
+    Entity[IndexIn[I, B, N], IndexOut[O, B, N], F[N, B], F[N, X]]
+
+  def index2[I, O, F[_, _], B, X, N](
+      co: Entity[I, O, B, X])(implicit
+      ev0: Observable[B, X],
+      ev1: Functor[F[N, ?]],
+      ev2: Mappable[F],
+      ev3: To[B, X]): IndexedEntity2[I, O, F, B, X, N] = { xs =>
+    EntityF(xs.map(co(_).observe), {
+      case Attach((n, b)) => (xs + (n, ev3.to(b))) ~> Attached((n, b))
+      case Detach(n) => (xs contains n).fold(
+        (xs - n) ~> Detached(n),
+        xs ~> UnknownIndex(n))
+      case WrapIn((n, i)) => {
+        type Out = (List[IndexOut[O, B, N]], Option[F[N, X]])
+        (xs get n).fold[Out](xs ~> UnknownIndex(n)) { x =>
+          co(x).next(i).bimap(_.map(o => WrapOut((n, o))), _.map(xs + (n, _)))
+        }
+      }
+    })
+  }
+
   def index[I, O, B, X, N](
       co: Entity[I, O, B, X])(
       f: B => N, g: B => X): IndexedEntity[I, O, B, X, N] = { xs =>
@@ -205,7 +229,7 @@ object Coalgebraz {
     val all = xs.map(x => (f(co(x).observe), x, co(x)))
     val obs = all.map(t => (t._1, t._3.observe)).toMap
     EntityF(obs, {
-      case Attach(b) => (List(Attached(b)), Option(g(b) :: xs))
+      case Attach(b) => (List(Attached(b)), Option(g(b._2) :: xs))
       case Detach(n) => {
         all.find(_._1 == n)
           .map(_._2)

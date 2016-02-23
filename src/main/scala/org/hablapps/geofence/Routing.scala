@@ -1,34 +1,35 @@
 package org.hablapps.geofence
 
-import scala.language.implicitConversions
-
 import scalaz._, Scalaz._
 
-import org.hablapps.coalgebraz._
+import org.hablapps.coalgebraz._, Coalgebraz._
 import wrap.dsl._
 
-object Routing {
+import state._
 
-  implicit val routeInGeofences: Router[
-      Map[String, Geofence],
-      ClockOut \/ IndexOut[GeoentityOut, Geoentity, String],
-      IndexIn[ClockOut \/ GeofenceIn, Geofence, String]] = obs => {
-    case -\/(Tick) => obs.toList.map { t =>
-      (t._1, Tick.left).wrap
-    }
+trait Routing { this: state.State =>
+
+  implicit def routeInGeofences[
+    F[_, _] : Mappable, B1, B2 : Joinable : Coverable, N1, N2](implicit
+      ev0: Functor[F[N2, ?]])
+      : Router[
+        F[N2, B2],
+        ClockOut \/ IndexOut[GeolocationOut, B1, N1],
+        IndexIn[ClockOut \/ GeofenceIn, B2, N2]] = obs => {
+    case -\/(Tick) => obs.map(_ => Tick.left).toList.map(_.wrap)
     case \/-(WrapOut((n, out))) => out match {
       case Moved(pos) => {
         def f(cn: Boolean, cv: Boolean, e: String => ClockOut \/ GeofenceIn) = {
-          obs.toList.filter { t =>
-            (t._2.elements contains n) == cn && t._2.covers(pos) == cv
-          }.map(t => (t._1, e(n)).wrap)
+          obs.filter { kv =>
+            (kv._2.contains(n.toString) == cn) && (kv._2.covers(pos) == cv)
+          }.map(_ => e(n.toString)).toList.map(_.wrap)
         }
         f(true, false, n => Leave(n).right) ++
           f(false, true, n => Join(n).right)
       }
-      case Halted => obs.toList.filter(_._2.elements contains n).map { t =>
-        (t._1, Leave(n).right).wrap
-      }
+      case Halted => obs.filter(kv => kv._2.contains(n.toString)).map { _ =>
+        Leave(n.toString).right
+      }.toList.map(_.wrap)
     }
     case _ => List.empty
   }

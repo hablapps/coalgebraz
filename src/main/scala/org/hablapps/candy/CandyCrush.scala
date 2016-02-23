@@ -7,7 +7,7 @@ import scalaz._, Scalaz._
 
 import org.hablapps.coalgebraz._
 import org.hablapps.coalgebraz.StoreF
-import Coalgebraz._, dsl._, EntityOps._
+import Coalgebraz._, dsl._
 import Nat.Syntax._
 import Isos.{ toCandy, isoCandy, isoBoard, isoBoard2 }, To.eqTo
 import Adapt._

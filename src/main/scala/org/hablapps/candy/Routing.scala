@@ -1,7 +1,5 @@
 package org.hablapps.candy
 
-import scala.language.implicitConversions
-
 import scala.collection.immutable.Stream
 import scala.util.Random
 
@@ -35,7 +33,7 @@ object Routing {
         candies.find(_.position == p).map(c => (c.key, Slide(d)).wrap.left)
       f(pos, dir).toList ++ f(dir(pos), dir.opposite).toList
     }
-    case NewCandy(candy) => List(Attach(candy).left, ().right)
+    case NewCandy(candy) => List(Attach((candy.key, candy)).left, ().right)
     case CrushThem(keys) => keys.toList.map { k =>
       (k, Crush).wrap.left
     }

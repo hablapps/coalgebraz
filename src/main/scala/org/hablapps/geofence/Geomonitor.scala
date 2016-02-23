@@ -3,62 +3,66 @@ package org.hablapps.geofence
 import scalaz._, Scalaz._
 
 import org.hablapps.coalgebraz._
-import Coalgebraz._, dsl._, EntityOps._
+import Coalgebraz._, dsl._
 
-import Routing._
+import state._
 
-object Geomonitor {
+object Geomonitor extends state.State with Routing {
 
-  val geoentity: Entity[GeoentityIn, GeoentityOut, Geoentity, Geoentity] =
-    next(implicit x => {
-      case Move(pos2) if (x.pos != pos2) => x.copy(pos = pos2) ~> Moved(pos2)
+  def geoentity[B, X : Observable[B, ?] : Positionable]
+      : Entity[GeolocationIn, GeolocationOut, B, X] =
+    next2(implicit x => {
+      case Move(p) if (x.position != p) => (x.position = p) ~> Moved(p)
       case Halt => halt ~> Halted
       case _ => skip
     })
 
-  val geofence: Entity[ClockOut \/ GeofenceIn, GeofenceOut, Geofence, Geofence] =
-    next(implicit x => {
-      case -\/(Tick) => x.copy(relation = x.relation.map(_.map(_ + 1)))
-      case \/-(Join(id)) =>
-        x.copy(relation = x.relation + (id -> 0)) ~> Joined(id)
-      case \/-(Leave(id)) => {
-        x.relation.find(_._1 == id).fold(skip[GeofenceOut, Geofence]) { t =>
-          x.copy(relation = x.relation - t) ~> Left(id, t._2)
-        }
+  def geofence[B, X : Observable[B, ?] : Tickable : Joinable]
+      : Entity[ClockOut \/ GeofenceIn, GeofenceOut, B, X] =
+    next2(implicit x => {
+      case -\/(Tick) => x.tick
+      case \/-(Join(id)) => x.join(id) ~> Joined(id)
+      case \/-(Leave(id)) => x.find(id).fold(skip[GeofenceOut, X]) { t =>
+        x.leave(id) ~> Left(id, t._2)
       }
     })
 
-  val clock: Entity[Unit, ClockOut, Int, Int] =
-    next(implicit x => _ => (x + 1) ~> Tick)
+  def timer[B, X : Observable[B, ?] : Tickable]: Entity[Unit, ClockOut, B, X] =
+    next2(implicit x => _ => x.tick ~> Tick)
 
-  // Entity[
-  //   IndexIn[GeoentityIn, Geoentity, String],
-  //   IndexOut[GeoentityOut, Geoentity, String],
-  //   Map[String, Geoentity],
-  //   List[Geoentity]]
-  val geoentities = geoentity.index(_.id, identity)
+  def geoentities[
+    F[_, _] : Mappable,
+    B : To[?, X],
+    X : Observable[B, ?] : Positionable,
+    N](implicit ev0: Functor[F[N, ?]])
+      : IndexedEntity2[GeolocationIn, GeolocationOut, F, B, X, N] =
+    geoentity.index2[F, N]
 
-  // Entity[
-  //   Unit \/ IndexIn[GeoentityIn, Geoentity, String],
-  //   ClockOut \/ IndexOut[GeoentityOut, Geoentity, String],
-  //   (Int, Map[String, Geoentity]),
-  //   (Int, List[Geoentity])]
-  val clockAndGeoentities = clock |*| geoentities
+  def timerAndGeoentities[
+      B1,
+      X1 : Observable[B1, ?] : Tickable,
+      F[_, _] : Mappable,
+      B2: To[?, X2],
+      X2 : Observable[B2, ?] : Positionable,
+      N2](implicit ev0: Functor[F[N2, ?]]) =
+    timer[B1, X1] |*| geoentities[F, B2, X2, N2]
 
-  // Entity[
-  //   IndexIn[GeofenceIn, Geofence, String],
-  //   IndexOut[GeofenceOut, Geofence, String],
-  //   Map[String, Geofence],
-  //   List[Geofence]]
-  val geofences = geofence.index(_.id, identity)
+  def geofences[
+      F[_, _] : Mappable,
+      B: To[?, X],
+      X : Observable[B, ?] : Tickable : Joinable,
+      N](implicit ev0: Functor[F[N, ?]]) =
+    geofence.index2[F, N]
 
-  // FIXME: It's required to invoke `in` to force `geofences` to adapt its
-  // input. Can this be avoided?
-  //
-  // Entity[
-  //   IndexIn[GeoentityIn, Geoentity, String],
-  //   IndexOut[GeofenceOut, Geofence, String],
-  //   (Map[String, Geoentity], Map[String, Geofence]),
-  //   (List[Geoentity], List[Geofence])]
-  val monitor = clockAndGeoentities |>| geofences.in
+  def monitor[
+      B1,
+      X1 : Observable[B1, ?] : Tickable,
+      F[_, _] : Mappable,
+      B2: To[?, X2],
+      X2 : Observable[B2, ?] : Positionable,
+      N2,
+      B3 : To[?, X3] : Joinable : Coverable,
+      X3 : Observable[B3, ?] : Tickable : Joinable,
+      N3](implicit ev0: Functor[F[N2, ?]], ev1: Functor[F[N3, ?]]) =
+    timerAndGeoentities[B1, X1, F, B2, X2, N2] |>| geofences[F, B3, X3, N3].in
 }
