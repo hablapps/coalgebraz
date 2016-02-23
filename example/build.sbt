@@ -24,5 +24,5 @@ initialCommands in console := """
   | import coalgebraz.test._, PropFramework._
   | import coalgebraz.example.candycrush._, CandyCrush._
   | import scala.util.Random
-  | import org.hablapps.geofence._, Geomonitor._
+  | import coalgebraz.example.geofence._, Geomonitor._
   |""".stripMargin
