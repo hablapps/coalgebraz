@@ -20,8 +20,6 @@ libraryDependencies ++= Seq(
 
 initialCommands in console := """
   | import scalaz._, Scalaz._
-  | import org.hablapps.coalgebraz._
-  | import Driver._
-  | import Coalgebraz._
-  | import org.hablapps.coalgebraz.test._, PropFramework._
+  | import coalgebraz._, Coalgebraz._
+  | import coalgebraz.test._, PropFramework._
   |""".stripMargin

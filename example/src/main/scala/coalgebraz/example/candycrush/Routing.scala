@@ -5,8 +5,7 @@ import scala.util.Random
 
 import scalaz._, Scalaz._
 
-import coalgebraz._
-import wrap.dsl._
+import coalgebraz._, Coalgebraz._
 
 object Routing {
 

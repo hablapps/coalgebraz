@@ -8,6 +8,10 @@ package object coalgebraz {
 
   type Coalgebra[F[_], S] = S => F[S]
 
+  type Entity[I, O, B, X] = Coalgebra[EntityF[I, O, B, ?], X]
+
+  type IEntity[I, O, B, X] = Coalgebra[IEntityF[I, O, B, ?], X]
+
   type Stream[H, X] = Coalgebra[StreamF[H, ?], X]
 
   type IStream[H, X] = Coalgebra[IStreamF[H, ?], X]
@@ -19,11 +23,6 @@ package object coalgebraz {
   type Store[K, V, X] = Coalgebra[StoreF[K, V, ?], X]
 
   type IStore[K, V, X] = Coalgebra[IStoreF[K, V, ?], X]
-
-  // XXX: is there a better name for `B`, more related to oBservable
-  type Entity[I, O, B, X] = Coalgebra[EntityF[I, O, B, ?], X]
-
-  type IEntity[I, O, B, X] = Coalgebra[IEntityF[I, O, B, ?], X]
 
   // XXX: using `type Void = Nothing` resulted in multiple errors because of the
   // problems with implicit resolutions when `Nothing` is involved.

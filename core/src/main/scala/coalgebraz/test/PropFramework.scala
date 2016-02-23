@@ -1,6 +1,6 @@
 package coalgebraz.test
 
-import coalgebraz._, Driver._
+import coalgebraz._, Coalgebraz._
 
 object PropFramework {
 

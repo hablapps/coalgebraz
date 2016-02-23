@@ -2,8 +2,7 @@ package coalgebraz.example.geofence.io
 
 import scalaz._, Scalaz._
 
-import coalgebraz._
-import Driver.runIO
+import coalgebraz._, Coalgebraz._
 
 import coalgebraz.example.geofence._, Geomonitor._
 import coalgebraz.example.geofence.state._

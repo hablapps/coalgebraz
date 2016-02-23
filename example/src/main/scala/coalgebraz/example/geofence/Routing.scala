@@ -3,7 +3,6 @@ package coalgebraz.example.geofence
 import scalaz._, Scalaz._
 
 import coalgebraz._, Coalgebraz._
-import wrap.dsl._
 
 import state._
 

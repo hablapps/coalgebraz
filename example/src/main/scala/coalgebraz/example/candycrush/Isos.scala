@@ -4,7 +4,7 @@ import scala.util.Random
 
 import scalaz._, Scalaz._
 
-import coalgebraz._
+import coalgebraz._, Coalgebraz._
 
 object Isos {
 

@@ -4,7 +4,7 @@ import scala.io.StdIn.readLine
 
 import scalaz._, Scalaz._
 
-object Driver {
+trait EntityDriver {
 
   def behaviour[I, O, B, X](
       co: Entity[I, O, B, X])(x: X, in: List[I]): List[B] =
