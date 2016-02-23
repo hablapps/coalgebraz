@@ -84,7 +84,7 @@ case class IEntityF[I, O, B, X](observe: B, next: I => (List[O], X)) {
     copy(next = i => next(i) map f)
 }
 
-object Codata {
+trait CodataInstances {
 
   implicit def StreamFFunctor[H] = new Functor[StreamF[H, ?]] {
     def map[A, B](r: StreamF[H, A])(f: A => B) = r map f

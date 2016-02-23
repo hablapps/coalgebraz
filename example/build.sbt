@@ -20,13 +20,9 @@ libraryDependencies ++= Seq(
 
 initialCommands in console := """
   | import scalaz._, Scalaz._
-  | import coalgebraz.example._
-  | import Driver._
-  | import Coalgebraz._
-  | import coalgebraz.example.test._, PropFramework._
-  | import org.hablapps.candy._
-  | import CandyCrush._
+  | import coalgebraz._, Coalgebraz._
+  | import coalgebraz.test._, PropFramework._
+  | import coalgebraz.example.candycrush._, CandyCrush._
   | import scala.util.Random
-  | import org.hablapps.geofence._
-  | import Geomonitor._
+  | import org.hablapps.geofence._, Geomonitor._
   |""".stripMargin

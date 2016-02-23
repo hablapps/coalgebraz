@@ -2,8 +2,7 @@ package coalgebraz.example.geofence
 
 import scalaz._, Scalaz._
 
-import coalgebraz._
-import Coalgebraz._, dsl._
+import coalgebraz._, Coalgebraz._
 
 import state._
 

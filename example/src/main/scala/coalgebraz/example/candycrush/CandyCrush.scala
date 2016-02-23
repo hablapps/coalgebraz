@@ -5,9 +5,8 @@ import Function.const
 
 import scalaz._, Scalaz._
 
-import coalgebraz._
-import coalgebraz.StoreF
-import Coalgebraz._, dsl._
+import coalgebraz._, Coalgebraz._
+
 import Nat.Syntax._
 import Isos.{ toCandy, isoCandy, isoBoard, isoBoard2 }, To.eqTo
 import Adapt._
