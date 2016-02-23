@@ -24,10 +24,6 @@ package object coalgebraz {
 
   type IStore[K, V, X] = Coalgebra[IStoreF[K, V, ?], X]
 
-  // XXX: using `type Void = Nothing` resulted in multiple errors because of the
-  // problems with implicit resolutions when `Nothing` is involved.
-  final class Void { ??? } // non-instantiable!
-
   type  ->[A, B] = To[A, B]
   type <->[A, B] = Iso[A, B]
 
@@ -40,29 +36,12 @@ package object coalgebraz {
   type IndexedEntity[I, O, B, X, N] =
     Entity[IndexIn[I, B, N], IndexOut[O, B, N], Map[N, B], List[X]]
 
+  type IndexedEntity2[I, O, F[_, _], B, X, N] =
+    Entity[IndexIn[I, B, N], IndexOut[O, B, N], F[N, B], F[N, X]]
+
   /* Implicit converters */
 
   implicit def idRouter[B, A]: Router[B, A, A] = _ => List(_)
-
-  object Adapt extends AdaptLowPriorityImplicits {
-    implicit def adapt2[I1, I2, O1, O2, B1, B2, X1, X2](
-        co:  Entity[I1, O1, B1, X1])(implicit
-        ev0: Router[B2, I2, I1],
-        ev1: Router[B2, O1, O2],
-        ev2: B1  -> B2,
-        ev3: X1 <-> X2): Entity[I2, O2, B2, X2] =
-      co.observe(ev2).in(ev0).out(ev1).carrier(ev3)
-  }
-
-  trait AdaptLowPriorityImplicits {
-    implicit def adapt[I1, I2, O1, O2, B1, B2, X1, X2](
-        co:  Entity[I1, O1, B1, X1])(implicit
-        ev0: Router[B1, I2, I1],
-        ev1: Router[B1, O1, O2],
-        ev2: B1  -> B2,
-        ev3: X1 <-> X2): Entity[I2, O2, B2, X2] =
-      co.in(ev0).out(ev1).observe(ev2).carrier(ev3)
-  }
 
   /* Generic combinators */
 

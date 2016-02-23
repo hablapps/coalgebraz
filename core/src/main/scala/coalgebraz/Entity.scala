@@ -196,9 +196,6 @@ trait EntityCore extends EntityNextDsl
     })
   }
 
-  type IndexedEntity2[I, O, F[_, _], B, X, N] =
-    Entity[IndexIn[I, B, N], IndexOut[O, B, N], F[N, B], F[N, X]]
-
   def index2[I, O, F[_, _], B, X, N](
       co: Entity[I, O, B, X])(implicit
       ev0: Observable[B, X],

@@ -9,7 +9,6 @@ import coalgebraz._, Coalgebraz._
 
 import Nat.Syntax._
 import Isos.{ toCandy, isoCandy, isoBoard, isoBoard2 }, To.eqTo
-import Adapt._
 import Routing._
 
 object CandyCrush {
