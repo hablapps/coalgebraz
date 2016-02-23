@@ -8,6 +8,8 @@ object Coalgebraz extends ToEntityOps
     with ToObservableOps
     with ToMappableOps {
 
+  import dsl._
+
   def entity[I, O, B, X](
       pi1: X => B,
       pi2: X => I => (List[O], Option[X])): Entity[I, O, B, X] = { x =>
@@ -21,21 +23,17 @@ object Coalgebraz extends ToEntityOps
       f: X => I => (List[O], Option[X])): Entity[I, O, B, X] =
     entity(_.observe, f)
 
-  def always[I, O, B, X](b: B): Entity[I, O, B, X] = { x =>
-    EntityF(b, _ => (List.empty, Option(x)))
-  }
+  def always[I, O, B, X](b: B): Entity[I, O, B, X] =
+    entity(const(b), x => _ => x)
 
-  def til[I, O, B, X](b: B, f: I => Boolean): Entity[I, O, B, X] = { x =>
-    EntityF(b, i => if (f(i)) (List.empty, None) else (List.empty, Option(x)))
-  }
+  def til[I, O, B, X](b: B, f: I => Boolean): Entity[I, O, B, X] =
+    entity(const(b), x => i => if (f(i)) halt else x)
 
-  def blocked[O, B, X](to: X -> B): Entity[Void, O, B, X] = { x =>
-    EntityF(to.to(x), _ => ??? /* does never happen */)
-  }
+  def blocked[O, B, X](to: X -> B): Entity[Void, O, B, X] =
+    entity(to.to(_), _ => _ => ??? /* does never happen */)
 
-  def once[I, O, B, X](b: B): Entity[I, O, B, X] = { x =>
-    EntityF(b, _ => (List.empty, None))
-  }
+  def once[I, O, B, X](b: B): Entity[I, O, B, X] =
+    entity(const(b), _ => _ => halt)
 
   def until[I, O, B, X](
       f: I => Boolean)(
@@ -132,12 +130,12 @@ object Coalgebraz extends ToEntityOps
       co: Entity[I, O, B, X],
       in: List[I],
       x: X): (List[O], Option[X]) = in match {
-    case Nil => (List.empty, Option(x))
+    case Nil => x
     case i::is => {
       val EntityF(_, nxt) = co(x)
       nxt(i) match {
         case (os, Some(x2)) => feed(co, is, x2).mapElements(_1 = os ++ _)
-        case (os, None) => (os, None)
+        case (os, None) => halt ~> (os: _*)
       }
     }
   }
@@ -197,8 +195,6 @@ object Coalgebraz extends ToEntityOps
       }
     })
   }
-
-  import dsl._
 
   type IndexedEntity2[I, O, F[_, _], B, X, N] =
     Entity[IndexIn[I, B, N], IndexOut[O, B, N], F[N, B], F[N, X]]
