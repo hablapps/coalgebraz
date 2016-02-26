@@ -2,12 +2,13 @@ package coalgebraz
 
 import scalaz._, Scalaz._
 
-case class StreamF[H, X](head: H, tail: Option[X]) {
-  def map[Y](f: X => Y): StreamF[H, Y] = copy(tail = tail.map(f))
+case class StreamF[H, X](head: H, tail: X) {
+  def map[Y](f: X => Y): StreamF[H, Y] = StreamF(head, f(tail))
 }
 
-case class IStreamF[H, X](head: H, tail: X) {
-  def map[Y](f: X => Y): IStreamF[H, Y] = copy(tail = f(tail))
+case class MooreF[I, O, X](output: O, transition: I => X) {
+  def map[Y](f: X => Y): MooreF[I, O, Y] =
+    MooreF(output, f compose transition)
 }
 
 case class AutomataF[I, O, X](transition: I => Option[(O, X)]) {
@@ -38,12 +39,6 @@ object EntityF {
   implicit def fromStreamF[H, X](
       co: Stream[H, X]): Entity[Unit, Void, H, X] = { s =>
     val StreamF(h, t) = co(s)
-    EntityF(h, _ => (List.empty, t))
-  }
-
-  implicit def fromIStreamF[H, X](
-      co: IStream[H, X]): Entity[Unit, Void, H, X] = { s =>
-    val IStreamF(h, t) = co(s)
     EntityF(h, _ => (List.empty, Option(t)))
   }
 
@@ -88,10 +83,6 @@ trait CodataInstances {
 
   implicit def StreamFFunctor[H] = new Functor[StreamF[H, ?]] {
     def map[A, B](r: StreamF[H, A])(f: A => B) = r map f
-  }
-
-  implicit def IStreamFFunctor[H] = new Functor[IStreamF[H, ?]] {
-    def map[A, B](r: IStreamF[H, A])(f: A => B) = r map f
   }
 
   implicit def AutomataFFunctor[I, O] = new Functor[AutomataF[I, O, ?]] {
