@@ -6,9 +6,9 @@ case class StreamF[H, X](head: H, tail: X) {
   def map[Y](f: X => Y): StreamF[H, Y] = StreamF(head, f(tail))
 }
 
-case class MooreF[I, O, X](output: O, transition: I => X) {
+case class MooreF[I, O, X](output: O, next: I => X) {
   def map[Y](f: X => Y): MooreF[I, O, Y] =
-    MooreF(output, f compose transition)
+    MooreF(output, f compose next)
 }
 
 case class AutomataF[I, O, X](transition: I => Option[(O, X)]) {

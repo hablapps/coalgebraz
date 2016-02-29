@@ -3,7 +3,7 @@ package coalgebraz
 import Coalgebraz._
 
 class MooreOps[I, O, X](val self: Moore[I, O, X]) {
-
+  
 }
 
 trait ToMooreOps {
