@@ -14,6 +14,8 @@ package object coalgebraz {
 
   type Stream[H, X] = Coalgebra[StreamF[H, ?], X]
 
+  type Moore[I, O, X] = Coalgebra[MooreF[I, O, ?], X]
+
   type Automata[I, O, X] = Coalgebra[AutomataF[I, O, ?], X]
 
   type IAutomata[I, O, X] = Coalgebra[IAutomataF[I, O, ?], X]
