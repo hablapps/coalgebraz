@@ -1,14 +1,21 @@
 package coalgebraz
 
+import scala.collection.immutable.{ Stream => LazyList }
+
 trait StreamDriver {
 
-  def run[H, X](s: Stream[H, X])(x: X): List[H] = unfold(s, x)
+  def run[H, X](s: Stream[H, X], b: Int = 100)(x: X): LazyList[H] =
+    unfold(s, x).take(b)
 
-  def runIO[H, X](s: Stream[H, X])(x: X, eff: H => Unit): Unit =
-    run(s)(x).foreach(eff)
+  def runIO[H, X](
+      s: Stream[H, X],
+      b: Int = 100)(
+      x: X,
+      e: H => Unit): Unit =
+    run(s, b)(x).foreach(e)
 
-  def unfold[H, X](s: Stream[H, X], x1: X): List[H] = {
+  def unfold[H, X](s: Stream[H, X], x1: X): LazyList[H] = {
     val StreamF(h, x2) = s(x1)
-    h :: unfold(s, x2)
+    h #:: unfold(s, x2)
   }
 }
