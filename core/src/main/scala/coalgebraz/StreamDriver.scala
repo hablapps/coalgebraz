@@ -2,6 +2,8 @@ package coalgebraz
 
 import scala.collection.immutable.{ Stream => LazyList }
 
+import Coalgebraz._
+
 trait StreamDriver {
 
   def run[H, X](s: Stream[H, X], b: Int = 50)(x: X): LazyList[H] =

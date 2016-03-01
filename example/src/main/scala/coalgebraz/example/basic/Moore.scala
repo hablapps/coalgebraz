@@ -8,7 +8,7 @@ object Moore extends App {
 
   /* Odd-size recognition */
 
-  def odd: Moore[Input, Boolean, Boolean] =
+  def odd: Moore[Alphabet, Boolean, Boolean] =
     moore(identity, x => _ => ! x)
 
   val f = run(odd)(false)
@@ -19,7 +19,7 @@ object Moore extends App {
 
   /* AAB recognition */
 
-  def aab: Moore[Input, Boolean, QState] =
+  def aab: Moore[Alphabet, Boolean, QState] =
     moore(_ == Q3, q => i => (q, i) match {
       case (Q0, A) => Q1
       case (Q0, B) => Q0
@@ -27,22 +27,23 @@ object Moore extends App {
       case (Q1, B) => Q0
       case (Q2, A) => Q2
       case (Q2, B) => Q3
-      case (Q3, _) => Q3
+      case (Q3, A) => Q1
+      case (Q3, B) => Q0
     })
 
   val g = run(aab)(Q0)
   assert(g(List(A)) == false)
   assert(g(List(A, A)) == false)
   assert(g(List(A, A, B)) == true)
-  assert(g(List(A, A, B, A)) == true)
-  assert(g(List(A, B, A, B, A)) == false)
+  assert(g(List(A, A, B, A)) == false)
+  assert(g(List(A, B, A, A, B)) == true)
 
   /* AAB + Odd-size recognition */
 
-  val aabOrOdd: Moore[Input, Boolean, (Boolean, QState)] =
+  val aabOrOdd: Moore[Alphabet, Boolean, (Boolean, QState)] =
     (odd |*| aab)
-      .in((i: Input) => List(i.left, i.right))
-      .out(os => os._1 || os._2)a
+      .in((i: Alphabet) => List(i.left, i.right))
+      .out(os => os._1 || os._2)
 
   runIO(aabOrOdd)((false, Q0), o => println(s"⇒ $o"))
 
@@ -52,13 +53,13 @@ object Moore extends App {
   case object Q2 extends QState
   case object Q3 extends QState
 
-  sealed trait Input
-  case object A extends Input
-  case object B extends Input
+  sealed trait Alphabet
+  case object A extends Alphabet
+  case object B extends Alphabet
 
-  object Input {
-    implicit val readInput: Read[Input] = new Read[Input] {
-      def read(s: String): Option[Input] = s match {
+  object Alphabet {
+    implicit val readAlphabet: Read[Alphabet] = new Read[Alphabet] {
+      def read(s: String): Option[Alphabet] = s match {
         case "a" | "A" => Option(A)
         case "b" | "B" => Option(B)
         case _ => None

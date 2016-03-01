@@ -2,6 +2,8 @@ package coalgebraz
 
 import scala.io.StdIn.readLine
 
+import Coalgebraz._
+
 trait MooreDriver {
 
   def run[I, O, X](m: Moore[I, O, X])(x: X): List[I] => O = unfold(m)(x)

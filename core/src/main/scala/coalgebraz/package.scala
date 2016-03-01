@@ -12,14 +12,6 @@ package object coalgebraz {
 
   type IEntity[I, O, B, X] = Coalgebra[IEntityF[I, O, B, ?], X]
 
-  type Stream[H, X] = Coalgebra[StreamF[H, ?], X]
-
-  type Moore[I, O, X] = Coalgebra[MooreF[I, O, ?], X]
-
-  type Automata[I, O, X] = Coalgebra[AutomataF[I, O, ?], X]
-
-  type IAutomata[I, O, X] = Coalgebra[IAutomataF[I, O, ?], X]
-
   type Store[K, V, X] = Coalgebra[StoreF[K, V, ?], X]
 
   type IStore[K, V, X] = Coalgebra[IStoreF[K, V, ?], X]

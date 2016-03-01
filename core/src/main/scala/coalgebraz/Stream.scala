@@ -6,6 +6,8 @@ import scalaz._, Scalaz._
 
 trait StreamCore extends ToStreamOps {
 
+  type Stream[H, X] = Coalgebra[StreamF[H, ?], X]
+
   def stream[H, X](pi1: X => H, pi2: X => X): Stream[H, X] =
     x => StreamF(pi1(x), pi2(x))
 

@@ -2,6 +2,8 @@ package coalgebraz
 
 import scalaz._, Scalaz._
 
+import Coalgebraz._
+
 case class StreamF[H, X](head: H, tail: X) {
   def map[Y](f: X => Y): StreamF[H, Y] = StreamF(head, f(tail))
 }
@@ -11,14 +13,9 @@ case class MooreF[I, O, X](output: O, next: I => X) {
     MooreF(output, f compose next)
 }
 
-case class AutomataF[I, O, X](transition: I => Option[(O, X)]) {
-  def map[Y](f: X => Y): AutomataF[I, O, Y] =
-    AutomataF(i => transition(i).map(_ map f))
-}
-
-case class IAutomataF[I, O, X](transition: I => (O, X)) {
-  def map[Y](f: X => Y): IAutomataF[I, O, Y] =
-    IAutomataF(i => transition(i) map f)
+case class MealyF[I, O, X](next: I => (O, X)) {
+  def map[Y](f: X => Y): MealyF[I, O, Y] =
+    MealyF(next andThen (_ map f))
 }
 
 case class StoreF[K, V, X](get: V, set: K => Option[X]) {
@@ -42,17 +39,16 @@ object EntityF {
     EntityF(h, _ => (List.empty, Option(t)))
   }
 
-  implicit def fromAutomataF[I, O, X](
-      co: Automata[I, O, X]): Entity[I, O, Unit, X] = { s =>
-    val AutomataF(tr) = co(s)
-    EntityF((), i => tr(i).fold(
-      (List.empty[O], None: Option[X])) { case (o, x) => (List(o), Option(x)) })
+  implicit def fromMooreF[I, O, X](
+      co: Moore[I, O, X]): Entity[I, Void, O, X] = { s =>
+    val MooreF(o, nxt) = co(s)
+    EntityF(o, i => (List.empty, Option(nxt(i))))
   }
 
-  implicit def fromIAutomataF[I, O, X](
-      co: IAutomata[I, O, X]): Entity[I, O, Unit, X] = { s =>
-    val IAutomataF(tr) = co(s)
-    EntityF((), i => tr(i).mapElements(List(_), Option.apply))
+  implicit def fromMealyF[I, O, X](
+      co: Mealy[I, O, X]): Entity[I, O, Unit, X] = { s =>
+    val MealyF(nxt) = co(s)
+    EntityF((), i => nxt(i).bimap(List.apply[O], Option.apply))
   }
 
   implicit def fromStoreF[K, V, X](
@@ -85,12 +81,12 @@ trait CodataInstances {
     def map[A, B](r: StreamF[H, A])(f: A => B) = r map f
   }
 
-  implicit def AutomataFFunctor[I, O] = new Functor[AutomataF[I, O, ?]] {
-    def map[A, B](r: AutomataF[I, O, A])(f: A => B) = r map f
+  implicit def MooreFFunctor[I, O] = new Functor[MooreF[I, O, ?]] {
+    def map[A, B](r: MooreF[I, O, A])(f: A => B) = r map f
   }
 
-  implicit def IAutomataFFunctor[I, O] = new Functor[IAutomataF[I, O, ?]] {
-    def map[A, B](r: IAutomataF[I, O, A])(f: A => B) = r map f
+  implicit def MealyFFunctor[I, O] = new Functor[MealyF[I, O, ?]] {
+    def map[A, B](r: MealyF[I, O, A])(f: A => B) = r map f
   }
 
   implicit def StoreFFunctor[K, V] = new Functor[StoreF[K, V, ?]] {
