@@ -40,12 +40,12 @@ object Moore extends App {
 
   /* AAB + Odd-size recognition */
 
-  val aabOrOdd: Moore[Alphabet, Boolean, (Boolean, QState)] =
+  val aabAndOdd: Moore[Alphabet, Boolean, (Boolean, QState)] =
     (odd |*| aab)
       .in((i: Alphabet) => List(i.left, i.right))
-      .out(os => os._1 || os._2)
+      .out(os => os._1 && os._2)
 
-  runIO(aabOrOdd)((false, Q0), o => println(s"⇒ $o"))
+  runIO(aabAndOdd)((false, Q0), o => println(s"⇒ $o"))
 
   sealed trait QState
   case object Q0 extends QState
