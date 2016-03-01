@@ -8,10 +8,11 @@ import Coalgebraz._
 
 trait MealyDriver {
 
-  def run[I, O, X](m: Mealy[I, O, X])(x: X): NonEmptyList[I] => O = unfold(m)(x)
+  def runMealy[I, O, X](m: Mealy[I, O, X])(x: X): NonEmptyList[I] => O =
+    unfoldMealy(m)(x)
 
-  def runIO[I: Read, O, X](m: Mealy[I, O, X])(x: X, e: O => Unit): Unit =
-    runNelFunctionIO(unfold(m)(x))(e)
+  def runIOMealy[I: Read, O, X](m: Mealy[I, O, X])(x: X, e: O => Unit): Unit =
+    runNelFunctionIO(unfoldMealy(m)(x))(e)
 
   def runNelFunctionIO[I: Read, O](
       f: NonEmptyList[I] => O)(
@@ -31,9 +32,9 @@ trait MealyDriver {
     }
   }
 
-  def unfold[I, O, X](m: Mealy[I, O, X])(x: X): NonEmptyList[I] => O = {
+  def unfoldMealy[I, O, X](m: Mealy[I, O, X])(x: X): NonEmptyList[I] => O = {
     case NonEmptyList(i1, INil()) => m(x).next(i1)._1
     case NonEmptyList(i1, ICons(i2, is)) =>
-      unfold(m)(m(x).next(i1)._2)(NonEmptyList(i2, is.toList: _*))
+      unfoldMealy(m)(m(x).next(i1)._2)(NonEmptyList(i2, is.toList: _*))
   }
 }
