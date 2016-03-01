@@ -4,10 +4,13 @@ import coalgebraz._, Coalgebraz._
 
 object Stream extends App {
 
-  val sumLastTwo: Stream[Long, (Long, Long)] =
+  val fibonacci: Stream[Long, (Long, Long)] =
     stream(_._1, { case (current, old) => (current + old, current)})
 
-  val fibonacci = run(sumLastTwo)(1, 0)
+  runIO(fibonacci, 30)(
+    (1, 0),
+    h => println(s"⇒ $h"))
+  println
 
   def odd[A]: Stream[A, List[A]] = stream(_.head, _.tail.tail)
 
@@ -15,7 +18,12 @@ object Stream extends App {
 
   def all[A]: Stream[A, (List[A], List[A], Boolean)] = odd merge even
 
-  runIO(all[Int])((1 to 500 toList, 1 to 500 toList, true), println(_))
+  runIO(all[Int])(
+    (1 to 100 toList, 1 to 100 toList, true),
+    h => println(s"⇒ $h"))
+  println
 
-  runIO(odd[Int].until(_ > 50, even))((1 to 500 toList, false), println(_))
+  runIO(odd[Int].until(_ > 25, even))(
+    (1 to 100 toList, false),
+    h => println(s"⇒ $h"))
 }

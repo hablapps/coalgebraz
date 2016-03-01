@@ -4,12 +4,12 @@ import scala.collection.immutable.{ Stream => LazyList }
 
 trait StreamDriver {
 
-  def run[H, X](s: Stream[H, X], b: Int = 100)(x: X): LazyList[H] =
+  def run[H, X](s: Stream[H, X], b: Int = 50)(x: X): LazyList[H] =
     unfold(s, x).take(b)
 
   def runIO[H, X](
       s: Stream[H, X],
-      b: Int = 100)(
+      b: Int = 50)(
       x: X,
       e: H => Unit): Unit =
     run(s, b)(x).foreach(e)
