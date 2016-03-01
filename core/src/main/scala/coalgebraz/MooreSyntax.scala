@@ -3,7 +3,8 @@ package coalgebraz
 import Coalgebraz._
 
 class MooreOps[I, O, X](val self: Moore[I, O, X]) {
-  
+
+  // Moore combinators???
 }
 
 trait ToMooreOps {
