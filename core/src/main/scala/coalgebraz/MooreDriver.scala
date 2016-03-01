@@ -12,7 +12,7 @@ trait MooreDriver {
   def runFunctionIO[I: Read, O](
       f: List[I] => O)(
       e: O => Unit): Unit = {
-    val s = readLine("$ ")
+    val s = readLine("ζ ")
     val oi = Read[I].read(s)
     oi.fold(s match {
       case "" => runFunctionIO(f)(e)

@@ -1,5 +1,7 @@
 package coalgebraz.example.basic
 
+import scalaz._, Scalaz._
+
 import coalgebraz._, Coalgebraz._
 
 object Moore extends App {
@@ -35,15 +37,22 @@ object Moore extends App {
   assert(g(List(A, A, B, A)) == true)
   assert(g(List(A, B, A, B, A)) == false)
 
-  runIO(aab)(Q0, o => println(s"=> Current state: $o"))
+  /* AAB + Odd-size recognition */
 
-  trait QState
+  val aabAndOdd: Moore[Input, Boolean, (Boolean, QState)] =
+    (odd |*| aab)
+      .in((i: Input) => List(i.left, i.right))
+      .out(os => os._1 && os._2)a
+
+  runIO(aabAndOdd)((false, Q0), o => println(s"⇒ $o"))
+
+  sealed trait QState
   case object Q0 extends QState
   case object Q1 extends QState
   case object Q2 extends QState
   case object Q3 extends QState
 
-  trait Input
+  sealed trait Input
   case object A extends Input
   case object B extends Input
 
