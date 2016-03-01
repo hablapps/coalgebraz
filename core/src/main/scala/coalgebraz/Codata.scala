@@ -49,7 +49,13 @@ object EntityF {
   }
 
   implicit def fromObjectF[I, O, E, X](
-    co: Object[I, O, E, X]): Entity[I, E, O, X] = ???
+      co: Object[I, O, E, X]): Entity[I, E \/ O, Unit, X] = { s =>
+    val ObjectF(method) = co(s)
+    EntityF((), i => method(i).fold(
+      e => halt ~> e.left[O],
+      ox => ox._2 ~> ox._1.right[E]
+    ))
+  }
 
   implicit def fromIEntityF[I, O, B, X](
       co: IEntity[I, O, B, X]): Entity[I, O, B, X] = { s =>
