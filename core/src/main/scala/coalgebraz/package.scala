@@ -8,10 +8,6 @@ package object coalgebraz {
 
   type Coalgebra[F[_], S] = S => F[S]
 
-  type Entity[I, O, B, X] = Coalgebra[EntityF[I, O, B, ?], X]
-
-  type IEntity[I, O, B, X] = Coalgebra[IEntityF[I, O, B, ?], X]
-
   type  ->[A, B] = To[A, B]
   type <->[A, B] = Iso[A, B]
 

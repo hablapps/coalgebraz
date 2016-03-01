@@ -10,6 +10,8 @@ trait EntityCore extends EntityNextDsl
     with ToMappableOps
     with ToEntityOps {
 
+  type Entity[I, O, B, X] = Coalgebra[EntityF[I, O, B, ?], X]
+
   def entity[I, O, B, X](
       pi1: X => B,
       pi2: X => I => (List[O], Option[X])): Entity[I, O, B, X] = { x =>

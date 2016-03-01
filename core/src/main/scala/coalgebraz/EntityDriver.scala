@@ -4,6 +4,8 @@ import scala.io.StdIn.readLine
 
 import scalaz._, Scalaz._
 
+import Coalgebraz._
+
 trait EntityDriver {
 
   def behaviour[I, O, B, X](

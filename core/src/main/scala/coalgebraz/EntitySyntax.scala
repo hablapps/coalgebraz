@@ -2,6 +2,8 @@ package coalgebraz
 
 import scalaz._, Scalaz._
 
+import Coalgebraz._
+
 class EntityOps[I1, O1, B1, X1](val co1: Entity[I1, O1, B1, X1]) {
 
   def |~|(

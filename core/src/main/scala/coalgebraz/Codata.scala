@@ -56,17 +56,6 @@ object EntityF {
       ox => ox._2 ~> ox._1.right[E]
     ))
   }
-
-  implicit def fromIEntityF[I, O, B, X](
-      co: IEntity[I, O, B, X]): Entity[I, O, B, X] = { s =>
-    val IEntityF(obs, nxt) = co(s)
-    EntityF(obs, i => nxt(i).map(Option.apply))
-  }
-}
-
-case class IEntityF[I, O, B, X](observe: B, next: I => (List[O], X)) {
-  def map[Y](f: X => Y): IEntityF[I, O, B, Y] =
-    copy(next = i => next(i) map f)
 }
 
 trait CodataInstances {
@@ -89,9 +78,5 @@ trait CodataInstances {
 
   implicit def EntityFFunctor[I, O, C] = new Functor[EntityF[I, O, C, ?]] {
     def map[A, B](r: EntityF[I, O, C, A])(f: A => B) = r map f
-  }
-
-  implicit def IEntityFFunctor[I, O, C] = new Functor[IEntityF[I, O, C, ?]] {
-    def map[A, B](r: IEntityF[I, O, C, A])(f: A => B) = r map f
   }
 }
