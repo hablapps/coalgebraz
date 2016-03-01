@@ -12,10 +12,6 @@ package object coalgebraz {
 
   type IEntity[I, O, B, X] = Coalgebra[IEntityF[I, O, B, ?], X]
 
-  type Store[K, V, X] = Coalgebra[StoreF[K, V, ?], X]
-
-  type IStore[K, V, X] = Coalgebra[IStoreF[K, V, ?], X]
-
   type  ->[A, B] = To[A, B]
   type <->[A, B] = Iso[A, B]
 

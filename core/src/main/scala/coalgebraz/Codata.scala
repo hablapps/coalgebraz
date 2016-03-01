@@ -18,12 +18,9 @@ case class MealyF[I, O, X](next: I => (O, X)) {
     MealyF(next andThen (_ map f))
 }
 
-case class StoreF[K, V, X](get: V, set: K => Option[X]) {
-  def map[Y](f: X => Y): StoreF[K, V, Y] = copy(set = k => set(k) map f)
-}
-
-case class IStoreF[K, V, X](get: V, set: K => X) {
-  def map[Y](f: X => Y): IStoreF[K, V, Y] = copy(set = k => f(set(k)))
+case class ObjectF[I, O, E, X](method: I => E \/ (O, X)) {
+  def map[Y](f: X => Y): ObjectF[I, O, E, Y] =
+    ObjectF(i => method(i).map(_ map f))
 }
 
 case class EntityF[I, O, B, X](observe: B, next: I => (List[O], Option[X])) {
@@ -51,17 +48,8 @@ object EntityF {
     EntityF((), i => nxt(i).bimap(List.apply[O], Option.apply))
   }
 
-  implicit def fromStoreF[K, V, X](
-      co: Store[K, V, X]): Entity[K, Void, V, X] = { s =>
-    val StoreF(get, set) = co(s)
-    EntityF(get, i => (List.empty, set(i)))
-  }
-
-  implicit def fromIStoreF[K, V, X](
-      co: IStore[K, V, X]): Entity[K, Void, V, X] = { s =>
-    val IStoreF(get, set) = co(s)
-    EntityF(get, i => (List.empty, Option(set(i))))
-  }
+  implicit def fromObjectF[I, O, E, X](
+    co: Object[I, O, E, X]): Entity[I, E, O, X] = ???
 
   implicit def fromIEntityF[I, O, B, X](
       co: IEntity[I, O, B, X]): Entity[I, O, B, X] = { s =>
@@ -89,12 +77,8 @@ trait CodataInstances {
     def map[A, B](r: MealyF[I, O, A])(f: A => B) = r map f
   }
 
-  implicit def StoreFFunctor[K, V] = new Functor[StoreF[K, V, ?]] {
-    def map[A, B](r: StoreF[K, V, A])(f: A => B) = r map f
-  }
-
-  implicit def IStoreFFunctor[K, V] = new Functor[IStoreF[K, V, ?]] {
-    def map[A, B](r: IStoreF[K, V, A])(f: A => B) = r map f
+  implicit def ObjectFFunctor[I, O, E] = new Functor[ObjectF[I, O, E, ?]] {
+    def map[A, B](r: ObjectF[I, O, E, A])(f: A => B) = r map f
   }
 
   implicit def EntityFFunctor[I, O, C] = new Functor[EntityF[I, O, C, ?]] {
