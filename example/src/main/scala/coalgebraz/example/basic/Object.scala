@@ -16,7 +16,7 @@ object Object extends App {
     stringBuffer |=>| bound(b)
 
   runIOObject(boundedStringBuffer(15))(
-    "", e => println(s"⤃ $e"), o => println(s"⇒ $o"))
+    "", e => println(s"⇏ $e"), o => println(s"⇒ $o"))
 
   sealed trait Error
   case object OutOfBounds extends Error
