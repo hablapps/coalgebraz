@@ -4,9 +4,10 @@ import Coalgebraz._
 
 class ObjectOps[I1, O1, E1, X1](val self: Object[I1, O1, E1, X1]) {
 
-  def |=>|[O, X2, X](
-      ob: Object[O1, O, E1, X2])(implicit
-      ev0: ClearProduct.Aux[X1, X2, X]): Object[I1, O, E1, X] =
+  def |=>|[O2, E2, E, X2, X](
+      ob: Object[O1, O2, E2, X2])(implicit
+      ev0: ClearProduct.Aux[X1, X2, X],
+      ev1: ClearSum.Aux[E1, E2, E]): Object[I1, O2, E, X] =
     andThenObject(self, ob)
 }
 

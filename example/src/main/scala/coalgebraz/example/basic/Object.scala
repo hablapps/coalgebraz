@@ -6,18 +6,20 @@ import coalgebraz._, Coalgebraz._
 
 object Object extends App {
 
-  def stringBuffer: Object[String, String, Error, String] =
-    obj(s1 => s2 => (s1 ++ s2, s1 ++ s2).right)
+  def stringBuffer: Object[String, String, Void, String] =
+    obj(s1 => s2 => dup(s1 ++ s2).right)
 
   def bound(b: Int): Object[String, String, Error, Unit] =
-    obj(_ => s => if (s.length > b) OutOfBound.left else (s, ()).right)
+    obj(_ => s => (s.length > b).fold(OutOfBounds.left, (s, ()).right))
 
   def boundedStringBuffer(b: Int): Object[String, String, Error, String] =
-    stringBuffer |=>| bound(25)
+    stringBuffer |=>| bound(b)
 
-  runIOObject(boundedStringBuffer(10))(
+  runIOObject(boundedStringBuffer(15))(
     "", e => println(s"⤃ $e"), o => println(s"⇒ $o"))
 
   sealed trait Error
-  case object OutOfBound extends Error
+  case object OutOfBounds extends Error
+
+  def dup[A](a: A): (A, A) = (a, a)
 }
