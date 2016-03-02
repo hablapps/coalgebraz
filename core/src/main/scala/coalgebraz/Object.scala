@@ -6,6 +6,10 @@ trait ObjectCore extends ToObjectOps {
 
   type Object[I, O, E, X] = Coalgebra[ObjectF[I, O, E, ?], X]
 
+  // XXX: `object` seems to be used somewhere else :)
+  def obj[I, O, E, X](method: X => I => E \/ (O, X)): Object[I, O, E, X] =
+    method andThen ObjectF.apply
+
   def afterObject[I, OI, O, E, X1, X2, X](
       ob1: Object[I, OI, E, X1],
       ob2: Object[OI, O, E, X2])(implicit
