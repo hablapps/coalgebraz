@@ -43,7 +43,7 @@ trait EntityDriver {
       eff: B => Unit,
       efo: List[O] => Unit): Unit = {
     eff(ht.current)
-    val s = readLine("ζ ")
+    val s = readLine("z> ")
     val oi = Read[I].read(s)
     oi.fold(s match {
       case "" => runHypertreeIO(ht)(eff, efo)

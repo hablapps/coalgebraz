@@ -17,7 +17,7 @@ trait MealyDriver {
   def runNelFunctionIO[I: Read, O](
       f: NonEmptyList[I] => O)(
       e: O => Unit): Unit = {
-    val s = readLine("ζ ")
+    val s = readLine("z> ")
     val oi = Read[I].read(s)
     oi.fold(s match {
       case "" => runNelFunctionIO(f)(e)
