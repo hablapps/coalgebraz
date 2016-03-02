@@ -30,9 +30,13 @@ trait ObjectDriver {
         runFunctionIOObject(f)(efe, efo)
       }
     }) { i =>
-      f(i.wrapNel).fold(efe, efo)
-      runFunctionIOObject(
-        (i2: NonEmptyList[I]) => f(i.wrapNel append i2))(efe, efo)
+      f(i.wrapNel).fold(
+        efe,
+        o => {
+          efo(o)
+          runFunctionIOObject(
+            (i2: NonEmptyList[I]) => f(i.wrapNel append i2))(efe, efo)
+        })
     }
   }
 

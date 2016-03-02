@@ -4,10 +4,10 @@ import Coalgebraz._
 
 class ObjectOps[I1, O1, E1, X1](val self: Object[I1, O1, E1, X1]) {
 
-  def after[O, X2, X](
+  def |=>|[O, X2, X](
       ob: Object[O1, O, E1, X2])(implicit
       ev0: ClearProduct.Aux[X1, X2, X]): Object[I1, O, E1, X] =
-    afterObject(self, ob)
+    andThenObject(self, ob)
 }
 
 trait ToObjectOps {
