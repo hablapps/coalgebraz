@@ -1,6 +1,6 @@
 package coalgebraz
 
-import scalaz._, Scalaz._
+import scalaz._, Scalaz._, Scalaz.{ Identity => _ }
 
 import Coalgebraz._
 
@@ -21,6 +21,11 @@ case class MealyF[I, O, X](next: I => (O, X)) {
 case class ObjectF[I, O, E, X](method: I => E \/ (O, X)) {
   def map[Y](f: X => Y): ObjectF[I, O, E, Y] =
     ObjectF(i => method(i).map(_ map f))
+}
+
+case class TransitionSystemF[X](next: Set[X]) {
+  def map[Y](f: X => Y): TransitionSystemF[Y] =
+    TransitionSystemF(next map f)
 }
 
 case class EntityF[I, O, B, X](observe: B, next: I => (List[O], Option[X])) {
@@ -74,6 +79,10 @@ trait CodataInstances {
 
   implicit def ObjectFFunctor[I, O, E] = new Functor[ObjectF[I, O, E, ?]] {
     def map[A, B](r: ObjectF[I, O, E, A])(f: A => B) = r map f
+  }
+
+  implicit def TransitionSystemF = new Functor[TransitionSystemF[?]] {
+    def map[A, B](r: TransitionSystemF[A])(f: A => B) = r map f
   }
 
   implicit def EntityFFunctor[I, O, C] = new Functor[EntityF[I, O, C, ?]] {
