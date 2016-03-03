@@ -6,5 +6,5 @@ object Coalgebraz extends CodataInstances
   with MooreCore with MooreDriver
   with ObjectCore with ObjectDriver
   with StreamCore with StreamDriver
-  with TransitionSystemCore
+  with TransitionSystemCore with TransitionSystemDriver
   with AdaptDsl
