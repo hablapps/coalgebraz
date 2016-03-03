@@ -23,7 +23,7 @@ case class ObjectF[I, O, E, X](method: I => E \/ (O, X)) {
     ObjectF(i => method(i).map(_ map f))
 }
 
-case class TransitionSystemF[X](next: Set[X]) {
+case class TransitionSystemF[X](next: List[X]) {
   def map[Y](f: X => Y): TransitionSystemF[Y] =
     TransitionSystemF(next map f)
 }
