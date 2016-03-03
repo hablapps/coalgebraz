@@ -2,7 +2,7 @@ package coalgebraz
 
 import scalaz._, Scalaz._
 
-trait ObjectCore extends ToObjectOps {
+trait ObjectCore extends syntax.ToObjectOps {
 
   type Object[I, O, E, X] = Coalgebra[ObjectF[I, O, E, ?], X]
 

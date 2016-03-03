@@ -1,5 +1,5 @@
 package coalgebraz
 
-trait TransitionSystemCore {
+trait TransitionSystemCore extends syntax.ToTransitionSystemOps {
   type TransitionSystem[X] = Coalgebra[TransitionSystemF[?], X]
 }

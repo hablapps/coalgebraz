@@ -1,8 +1,8 @@
-package coalgebraz
+package coalgebraz.syntax
 
 import scalaz._, Scalaz._
 
-import Coalgebraz._
+import coalgebraz._, Coalgebraz._
 
 class MealyOps[I1, O1, X1](val self: Mealy[I1, O1, X1]) {
 

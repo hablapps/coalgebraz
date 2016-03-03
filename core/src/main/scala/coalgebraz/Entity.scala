@@ -8,7 +8,7 @@ trait EntityCore extends EntityNextDsl
     with EntityWrapDsl
     with ToObservableOps
     with ToMappableOps
-    with ToEntityOps {
+    with syntax.ToEntityOps {
 
   type Entity[I, O, B, X] = Coalgebra[EntityF[I, O, B, ?], X]
 

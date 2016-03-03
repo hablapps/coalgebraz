@@ -1,6 +1,6 @@
-package coalgebraz
+package coalgebraz.syntax
 
-import Coalgebraz._
+import coalgebraz._, Coalgebraz._
 
 class StreamOps[H, X](val self: Stream[H, X]) {
 

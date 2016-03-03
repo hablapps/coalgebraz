@@ -4,7 +4,7 @@ import Function.const
 
 import scalaz._, Scalaz._
 
-trait StreamCore extends ToStreamOps {
+trait StreamCore extends syntax.ToStreamOps {
 
   type Stream[H, X] = Coalgebra[StreamF[H, ?], X]
 

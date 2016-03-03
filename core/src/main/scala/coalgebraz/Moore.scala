@@ -1,6 +1,6 @@
 package coalgebraz
 
-trait MooreCore extends ToMooreOps {
+trait MooreCore extends syntax.ToMooreOps {
 
   type Moore[I, O, X] = Coalgebra[MooreF[I, O, ?], X]
 

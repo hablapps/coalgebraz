@@ -1,6 +1,6 @@
-package coalgebraz
+package coalgebraz.syntax
 
-import Coalgebraz._
+import coalgebraz._, Coalgebraz._
 
 class MooreOps[I1, O1, X1](val self: Moore[I1, O1, X1]) {
 

@@ -2,7 +2,7 @@ package coalgebraz
 
 import scalaz._, Scalaz._
 
-trait MealyCore extends ToMealyOps {
+trait MealyCore extends syntax.ToMealyOps {
 
   type Mealy[I, O, X] = Coalgebra[MealyF[I, O, ?], X]
 
