@@ -1,6 +1,7 @@
-package coalgebraz.example.basic
+package coalgebraz
+package example.basic
 
-import coalgebraz._, Coalgebraz._
+import Coalgebraz._
 
 object Stream extends App {
 

@@ -1,8 +1,9 @@
-package coalgebraz.example.basic
+package coalgebraz
+package example.basic
 
 import scalaz._, Scalaz._
 
-import coalgebraz._, Coalgebraz._
+import Coalgebraz._
 
 object Mealy extends App {
 
