@@ -1,6 +1,7 @@
-package coalgebraz.syntax
+package coalgebraz
+package syntax
 
-import coalgebraz._, Coalgebraz._
+import Coalgebraz._
 
 class TransitionSystemOps[X1](val self: TransitionSystem[X1])
 

@@ -1,8 +1,9 @@
-package coalgebraz.syntax
+package coalgebraz
+package syntax
 
 import scalaz._, Scalaz._
 
-import coalgebraz._, Coalgebraz._
+import Coalgebraz._
 
 class EntityOps[I1, O1, B1, X1](val co1: Entity[I1, O1, B1, X1]) {
 

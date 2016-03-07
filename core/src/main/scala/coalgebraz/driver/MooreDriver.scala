@@ -1,8 +1,9 @@
-package coalgebraz.driver
+package coalgebraz
+package driver
 
 import scala.io.StdIn.readLine
 
-import coalgebraz._, Coalgebraz._
+import Coalgebraz._
 
 trait MooreDriver {
 

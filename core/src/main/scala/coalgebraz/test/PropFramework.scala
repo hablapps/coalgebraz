@@ -1,6 +1,7 @@
-package coalgebraz.test
+package coalgebraz
+package test
 
-import coalgebraz._, Coalgebraz._
+import Coalgebraz._
 
 object PropFramework {
 

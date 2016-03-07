@@ -1,8 +1,7 @@
-package coalgebraz.test
+package coalgebraz
+package test
 
 import Function.const
-
-import coalgebraz._
 
 sealed trait EntityProp[A]
 case class Pred[A](f: A => Boolean) extends EntityProp[A]
