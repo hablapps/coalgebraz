@@ -38,6 +38,11 @@ case class TransitionSystemF[X](next: List[X]) {
     TransitionSystemF(next map f)
 }
 
+case class MilnerF[A, X](next: List[(A, X)]) {
+  def map[Y](f: X => Y): MilnerF[A, Y] =
+    MilnerF(next map (_ map f))
+}
+
 case class EntityF[I, O, B, X](observe: B, next: I => (List[O], Option[X])) {
   def map[Y](f: X => Y): EntityF[I, O, B, Y] =
     copy(next = i => next(i).map(_ map f))
@@ -93,6 +98,10 @@ trait CodataInstances {
 
   implicit def TransitionSystemF = new Functor[TransitionSystemF[?]] {
     def map[A, B](r: TransitionSystemF[A])(f: A => B) = r map f
+  }
+
+  implicit def MilnerF[A] = new Functor[MilnerF[A, ?]] {
+    def map[B, C](r: MilnerF[A, B])(f: B => C) = r map f
   }
 
   implicit def EntityFFunctor[I, O, C] = new Functor[EntityF[I, O, C, ?]] {
