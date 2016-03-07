@@ -7,7 +7,7 @@ trait TransitionSystemDriver {
   def runTransitionSystemIO[X](
       ts: TransitionSystem[X])(
       x: X): Unit =
-    runBareTreeIO(unfold(ts)(x))
+    runBareTreeIO(unfoldTS(ts)(x))
 
   def runBareTreeIO(bt: BareTree): Unit = {
     bt.branches.flatMap { bt2 =>
@@ -19,8 +19,10 @@ trait TransitionSystemDriver {
     } foreach(runBareTreeIO(_))
   }
 
-  def unfold[X](ts: TransitionSystem[X])(x: X): BareTree =
-    BareTree(ts(x).next map (x2 => unfold(ts)(x2)))
+  def unfoldTS[X](ts: TransitionSystem[X])(x: X): BareTree = anaTS(ts)(x)
+
+  def anaTS[X](ts: TransitionSystem[X]): X => BareTree =
+    ts andThen (_ map anaTS(ts)) andThen (tsf => BareTree(tsf.next))
 
   case class BareTree(branches: List[BareTree])
 }

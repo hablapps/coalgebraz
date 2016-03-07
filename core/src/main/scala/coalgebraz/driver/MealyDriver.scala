@@ -32,9 +32,13 @@ trait MealyDriver {
     }
   }
 
-  def unfoldMealy[I, O, X](m: Mealy[I, O, X])(x: X): NonEmptyList[I] => O = {
-    case NonEmptyList(i1, INil()) => m(x).next(i1)._1
-    case NonEmptyList(i1, ICons(i2, is)) =>
-      unfoldMealy(m)(m(x).next(i1)._2)(NonEmptyList(i2, is.toList: _*))
-  }
+  def unfoldMealy[I, O, X](m: Mealy[I, O, X])(x: X): NonEmptyList[I] => O =
+    anaMealy(m)(x)
+
+  def anaMealy[I, O, X](m: Mealy[I, O, X]): X => NonEmptyList[I] => O =
+    m andThen (_ map anaMealy(m)) andThen (mf => {
+      case NonEmptyList(x, INil()) => mf.next(x)._1
+      case NonEmptyList(x1, ICons(x2, xs)) =>
+        mf.next(x1)._2(NonEmptyList.nel(x2, xs))
+    })
 }

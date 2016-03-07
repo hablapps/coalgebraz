@@ -6,10 +6,10 @@ import coalgebraz._, Coalgebraz._
 
 trait MooreDriver {
 
-  def run[I, O, X](m: Moore[I, O, X])(x: X): List[I] => O = unfold(m)(x)
+  def run[I, O, X](m: Moore[I, O, X])(x: X): List[I] => O = unfoldMoore(m)(x)
 
   def runIO[I: Read, O, X](m: Moore[I, O, X])(x: X, e: O => Unit): Unit =
-    runFunctionIO(unfold(m)(x))(e)
+    runFunctionIO(unfoldMoore(m)(x))(e)
 
   def runFunctionIO[I: Read, O](
       f: List[I] => O)(
@@ -29,8 +29,10 @@ trait MooreDriver {
     }
   }
 
-  def unfold[I, O, X](m: Moore[I, O, X])(x: X): List[I] => O = {
-    val MooreF(o, nxt) = m(x)
-    s => if (s.isEmpty) o else unfold(m)(nxt(s.head))(s.tail)
-  }
+  def unfoldMoore[I, O, X](m: Moore[I, O, X])(x: X): List[I] => O =
+    anaMoore(m)(x)
+
+  def anaMoore[I, O, X](s: Moore[I, O, X]): X => List[I] => O =
+    s andThen (_ map anaMoore(s)) andThen (mf => xs =>
+      if (xs.isEmpty) mf.output else mf.next(xs.head)(xs.tail))
 }

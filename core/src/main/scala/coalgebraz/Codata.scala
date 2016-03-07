@@ -4,8 +4,18 @@ import scalaz._, Scalaz._, Scalaz.{ Identity => _ }
 
 import Coalgebraz._
 
-case class StreamF[H, X](head: H, tail: X) {
+class StreamF[H, X](val head: H, _tail: => X) {
+  def tail: X = _tail
   def map[Y](f: X => Y): StreamF[H, Y] = StreamF(head, f(tail))
+}
+
+object StreamF {
+
+  def apply[H, X](head: H, tail: => X): StreamF[H, X] =
+    new StreamF[H, X](head, tail)
+
+  def unapply[H, X](sf: StreamF[H, X]): Option[(H, X)] =
+    Option(sf.head, sf.tail)
 }
 
 case class MooreF[I, O, X](output: O, next: I => X) {
