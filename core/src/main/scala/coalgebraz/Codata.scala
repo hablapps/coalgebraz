@@ -38,7 +38,7 @@ case class TransitionSystemF[X](next: List[X]) {
     TransitionSystemF(next map f)
 }
 
-case class MilnerF[A, X](next: List[(A, X)]) {
+case class MilnerF[A, X](next: List[(A \/ A, X)]) {
   def map[Y](f: X => Y): MilnerF[A, Y] =
     MilnerF(next map (_ map f))
 }

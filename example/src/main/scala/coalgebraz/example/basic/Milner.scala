@@ -7,10 +7,15 @@ import Coalgebraz._
 
 object Milner extends App {
 
-  val cs: Milner[CSChannel, CSState] = milner {
-    case CS0 => List(_pub_  -> CS1)
-    case CS1 => List(_coin_ -> CS2)
-    case CS2 => List(coffee -> CS0)
+  val cs: Milner[Channel, CSState] = milner {
+    case CS0 => List(pub.right -> CS1)
+    case CS1 => List(coin.right -> CS2)
+    case CS2 => List(coffee.left -> CS0)
+  }
+
+  val cm: Milner[Channel, CMState] = milner {
+    case CM0 => List(coin.left -> CM1)
+    case CM1 => List(coffee.right -> CM0)
   }
 
   trait CSState
@@ -18,8 +23,12 @@ object Milner extends App {
   case object CS1 extends CSState
   case object CS2 extends CSState
 
-  trait CSChannel
-  case object _pub_ extends CSChannel
-  case object _coin_ extends CSChannel
-  case object coffee extends CSChannel
+  trait CMState
+  case object CM0 extends CMState
+  case object CM1 extends CMState
+
+  trait Channel
+  case object pub extends Channel
+  case object coin extends Channel
+  case object coffee extends Channel
 }
