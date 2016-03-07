@@ -1,8 +1,10 @@
-package coalgebraz
+package coalgebraz.driver
 
 import scala.io.StdIn.readLine
 
 import scalaz._, Scalaz._
+
+import coalgebraz._, Coalgebraz._
 
 trait EntityDriver {
 
@@ -41,7 +43,7 @@ trait EntityDriver {
       eff: B => Unit,
       efo: List[O] => Unit): Unit = {
     eff(ht.current)
-    val s = readLine("$ ")
+    val s = readLine("z> ")
     val oi = Read[I].read(s)
     oi.fold(s match {
       case "" => runHypertreeIO(ht)(eff, efo)

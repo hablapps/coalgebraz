@@ -1,31 +1,41 @@
 package coalgebraz
 
-import scalaz._, Scalaz._
+import scalaz._, Scalaz._, Scalaz.{ Identity => _ }
 
-case class StreamF[H, X](head: H, tail: Option[X]) {
-  def map[Y](f: X => Y): StreamF[H, Y] = copy(tail = tail.map(f))
+import Coalgebraz._
+
+class StreamF[H, X](val head: H, _tail: => X) {
+  def tail: X = _tail
+  def map[Y](f: X => Y): StreamF[H, Y] = StreamF(head, f(tail))
 }
 
-case class IStreamF[H, X](head: H, tail: X) {
-  def map[Y](f: X => Y): IStreamF[H, Y] = copy(tail = f(tail))
+object StreamF {
+
+  def apply[H, X](head: H, tail: => X): StreamF[H, X] =
+    new StreamF[H, X](head, tail)
+
+  def unapply[H, X](sf: StreamF[H, X]): Option[(H, X)] =
+    Option(sf.head, sf.tail)
 }
 
-case class AutomataF[I, O, X](transition: I => Option[(O, X)]) {
-  def map[Y](f: X => Y): AutomataF[I, O, Y] =
-    AutomataF(i => transition(i).map(_ map f))
+case class MooreF[I, O, X](output: O, next: I => X) {
+  def map[Y](f: X => Y): MooreF[I, O, Y] =
+    MooreF(output, f compose next)
 }
 
-case class IAutomataF[I, O, X](transition: I => (O, X)) {
-  def map[Y](f: X => Y): IAutomataF[I, O, Y] =
-    IAutomataF(i => transition(i) map f)
+case class MealyF[I, O, X](next: I => (O, X)) {
+  def map[Y](f: X => Y): MealyF[I, O, Y] =
+    MealyF(next andThen (_ map f))
 }
 
-case class StoreF[K, V, X](get: V, set: K => Option[X]) {
-  def map[Y](f: X => Y): StoreF[K, V, Y] = copy(set = k => set(k) map f)
+case class ObjectF[I, O, E, X](method: I => E \/ (O, X)) {
+  def map[Y](f: X => Y): ObjectF[I, O, E, Y] =
+    ObjectF(i => method(i).map(_ map f))
 }
 
-case class IStoreF[K, V, X](get: V, set: K => X) {
-  def map[Y](f: X => Y): IStoreF[K, V, Y] = copy(set = k => f(set(k)))
+case class TransitionSystemF[X](next: List[X]) {
+  def map[Y](f: X => Y): TransitionSystemF[Y] =
+    TransitionSystemF(next map f)
 }
 
 case class EntityF[I, O, B, X](observe: B, next: I => (List[O], Option[X])) {
@@ -38,50 +48,29 @@ object EntityF {
   implicit def fromStreamF[H, X](
       co: Stream[H, X]): Entity[Unit, Void, H, X] = { s =>
     val StreamF(h, t) = co(s)
-    EntityF(h, _ => (List.empty, t))
-  }
-
-  implicit def fromIStreamF[H, X](
-      co: IStream[H, X]): Entity[Unit, Void, H, X] = { s =>
-    val IStreamF(h, t) = co(s)
     EntityF(h, _ => (List.empty, Option(t)))
   }
 
-  implicit def fromAutomataF[I, O, X](
-      co: Automata[I, O, X]): Entity[I, O, Unit, X] = { s =>
-    val AutomataF(tr) = co(s)
-    EntityF((), i => tr(i).fold(
-      (List.empty[O], None: Option[X])) { case (o, x) => (List(o), Option(x)) })
+  implicit def fromMooreF[I, O, X](
+      co: Moore[I, O, X]): Entity[I, Void, O, X] = { s =>
+    val MooreF(o, nxt) = co(s)
+    EntityF(o, i => (List.empty, Option(nxt(i))))
   }
 
-  implicit def fromIAutomataF[I, O, X](
-      co: IAutomata[I, O, X]): Entity[I, O, Unit, X] = { s =>
-    val IAutomataF(tr) = co(s)
-    EntityF((), i => tr(i).mapElements(List(_), Option.apply))
+  implicit def fromMealyF[I, O, X](
+      co: Mealy[I, O, X]): Entity[I, O, Unit, X] = { s =>
+    val MealyF(nxt) = co(s)
+    EntityF((), i => nxt(i).bimap(List.apply[O], Option.apply))
   }
 
-  implicit def fromStoreF[K, V, X](
-      co: Store[K, V, X]): Entity[K, Void, V, X] = { s =>
-    val StoreF(get, set) = co(s)
-    EntityF(get, i => (List.empty, set(i)))
+  implicit def fromObjectF[I, O, E, X](
+      co: Object[I, O, E, X]): Entity[I, E \/ O, Unit, X] = { s =>
+    val ObjectF(method) = co(s)
+    EntityF((), i => method(i).fold(
+      e => halt ~> e.left[O],
+      ox => ox._2 ~> ox._1.right[E]
+    ))
   }
-
-  implicit def fromIStoreF[K, V, X](
-      co: IStore[K, V, X]): Entity[K, Void, V, X] = { s =>
-    val IStoreF(get, set) = co(s)
-    EntityF(get, i => (List.empty, Option(set(i))))
-  }
-
-  implicit def fromIEntityF[I, O, B, X](
-      co: IEntity[I, O, B, X]): Entity[I, O, B, X] = { s =>
-    val IEntityF(obs, nxt) = co(s)
-    EntityF(obs, i => nxt(i).map(Option.apply))
-  }
-}
-
-case class IEntityF[I, O, B, X](observe: B, next: I => (List[O], X)) {
-  def map[Y](f: X => Y): IEntityF[I, O, B, Y] =
-    copy(next = i => next(i) map f)
 }
 
 trait CodataInstances {
@@ -90,31 +79,23 @@ trait CodataInstances {
     def map[A, B](r: StreamF[H, A])(f: A => B) = r map f
   }
 
-  implicit def IStreamFFunctor[H] = new Functor[IStreamF[H, ?]] {
-    def map[A, B](r: IStreamF[H, A])(f: A => B) = r map f
+  implicit def MooreFFunctor[I, O] = new Functor[MooreF[I, O, ?]] {
+    def map[A, B](r: MooreF[I, O, A])(f: A => B) = r map f
   }
 
-  implicit def AutomataFFunctor[I, O] = new Functor[AutomataF[I, O, ?]] {
-    def map[A, B](r: AutomataF[I, O, A])(f: A => B) = r map f
+  implicit def MealyFFunctor[I, O] = new Functor[MealyF[I, O, ?]] {
+    def map[A, B](r: MealyF[I, O, A])(f: A => B) = r map f
   }
 
-  implicit def IAutomataFFunctor[I, O] = new Functor[IAutomataF[I, O, ?]] {
-    def map[A, B](r: IAutomataF[I, O, A])(f: A => B) = r map f
+  implicit def ObjectFFunctor[I, O, E] = new Functor[ObjectF[I, O, E, ?]] {
+    def map[A, B](r: ObjectF[I, O, E, A])(f: A => B) = r map f
   }
 
-  implicit def StoreFFunctor[K, V] = new Functor[StoreF[K, V, ?]] {
-    def map[A, B](r: StoreF[K, V, A])(f: A => B) = r map f
-  }
-
-  implicit def IStoreFFunctor[K, V] = new Functor[IStoreF[K, V, ?]] {
-    def map[A, B](r: IStoreF[K, V, A])(f: A => B) = r map f
+  implicit def TransitionSystemF = new Functor[TransitionSystemF[?]] {
+    def map[A, B](r: TransitionSystemF[A])(f: A => B) = r map f
   }
 
   implicit def EntityFFunctor[I, O, C] = new Functor[EntityF[I, O, C, ?]] {
     def map[A, B](r: EntityF[I, O, C, A])(f: A => B) = r map f
-  }
-
-  implicit def IEntityFFunctor[I, O, C] = new Functor[IEntityF[I, O, C, ?]] {
-    def map[A, B](r: IEntityF[I, O, C, A])(f: A => B) = r map f
   }
 }
