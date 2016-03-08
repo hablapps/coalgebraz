@@ -14,6 +14,8 @@ object Milner extends App {
     case CS2 => List(coffee.left -> CS0)
   }
 
+  runMilnerIO(cs)(CS0)
+
   // def CM = coin._coffee_.CM
   val cm: Milner[Channel, CMState] = milner {
     case CM0 => List(coin.left -> CM1)
@@ -48,4 +50,21 @@ object Milner extends App {
   case object coin extends Channel
   case object coffee extends Channel
   case object tea extends Channel
+
+  object Channel {
+    implicit val readChannel: Read[Channel \/ Channel] =
+      new Read[Channel \/ Channel] {
+        def read(s: String): Option[Channel \/ Channel] = s match {
+          case "pub" => pub.left.some
+          case "coin" => coin.left.some
+          case "coffee" => coffee.left.some
+          case "tea" => tea.left.some
+          case "_pub_" => pub.right.some
+          case "_coin_" => coin.right.some
+          case "_coffee_" => coffee.right.some
+          case "_tea_" => tea.right.some
+          case _ => Option.empty
+        }
+      }
+  }
 }

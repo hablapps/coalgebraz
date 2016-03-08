@@ -1,6 +1,6 @@
 package coalgebraz
 
-import scalaz._, Scalaz._, Scalaz.{ Identity => _ }
+import scalaz._, Scalaz._
 
 import Coalgebraz._
 
