@@ -7,7 +7,7 @@ import scalaz._, Scalaz._
 
 import Coalgebraz._
 
-// The following examples have been obtained from these lecture notes:
+// The following examples were obtained from these nice lecture notes:
 // http://people.cis.ksu.edu/~schmidt/705a/Lectures/intro2ccs.pdf
 object Milner extends App {
 
@@ -30,6 +30,9 @@ object Milner extends App {
     case CTM1 => (coffee.out % CTM0) ++ (tea.out % CTM0)
   }
 
+  // RCTM =def= CTM \ tea
+  def RCTM: Milner[Channel, CTMState] = CTM \ tea
+
   // CS | CM
   def cs_cm: Milner[Channel \/ Channel, (CSState, CMState)] = CS | CM
 
@@ -44,12 +47,10 @@ object Milner extends App {
   val SmUni: Milner[Channel \/ Channel, (CSState, CMState)] =
     (CS | CM) \ coin.right \ coffee.right
 
-  runMilnerIO(CTM \ tea)(CTM0, l => println(s"⇒ $l"), r => println(s"⇒ _${r}_"))
-
-  runMilnerIO(SmUni)(
-    (CS0, CM0),
-    l => println(s"⇒ <| ${ l.fold(_.toString, "_" + _ + "_") }"),
-    r => println(s"⇒ |> ${ r.fold(_.toString, "_" + _ + "_") }"))
+  // runMilnerIO(SmUni)(
+  //   (CS0, CM0),
+  //   l => println(s"⇒ <| ${ l.fold(_.toString, "_" + _ + "_") }"),
+  //   r => println(s"⇒ |> ${ r.fold(_.toString, "_" + _ + "_") }"))
 
   trait CSState
   case object CS0 extends CSState
