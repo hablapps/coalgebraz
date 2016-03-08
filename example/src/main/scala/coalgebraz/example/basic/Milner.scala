@@ -28,7 +28,7 @@ object Milner extends App {
   }
 
   // CS | CM
-  val cs_cm: Milner[Channel, (CSState, CMState)] = cs | cm
+  val cs_cm: Milner[Channel \/ Channel, (CSState, CMState)] = cs | cm
 
   trait CSState
   case object CS0 extends CSState
