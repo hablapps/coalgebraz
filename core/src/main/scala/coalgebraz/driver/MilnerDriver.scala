@@ -13,28 +13,31 @@ trait MilnerDriver {
 
   def runMilnerIO[A, X](
       m: Milner[A, X])(
-      x: X)(implicit
+      x: X,
+      el: A => Unit,
+      er: A => Unit)(implicit
       ev0: Read[A \/ A]): Unit =
-    runDisjTreeIO(unfoldMilner(m)(x))
+    runDisjTreeIO(unfoldMilner(m)(x))(el, er)
 
-  def runDisjTreeIO[A](dt: DisjTree[A])(implicit ev0: Read[A \/ A]): Unit = {
-    dt.branches.foreach { b =>
-      println(s"""⇒ ${b._1.fold(in => in, out => "_" + out + "_")}""")
-    }
+  def runDisjTreeIO[A](
+      dt: DisjTree[A])(
+      el: A => Unit, er: A => Unit)(implicit
+      ev0: Read[A \/ A]): Unit = {
+    dt.branches.foreach(b => b._1.fold(el, er))
     val s = readLine("z> ")
     val oa = Read[A \/ A].read(s)
     oa.fold(s match {
-      case "" => runDisjTreeIO(dt)
+      case "" => runDisjTreeIO(dt)(el, er)
       case "exit" => println("Bye!")
       case _ => {
         println(s"unknown input: '$s'")
-        runDisjTreeIO(dt)
+        runDisjTreeIO(dt)(el, er)
       }
     }) { a =>
       dt.branches.find(_._1 == a).fold {
         println(s"invalid transition: '$s'")
-        runDisjTreeIO(dt)
-      } { case (_, dt2) => runDisjTreeIO(dt2) }
+        runDisjTreeIO(dt)(el, er)
+      } { case (_, dt2) => runDisjTreeIO(dt2)(el, er) }
     }
   }
 

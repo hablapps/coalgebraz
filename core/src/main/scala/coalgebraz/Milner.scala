@@ -33,7 +33,8 @@ trait MilnerCore extends syntax.ToMilnerOps {
 
     def handshake(
         nxt1: LazyList[(A \/ A, X1)],
-        nxt2: LazyList[(A \/ A, X2)]): (LazyList[(A \/ A, X1)], LazyList[(A \/ A, X2)]) = {
+        nxt2: LazyList[(A \/ A, X2)])
+        : (LazyList[(A \/ A, X1)], LazyList[(A \/ A, X2)]) = {
       filter2(nxt1, nxt2)((tp1, tp2) => isDual(tp1._1, tp2._1)).headOption.fold(
         (nxt1, nxt2)) {
           case ((_, x1), (_, x2)) => handshake(m1(x1).next, m2(x2).next)
