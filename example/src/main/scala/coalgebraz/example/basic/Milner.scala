@@ -1,36 +1,44 @@
 package coalgebraz
 package example.basic
 
+import scala.collection.immutable.{ Stream => LazyList }
+
 import scalaz._, Scalaz._
 
 import Coalgebraz._
 
 object Milner extends App {
 
-  // def CS = _pub_._coin_.coffee.CS
+  // CS =def= _pub_._coin_.coffee.CS
   val cs: Milner[Channel, CSState] = milner {
-    case CS0 => List(pub.right -> CS1)
-    case CS1 => List(coin.right -> CS2)
-    case CS2 => List(coffee.left -> CS0)
+    case CS0 => LazyList(pub.right -> CS1)
+    case CS1 => LazyList(coin.right -> CS2)
+    case CS2 => LazyList(coffee.left -> CS0)
   }
 
   runMilnerIO(cs)(CS0)
 
-  // def CM = coin._coffee_.CM
+  // CM =def= coin._coffee_.CM
   val cm: Milner[Channel, CMState] = milner {
-    case CM0 => List(coin.left -> CM1)
-    case CM1 => List(coffee.right -> CM0)
+    case CM0 => LazyList(coin.left -> CM1)
+    case CM1 => LazyList(coffee.right -> CM0)
   }
 
-  // def CTM = coin.(_coffee_.CTM + _tea_.CTM)
+  runMilnerIO(cm)(CM0)
+
+  // CTM =def= coin.(_coffee_.CTM + _tea_.CTM)
   val ctm: Milner[Channel, CTMState] = milner {
-    case CTM0 => List(coin.left -> CTM1)
+    case CTM0 => LazyList(coin.left -> CTM1)
     // non-determinism
-    case CTM1 => List(coffee.right -> CTM0, tea.right -> CTM0)
+    case CTM1 => LazyList(coffee.right -> CTM0, tea.right -> CTM0)
   }
+
+  runMilnerIO(ctm)(CTM0)
 
   // CS | CM
   val cs_cm: Milner[Channel \/ Channel, (CSState, CMState)] = cs | cm
+
+  // runMilnerIO(cs_cm)((CS0, CM0))
 
   trait CSState
   case object CS0 extends CSState

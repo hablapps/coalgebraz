@@ -1,5 +1,7 @@
 package coalgebraz
 
+import scala.collection.immutable.{ Stream => LazyList }
+
 import scalaz._, Scalaz._
 
 import Coalgebraz._
@@ -38,9 +40,21 @@ case class TransitionSystemF[X](next: List[X]) {
     TransitionSystemF(next map f)
 }
 
-case class MilnerF[A, X](next: List[(A \/ A, X)]) {
+class MilnerF[A, X](_next: => LazyList[(A \/ A, X)]) {
+
+  def next: LazyList[(A \/ A, X)] = _next
+
   def map[Y](f: X => Y): MilnerF[A, Y] =
     MilnerF(next map (_ map f))
+}
+
+object MilnerF {
+
+  def apply[A, X](next: => LazyList[(A \/ A, X)]): MilnerF[A, X] =
+    new MilnerF(next)
+
+  def unapply[A, X](mf: MilnerF[A, X]): Option[LazyList[(A \/ A, X)]] =
+    Option(mf.next)
 }
 
 case class EntityF[I, O, B, X](observe: B, next: I => (List[O], Option[X])) {

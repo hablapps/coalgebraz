@@ -1,6 +1,8 @@
 package coalgebraz
 package driver
 
+import scala.collection.immutable.{ Stream => LazyList }
+
 import scala.io.StdIn.readLine
 
 import scalaz._, Scalaz._
@@ -41,5 +43,12 @@ trait MilnerDriver {
   def anaMilner[A, X](m: Milner[A, X]): X => DisjTree[A] =
     m andThen (_ map anaMilner(m)) andThen (mf => DisjTree(mf.next))
 
-  case class DisjTree[A](branches: List[(A \/ A, DisjTree[A])])
+  class DisjTree[A](_branches: => LazyList[(A \/ A, DisjTree[A])]) {
+    def branches: LazyList[(A \/ A, DisjTree[A])] = _branches
+  }
+
+  object DisjTree {
+    def apply[A](branches: => LazyList[(A \/ A, DisjTree[A])]): DisjTree[A] =
+      new DisjTree(branches)
+  }
 }

@@ -1,12 +1,14 @@
 package coalgebraz
 
+import scala.collection.immutable.{ Stream => LazyList }
+
 import scalaz._, Scalaz._
 
 trait MilnerCore extends syntax.ToMilnerOps {
 
   type Milner[A, X] = Coalgebra[MilnerF[A, ?], X]
 
-  def milner[A, X](pi1: X => List[(A \/ A, X)]): Milner[A, X] =
+  def milner[A, X](pi1: X => LazyList[(A \/ A, X)]): Milner[A, X] =
     x => MilnerF(pi1(x))
 
   def parallel[A, X1, X2, X](
@@ -15,8 +17,8 @@ trait MilnerCore extends syntax.ToMilnerOps {
       ev0: ClearProduct.Aux[X1, X2, X]): Milner[A \/ A, X] = { x =>
 
     def filter2[A, B](
-        l1: List[A], l2: List[B])(
-        p: (A, B) => Boolean): List[(A, B)] =
+        l1: LazyList[A], l2: LazyList[B])(
+        p: (A, B) => Boolean): LazyList[(A, B)] =
       for {
         a <- l1
         b <- l2
@@ -30,8 +32,8 @@ trait MilnerCore extends syntax.ToMilnerOps {
     }
 
     def handshake(
-        nxt1: List[(A \/ A, X1)],
-        nxt2: List[(A \/ A, X2)]): (List[(A \/ A, X1)], List[(A \/ A, X2)]) = {
+        nxt1: LazyList[(A \/ A, X1)],
+        nxt2: LazyList[(A \/ A, X2)]): (LazyList[(A \/ A, X1)], LazyList[(A \/ A, X2)]) = {
       filter2(nxt1, nxt2)((tp1, tp2) => isDual(tp1._1, tp2._1)).headOption.fold(
         (nxt1, nxt2)) {
           case ((_, x1), (_, x2)) => handshake(m1(x1).next, m2(x2).next)
