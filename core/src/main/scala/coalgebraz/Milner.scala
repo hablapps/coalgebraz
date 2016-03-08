@@ -50,6 +50,9 @@ trait MilnerCore extends MilnerDSL with syntax.ToMilnerOps {
       _nxt1.map(_.bimap(_.left, ev0(_, x2))) ++
         _nxt2.map(_.bimap(_.right, ev0(x1, _))))
   }
+
+  def restrict[A, X](m: Milner[A, X])(act: A): Milner[A, X] = milner(
+    m(_).next.filter(ax => ax._1.fold(_ != act, _ != act)))
 }
 
 trait MilnerDSL {
@@ -58,4 +61,11 @@ trait MilnerDSL {
     def in: A \/ A = a.left
     def out: A \/ A = a.right
   }
+
+  implicit class SharpHelper[A](a: A \/ A) {
+    def %[X](x: X): LazyList[(A \/ A, X)] = LazyList((a, x))
+  }
+
+  def prefix[A, X](ax: (A \/ A, X)): LazyList[(A \/ A, X)] =
+    LazyList(ax)
 }

@@ -13,21 +13,21 @@ object Milner extends App {
 
   // CS =def= _pub_._coin_.coffee.CS
   def CS: Milner[Channel, CSState] = milner {
-    case CS0 => LazyList(pub.out -> CS1)
-    case CS1 => LazyList(coin.out -> CS2)
-    case CS2 => LazyList(coffee.in -> CS0)
+    case CS0 => pub.out % CS1
+    case CS1 => coin.out % CS2
+    case CS2 => coffee.in % CS0
   }
 
   // CM =def= coin._coffee_.CM
   def CM: Milner[Channel, CMState] = milner {
-    case CM0 => LazyList(coin.in -> CM1)
-    case CM1 => LazyList(coffee.out -> CM0)
+    case CM0 => coin.in % CM1
+    case CM1 => coffee.out % CM0
   }
 
   // CTM =def= coin.(_coffee_.CTM + _tea_.CTM)
   def CTM: Milner[Channel, CTMState] = milner {
-    case CTM0 => LazyList(coin.in -> CTM1)
-    case CTM1 => LazyList(coffee.out -> CTM0, tea.out -> CTM0)
+    case CTM0 => coin.in % CTM1
+    case CTM1 => (coffee.out % CTM0) ++ (tea.out % CTM0)
   }
 
   // CS | CM
@@ -40,8 +40,14 @@ object Milner extends App {
 
   // TODO: CS | CM | CM'
 
-  runMilnerIO(cs_cs)(
-    (CS0, CS0),
+  // (CS | CM) \ coin \ coffee
+  val SmUni: Milner[Channel \/ Channel, (CSState, CMState)] =
+    (CS | CM) \ coin.right \ coffee.right
+
+  runMilnerIO(CTM \ tea)(CTM0, l => println(s"⇒ $l"), r => println(s"⇒ _${r}_"))
+
+  runMilnerIO(SmUni)(
+    (CS0, CM0),
     l => println(s"⇒ <| ${ l.fold(_.toString, "_" + _ + "_") }"),
     r => println(s"⇒ |> ${ r.fold(_.toString, "_" + _ + "_") }"))
 
