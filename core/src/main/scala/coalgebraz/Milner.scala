@@ -4,7 +4,7 @@ import scala.collection.immutable.{ Stream => LazyList }
 
 import scalaz._, Scalaz._
 
-trait MilnerCore extends syntax.ToMilnerOps {
+trait MilnerCore extends MilnerDSL with syntax.ToMilnerOps {
 
   type Milner[A, X] = Coalgebra[MilnerF[A, ?], X]
 
@@ -49,5 +49,13 @@ trait MilnerCore extends syntax.ToMilnerOps {
     MilnerF(
       _nxt1.map(_.bimap(_.left, ev0(_, x2))) ++
         _nxt2.map(_.bimap(_.right, ev0(x1, _))))
+  }
+}
+
+trait MilnerDSL {
+
+  implicit class InOutHelper[A](a: A) {
+    def in: A \/ A = a.left
+    def out: A \/ A = a.right
   }
 }

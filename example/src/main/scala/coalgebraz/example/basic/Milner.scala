@@ -7,38 +7,41 @@ import scalaz._, Scalaz._
 
 import Coalgebraz._
 
+// The following examples have been obtained from these lecture notes:
+// http://people.cis.ksu.edu/~schmidt/705a/Lectures/intro2ccs.pdf
 object Milner extends App {
 
   // CS =def= _pub_._coin_.coffee.CS
-  val cs: Milner[Channel, CSState] = milner {
-    case CS0 => LazyList(pub.right -> CS1)
-    case CS1 => LazyList(coin.right -> CS2)
-    case CS2 => LazyList(coffee.left -> CS0)
+  def CS: Milner[Channel, CSState] = milner {
+    case CS0 => LazyList(pub.out -> CS1)
+    case CS1 => LazyList(coin.out -> CS2)
+    case CS2 => LazyList(coffee.in -> CS0)
   }
-
-  // runMilnerIO(cs)(CS0)
 
   // CM =def= coin._coffee_.CM
-  val cm: Milner[Channel, CMState] = milner {
-    case CM0 => LazyList(coin.left -> CM1)
-    case CM1 => LazyList(coffee.right -> CM0)
+  def CM: Milner[Channel, CMState] = milner {
+    case CM0 => LazyList(coin.in -> CM1)
+    case CM1 => LazyList(coffee.out -> CM0)
   }
-
-  // runMilnerIO(cm)(CM0)
 
   // CTM =def= coin.(_coffee_.CTM + _tea_.CTM)
-  val ctm: Milner[Channel, CTMState] = milner {
-    case CTM0 => LazyList(coin.left -> CTM1)
-    case CTM1 => LazyList(coffee.right -> CTM0, tea.right -> CTM0)
+  def CTM: Milner[Channel, CTMState] = milner {
+    case CTM0 => LazyList(coin.in -> CTM1)
+    case CTM1 => LazyList(coffee.out -> CTM0, tea.out -> CTM0)
   }
 
-  // runMilnerIO(ctm)(CTM0)
-
   // CS | CM
-  val cs_cm: Milner[Channel \/ Channel, (CSState, CMState)] = cs | cm
+  def cs_cm: Milner[Channel \/ Channel, (CSState, CMState)] = CS | CM
 
-  runMilnerIO(cs_cm)(
-    (CS0, CM0),
+  // CS | CS'
+  def cs_cs: Milner[Channel \/ Channel, (CSState, CSState)] = CS | CS
+
+  // TODO: CS | CS' | CM
+
+  // TODO: CS | CM | CM'
+
+  runMilnerIO(cs_cs)(
+    (CS0, CS0),
     l => println(s"⇒ <| ${ l.fold(_.toString, "_" + _ + "_") }"),
     r => println(s"⇒ |> ${ r.fold(_.toString, "_" + _ + "_") }"))
 
@@ -65,14 +68,14 @@ object Milner extends App {
     implicit val readChannel: Read[Channel \/ Channel] =
       new Read[Channel \/ Channel] {
         def read(s: String): Option[Channel \/ Channel] = s match {
-          case "pub" => pub.left.some
-          case "coin" => coin.left.some
-          case "coffee" => coffee.left.some
-          case "tea" => tea.left.some
-          case "_pub_" => pub.right.some
-          case "_coin_" => coin.right.some
-          case "_coffee_" => coffee.right.some
-          case "_tea_" => tea.right.some
+          case "pub" => pub.in.some
+          case "coin" => coin.in.some
+          case "coffee" => coffee.in.some
+          case "tea" => tea.in.some
+          case "_pub_" => pub.out.some
+          case "_coin_" => coin.out.some
+          case "_coffee_" => coffee.out.some
+          case "_tea_" => tea.out.some
           case _ => Option.empty
         }
       }
