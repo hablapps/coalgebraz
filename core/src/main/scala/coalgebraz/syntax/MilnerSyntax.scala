@@ -13,6 +13,8 @@ class MilnerOps[A1, X1](val self: Milner[A1, X1]) {
     parallel(self, m2)
 
   def \(a: A1): Milner[A1, X1] = restrict(self)(a)
+
+  def rename[A2](rs: (A1, A2)*): Milner[A2, X1] = renaming(self)(rs: _*)
 }
 
 trait ToMilnerOps {

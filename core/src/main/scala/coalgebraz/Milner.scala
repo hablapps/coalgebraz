@@ -6,6 +6,8 @@ import scala.collection.immutable.{ Stream => LazyList }
 
 import scalaz._, Scalaz._
 
+import Coalgebraz._
+
 trait MilnerCore extends MilnerDSL with syntax.ToMilnerOps {
 
   type Milner[A, X] = Coalgebra[MilnerF[A, ?], X]
@@ -57,6 +59,16 @@ trait MilnerCore extends MilnerDSL with syntax.ToMilnerOps {
 
   def restrict[A, X](m: Milner[A, X])(act: A): Milner[A, X] = milner(
     m(_).next.filter(ax => ax._1.fold(_ != act, _ != act)))
+
+  def renaming[A1, A2, X](m: Milner[A1, X])(rs: (A1, A2)*): Milner[A2, X] = {
+    val pf: PartialFunction[A1 \/ A1, A2 \/ A2] = rs
+      .map { case (a1, a2) => {
+        case -\/(`a1`) => -\/(a2)
+        case \/-(`a1`) => \/-(a2)
+      }: PartialFunction[A1 \/ A1, A2 \/ A2] }
+      .foldRight(PartialFunction.empty[A1 \/ A1, A2 \/ A2])(_ orElse _)
+    milner(m(_).next.map(_.swap.map(pf).swap))
+  }
 }
 
 trait MilnerDSL {
@@ -72,4 +84,8 @@ trait MilnerDSL {
 
   def prefix[A, X](ax: (A \/ A, X)): LazyList[(A \/ A, X)] =
     LazyList(ax)
+
+  implicit class RenameHelper[A](a: A) {
+    def /[B](b: B): (B, A) = (b, a)
+  }
 }

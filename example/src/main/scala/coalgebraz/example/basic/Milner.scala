@@ -46,29 +46,54 @@ object Milner extends App {
 
   // TODO: CS | CM | CM'
 
-  // (CS | CM) \ coin \ coffee
-  val SmUni: Milner[Channel \/ Channel, (CSState, CMState)] =
+  // SmUni =def= (CS | CM) \ coin \ coffee
+  def SmUni: Milner[Channel \/ Channel, (CSState, CMState)] =
     (CS | CM) \ coin.right \ coffee.right
 
-  runMilnerIO(SmUni)(
-    (CS0, CM0),
-    l => println(s"⇒ <| ${ l.fold(_.toString, "_" + _ + "_") }"),
-    r => println(s"⇒ |> ${ r.fold(_.toString, "_" + _ + "_") }"))
+  // VM  =def= coin._item_.VM
+  def VM: Milner[GenChannel, GenState] = milner {
+    case S0 => item0.in  % S1
+    case S1 => item1.out % S0
+  }
 
-  trait CSState
+  // CM2 =def= VM[coffee/item]
+  // XXX: What about state, should we convert to CMState? => should be easy!
+  def CM2: Milner[Channel, GenState] =
+    VM rename (coin / item0, coffee / item1)
+
+  runMilnerIO(CM2)(S0, l => println(s"⇒ $l"), r => println(s"⇒ _${r}_"))
+
+  // runMilnerIO(SmUni)(
+  //   (CS0, CM0),
+  //   l => println(s"⇒ <| ${ l.fold(_.toString, "_" + _ + "_") }"),
+  //   r => println(s"⇒ |> ${ r.fold(_.toString, "_" + _ + "_") }"))
+
+  sealed trait CSState
   case object CS0 extends CSState
   case object CS1 extends CSState
   case object CS2 extends CSState
 
-  trait CMState
+  sealed trait CMState
   case object CM0 extends CMState
   case object CM1 extends CMState
 
-  trait CTMState
+  sealed trait CTMState
   case object CTM0 extends CTMState
   case object CTM1 extends CTMState
 
-  trait Channel
+  sealed trait GenState
+  case object S0 extends GenState
+  case object S1 extends GenState
+  // ...
+  // case object SN extends GenState
+
+  sealed trait GenChannel
+  case object item0 extends GenChannel
+  case object item1 extends GenChannel
+  // ...
+  // case object itemN extends GenChannel
+
+  sealed trait Channel
   case object pub extends Channel
   case object coin extends Channel
   case object coffee extends Channel
