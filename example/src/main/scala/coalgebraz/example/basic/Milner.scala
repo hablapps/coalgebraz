@@ -11,6 +11,9 @@ import Coalgebraz._
 // http://people.cis.ksu.edu/~schmidt/705a/Lectures/intro2ccs.pdf
 object Milner extends App {
 
+  // 0
+  def zero: Milner[Channel, Unit] = empty
+
   // CS =def= _pub_._coin_.coffee.CS
   def CS: Milner[Channel, CSState] = milner {
     case CS0 => pub.out % CS1
@@ -45,7 +48,7 @@ object Milner extends App {
 
   // (CS | CM) \ coin \ coffee
   val SmUni: Milner[Channel \/ Channel, (CSState, CMState)] =
-    (CS | CM) /*\ coin.right*/ \ coffee.right
+    (CS | CM) \ coin.right \ coffee.right
 
   runMilnerIO(SmUni)(
     (CS0, CM0),

@@ -1,5 +1,7 @@
 package coalgebraz
 
+import Function.const
+
 import scala.collection.immutable.{ Stream => LazyList }
 
 import scalaz._, Scalaz._
@@ -10,6 +12,8 @@ trait MilnerCore extends MilnerDSL with syntax.ToMilnerOps {
 
   def milner[A, X](pi1: X => LazyList[(A \/ A, X)]): Milner[A, X] =
     x => MilnerF(pi1(x))
+
+  def empty[A, X]: Milner[A, X] = milner(const(LazyList.empty))
 
   def parallel[A, X1, X2, X](
       m1: Milner[A, X1],
