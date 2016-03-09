@@ -12,14 +12,29 @@ import Coalgebraz._
 object Milner extends App {
 
   // 0
-  def zero: Milner[Channel, Unit] = empty
+  empty
+
+  // CF =def= coffee._tea_.0
+  def CF: Milner[Channel, CFState] =
+    (coffee.in -> CF1) %:
+      (tea.out -> CF2) %:
+      (tea.in -> CF3 /* should I care? */) %:
+      empty[Channel, CFState]
+
+  runMilnerIO(CF)(CF0, l => println(s"⇒ $l"), r => println(s"⇒ _${r}_"))
 
   // CS =def= _pub_._coin_.coffee.CS
+
   def CS: Milner[Channel, CSState] = milner {
     case CS0 => pub.out % CS1
     case CS1 => coin.out % CS2
     case CS2 => coffee.in % CS0
   }
+
+  def CS_2: Milner[Channel, CSState] =
+    (pub.out -> CS1) %: (coin.out -> CS2) %: (coffee.in -> CS0) %: CS_2
+
+  // runMilnerIO(CS_2)(CS0, l => println(s"⇒ $l"), r => println(s"⇒ _${r}_"))
 
   // CM =def= coin._coffee_.CM
   def CM: Milner[Channel, CMState] = milner {
@@ -65,12 +80,31 @@ object Milner extends App {
   //   l => println(s"⇒ <| ${ l.fold(_.toString, "_" + _ + "_") }"),
   //   r => println(s"⇒ |> ${ r.fold(_.toString, "_" + _ + "_") }"))
 
-  runMilnerIO(CM2)(CM0, l => println(s"⇒ $l"), r => println(s"⇒ _${r}_"))
+  // runMilnerIO(CM2)(CM0, l => println(s"⇒ $l"), r => println(s"⇒ _${r}_"))
+
+  sealed trait CFState
+  case object CF0 extends CFState
+  case object CF1 extends CFState
+  case object CF2 extends CFState
+  case object CF3 extends CFState
+
+  object CFState {
+    implicit val orderedInstance: Ordered[CFState] = new Ordered[CFState] {
+      // XXX: haha, what a crap!
+      def compare(a1: CFState, a2: CFState) = a1.toString compare a2.toString
+    }
+  }
 
   sealed trait CSState
   case object CS0 extends CSState
   case object CS1 extends CSState
   case object CS2 extends CSState
+
+  object CSState {
+    implicit val orderedInstance: Ordered[CSState] = new Ordered[CSState] {
+      def compare(a1: CSState, a2: CSState) = a1.toString compare a2.toString
+    }
+  }
 
   sealed trait CMState
   case object CM0 extends CMState

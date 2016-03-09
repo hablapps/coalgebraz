@@ -17,6 +17,21 @@ trait MilnerCore extends MilnerDSL with syntax.ToMilnerOps {
 
   def empty[A, X]: Milner[A, X] = milner(const(LazyList.empty))
 
+  trait Ordered[A] {
+    def compare(a1: A, a2: A): Int
+    def lt(a1: A, a2: A): Boolean = compare(a1, a2) < 0
+    def let(a1: A, a2: A): Boolean = compare(a1, a2) <= 0
+    def gt(a1: A, a2: A): Boolean = compare(a1, a2) > 0
+    def get(a1: A, a2: A): Boolean = compare(a1, a2) >= 0
+  }
+
+  object Ordered {
+    def apply[A](implicit ev: Ordered[A]): Ordered[A] = ev
+  }
+
+  def prefix[A, X: Ordered](m: Milner[A, X])(ax: (A \/ A, X)): Milner[A, X] =
+    milner(x => if (Ordered[X].get(x, ax._2)) m(x).next else LazyList(ax))
+
   def parallel[A, X1, X2, X](
       m1: Milner[A, X1],
       m2: Milner[A, X2])(implicit

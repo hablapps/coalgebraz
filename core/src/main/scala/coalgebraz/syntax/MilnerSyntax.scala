@@ -18,6 +18,9 @@ class MilnerOps[A1, X1](val self: Milner[A1, X1]) {
       rs: (A1, A2)*)(implicit
       ev0: X1 <-> X2): Milner[A2, X2] =
     renaming(self)(rs: _*)(ev0)
+
+  def %:(a1: (A1 \/ A1, X1))(implicit ev: Ordered[X1]): Milner[A1, X1] =
+    prefix(self)(a1)
 }
 
 trait ToMilnerOps {
