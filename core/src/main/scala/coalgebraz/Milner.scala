@@ -47,8 +47,8 @@ trait MilnerCore extends MilnerDSL with syntax.ToMilnerOps {
     val (_nxt1, _nxt2) = handshake(m1(x1).next, m2(x2).next)
 
     MilnerF(
-      _nxt1.map(_.bimap(_.left, ev0(_, x2))) ++
-        _nxt2.map(_.bimap(_.right, ev0(x1, _))))
+      _nxt1.map(_.bimap(_.fold(_.left.left, _.left.right), ev0(_, x2))) ++
+        _nxt2.map(_.bimap(_.fold(_.right.left, _.right.right), ev0(x1, _))))
   }
 
   def restrict[A, X](m: Milner[A, X])(act: A): Milner[A, X] = milner(

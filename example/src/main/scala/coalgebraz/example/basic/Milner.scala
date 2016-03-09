@@ -45,12 +45,12 @@ object Milner extends App {
 
   // (CS | CM) \ coin \ coffee
   val SmUni: Milner[Channel \/ Channel, (CSState, CMState)] =
-    (CS | CM) \ coin.right \ coffee.right
+    (CS | CM) /*\ coin.right*/ \ coffee.right
 
-  // runMilnerIO(SmUni)(
-  //   (CS0, CM0),
-  //   l => println(s"⇒ <| ${ l.fold(_.toString, "_" + _ + "_") }"),
-  //   r => println(s"⇒ |> ${ r.fold(_.toString, "_" + _ + "_") }"))
+  runMilnerIO(SmUni)(
+    (CS0, CM0),
+    l => println(s"⇒ <| ${ l.fold(_.toString, "_" + _ + "_") }"),
+    r => println(s"⇒ |> ${ r.fold(_.toString, "_" + _ + "_") }"))
 
   trait CSState
   case object CS0 extends CSState
