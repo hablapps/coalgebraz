@@ -57,16 +57,15 @@ object Milner extends App {
   }
 
   // CM2 =def= VM[coffee/item]
-  // XXX: What about state, should we convert to CMState? => should be easy!
-  def CM2: Milner[Channel, GenState] =
+  def CM2: Milner[Channel, CMState] =
     VM rename (coin / item0, coffee / item1)
-
-  runMilnerIO(CM2)(S0, l => println(s"⇒ $l"), r => println(s"⇒ _${r}_"))
 
   // runMilnerIO(SmUni)(
   //   (CS0, CM0),
   //   l => println(s"⇒ <| ${ l.fold(_.toString, "_" + _ + "_") }"),
   //   r => println(s"⇒ |> ${ r.fold(_.toString, "_" + _ + "_") }"))
+
+  runMilnerIO(CM2)(CM0, l => println(s"⇒ $l"), r => println(s"⇒ _${r}_"))
 
   sealed trait CSState
   case object CS0 extends CSState
@@ -76,6 +75,15 @@ object Milner extends App {
   sealed trait CMState
   case object CM0 extends CMState
   case object CM1 extends CMState
+
+  object CMState {
+    implicit val isoGenCMState: Iso[GenState, CMState] =
+      Iso[GenState, CMState](
+        { case S0 => CM0
+          case S1 => CM1 },
+        { case CM0 => S0
+          case CM1 => S1 })
+  }
 
   sealed trait CTMState
   case object CTM0 extends CTMState

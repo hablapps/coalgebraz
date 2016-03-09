@@ -14,7 +14,10 @@ class MilnerOps[A1, X1](val self: Milner[A1, X1]) {
 
   def \(a: A1): Milner[A1, X1] = restrict(self)(a)
 
-  def rename[A2](rs: (A1, A2)*): Milner[A2, X1] = renaming(self)(rs: _*)
+  def rename[A2, X2](
+      rs: (A1, A2)*)(implicit
+      ev0: X1 <-> X2): Milner[A2, X2] =
+    renaming(self)(rs: _*)(ev0)
 }
 
 trait ToMilnerOps {

@@ -60,14 +60,17 @@ trait MilnerCore extends MilnerDSL with syntax.ToMilnerOps {
   def restrict[A, X](m: Milner[A, X])(act: A): Milner[A, X] = milner(
     m(_).next.filter(ax => ax._1.fold(_ != act, _ != act)))
 
-  def renaming[A1, A2, X](m: Milner[A1, X])(rs: (A1, A2)*): Milner[A2, X] = {
+  def renaming[A1, A2, X1, X2](
+      m: Milner[A1, X1])(
+      rs: (A1, A2)*)(implicit
+      ev0: X1 <-> X2): Milner[A2, X2] = {
     val pf: PartialFunction[A1 \/ A1, A2 \/ A2] = rs
       .map { case (a1, a2) => {
         case -\/(`a1`) => -\/(a2)
         case \/-(`a1`) => \/-(a2)
       }: PartialFunction[A1 \/ A1, A2 \/ A2] }
       .foldRight(PartialFunction.empty[A1 \/ A1, A2 \/ A2])(_ orElse _)
-    milner(m(_).next.map(_.swap.map(pf).swap))
+    milner(x2 => m(ev0.from(x2)).next.map(_.bimap(pf, ev0.to)))
   }
 }
 
