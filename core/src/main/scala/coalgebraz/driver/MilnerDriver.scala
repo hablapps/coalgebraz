@@ -23,21 +23,25 @@ trait MilnerDriver {
       dt: DisjTree[A])(
       el: A => Unit, er: A => Unit)(implicit
       ev0: Read[A \/ A]): Unit = {
-    dt.branches.foreach(b => b._1.fold(el, er))
-    val s = readLine("z> ")
-    val oa = Read[A \/ A].read(s)
-    oa.fold(s match {
-      case "" => runDisjTreeIO(dt)(el, er)
-      case "exit" => println("Bye!")
-      case _ => {
-        println(s"unknown input: '$s'")
-        runDisjTreeIO(dt)(el, er)
+    if (dt.branches.isEmpty)
+      println("deadlocked!")
+    else {
+      dt.branches.foreach(b => b._1.fold(el, er))
+      val s = readLine("z> ")
+      val oa = Read[A \/ A].read(s)
+      oa.fold(s match {
+        case "" => runDisjTreeIO(dt)(el, er)
+        case "exit" => println("bye!")
+        case _ => {
+          println(s"unknown input: '$s'")
+          runDisjTreeIO(dt)(el, er)
+        }
+      }) { a =>
+        dt.branches.find(_._1 == a).fold {
+          println(s"invalid transition: '$s'")
+          runDisjTreeIO(dt)(el, er)
+        } { case (_, dt2) => runDisjTreeIO(dt2)(el, er) }
       }
-    }) { a =>
-      dt.branches.find(_._1 == a).fold {
-        println(s"invalid transition: '$s'")
-        runDisjTreeIO(dt)(el, er)
-      } { case (_, dt2) => runDisjTreeIO(dt2)(el, er) }
     }
   }
 

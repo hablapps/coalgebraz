@@ -42,8 +42,8 @@ object Milner extends App {
   //   r => println(s"⇒ _${r}_".toLowerCase))
 
   // CTM =def= coin.(_coffee_.CTM + _tea_.CTM)
-  def CTM: Milner[Channel, CTMState] = (coin.in -> CTM1) %: (
-    (coffee.out -> CTM0) %: CTM + (tea.out -> CTM0) %: CTM)
+  def CTM: Milner[Channel, CTMState] = (coin.in -> CTM1) %:
+    ((coffee.out -> CTM0) %: CTM + (tea.out -> CTM0) %: CTM)
 
   // runMilnerIO(CTM)(
   //   CTM0,
