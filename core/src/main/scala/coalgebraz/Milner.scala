@@ -32,9 +32,9 @@ trait MilnerCore extends MilnerDSL with syntax.ToMilnerOps {
     def apply[A](implicit ev: Ordered[A]): Ordered[A] = ev
   }
 
-  def prefix[A, X: Ordered](
+  def action[A, X: Ordered](
       m: => Milner[A, X])(
-      ax: => (A \/ A, X)): Milner[A, X] =
+      ax: (A \/ A, X)): Milner[A, X] =
     milner { x0 =>
       val x = if (x0 == Ordered[X].max) Ordered[X].min else x0
       if (Ordered[X].get(x, ax._2)) m(x).next else LazyList(ax)
@@ -107,10 +107,6 @@ trait MilnerDSL {
     def out: A \/ A = a.right
   }
 
-  implicit class SharpHelper[A](a: A \/ A) {
-    def %[X](x: X): LazyList[(A \/ A, X)] = LazyList((a, x))
-  }
-
   def prefix[A, X](ax: (A \/ A, X)): LazyList[(A \/ A, X)] =
     LazyList(ax)
 
@@ -119,6 +115,6 @@ trait MilnerDSL {
   }
 
   implicit class PrefixHelper[A, X: Ordered](m: => Milner[A, X]) {
-    def %:(aax: (A \/ A, X)): Milner[A, X] = Coalgebraz.prefix(m)(aax)
+    def %:(aax: (A \/ A, X)): Milner[A, X] = action(m)(aax)
   }
 }

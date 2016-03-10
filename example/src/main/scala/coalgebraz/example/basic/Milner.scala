@@ -29,10 +29,10 @@ object Milner extends App {
   def CS: Milner[Channel, CSState] =
     (pub.out -> CS1) %: (coin.out -> CS2) %: (coffee.in -> CS3) %: CS
 
-  // runMilnerIO(CS)(
-  //   cs0,
-  //   l => println(s"⇒ $l".toLowerCase),
-  //   r => println(s"⇒ _${r}_".toLowerCase))
+  runMilnerIO(CS)(
+    CS0,
+    l => println(s"⇒ $l".toLowerCase),
+    r => println(s"⇒ _${r}_".toLowerCase))
 
   // CM =def= coin._coffee_.CM
   def CM: Milner[Channel, CMState] =
@@ -47,10 +47,10 @@ object Milner extends App {
   def CTM: Milner[Channel, CTMState] = (coin.in -> CTM1) %: (
     (coffee.out -> CTM2) %: CTM + (tea.out -> CTM2) %: CTM)
 
-  runMilnerIO(CTM)(
-    CTM0,
-    l => println(s"⇒ $l".toLowerCase),
-    r => println(s"⇒ _${r}_".toLowerCase))
+  // runMilnerIO(CTM)(
+  //   CTM0,
+  //   l => println(s"⇒ $l".toLowerCase),
+  //   r => println(s"⇒ _${r}_".toLowerCase))
 
   // RCTM =def= CTM \ tea
   def RCTM: Milner[Channel, CTMState] = CTM \ tea
@@ -84,7 +84,7 @@ object Milner extends App {
 
   // CM_2 =def= VM[coffee/item]
   def CM_2: Milner[Channel, CMState] =
-    VM rename (coin / item0, coffee / item1)
+    VM r (coin / item0, coffee / item1)
 
   // runMilnerIO(CM_2)(
   //   CM0,
