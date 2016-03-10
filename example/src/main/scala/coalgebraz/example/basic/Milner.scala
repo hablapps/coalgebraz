@@ -11,8 +11,6 @@ import Coalgebraz._
 // http://people.cis.ksu.edu/~schmidt/705a/Lectures/intro2ccs.pdf
 object Milner extends App {
 
-  import Channel._, CFState._, CSState._
-
   // 0
   empty
 
@@ -20,10 +18,10 @@ object Milner extends App {
   def CF: Milner[Channel, CFState] =
     (coffee.in -> CF1) %: (tea.in -> CF2) %: empty[Channel, CFState]
 
-  // runMilnerIO(CF)(
-  //   CF0,
-  //   l => println(s"⇒ $l".toLowerCase),
-  //   r => println(s"⇒ _${r}_".toLowerCase))
+  runMilnerIO(CF)(
+    CF0,
+    l => println(s"⇒ $l".toLowerCase),
+    r => println(s"⇒ _${r}_".toLowerCase))
 
   // CS =def= _pub_._coin_.coffee.CS
   def CS: Milner[Channel, CSState] =
@@ -95,12 +93,11 @@ object Milner extends App {
   case object CF0 extends CFState
   case object CF1 extends CFState
   case object CF2 extends CFState
-  case object CF3 extends CFState
 
   object CFState {
     implicit val orderedInstance: Ordered[CFState] = new Ordered[CFState] {
       def min = CF0
-      def max = CF3
+      def max = CF2
       def compare(a1: CFState, a2: CFState) = a1.toString compare a2.toString
     }
   }
@@ -172,17 +169,12 @@ object Milner extends App {
   // case object itemN extends GenChannel
 
   sealed trait Channel
-  case object Pub extends Channel
-  case object Coin extends Channel
-  case object Coffee extends Channel
-  case object Tea extends Channel
+  case object pub extends Channel
+  case object coin extends Channel
+  case object coffee extends Channel
+  case object tea extends Channel
 
   object Channel {
-
-    def pub: Channel = Pub
-    def coin: Channel = Coin
-    def coffee: Channel = Coffee
-    def tea: Channel = Tea
 
     implicit val readChannel: Read[Channel \/ Channel] =
       new Read[Channel \/ Channel] {
