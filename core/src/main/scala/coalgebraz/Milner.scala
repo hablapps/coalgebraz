@@ -35,9 +35,11 @@ trait MilnerCore extends MilnerDSL with syntax.ToMilnerOps {
   def action[A, X: Ordered](
       m: => Milner[A, X])(
       ax: (A \/ A, X)): Milner[A, X] =
-    milner { x0 =>
-      val x = if (x0 == Ordered[X].max) Ordered[X].min else x0
-      if (Ordered[X].get(x, ax._2)) m(x).next else LazyList(ax)
+    milner { x =>
+      if (Ordered[X].get(x, ax._2) && Ordered[X].min != ax._2)
+        m(x).next
+      else
+        LazyList(ax)
     }
 
   def choice[A, X](m1: Milner[A, X])(m2: Milner[A, X]): Milner[A, X] =

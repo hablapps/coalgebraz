@@ -27,16 +27,16 @@ object Milner extends App {
 
   // CS =def= _pub_._coin_.coffee.CS
   def CS: Milner[Channel, CSState] =
-    (pub.out -> CS1) %: (coin.out -> CS2) %: (coffee.in -> CS3) %: CS
+    (pub.out -> CS1) %: (coin.out -> CS2) %: (coffee.in -> CS0) %: CS
 
-  runMilnerIO(CS)(
-    CS0,
-    l => println(s"⇒ $l".toLowerCase),
-    r => println(s"⇒ _${r}_".toLowerCase))
+  // runMilnerIO(CS)(
+  //   CS0,
+  //   l => println(s"⇒ $l".toLowerCase),
+  //   r => println(s"⇒ _${r}_".toLowerCase))
 
   // CM =def= coin._coffee_.CM
   def CM: Milner[Channel, CMState] =
-    (coin.in -> CM1) %: (coffee.out -> CM2) %: CM
+    (coin.in -> CM1) %: (coffee.out -> CM0) %: CM
 
   // runMilnerIO(CM)(
   //   CM0,
@@ -45,7 +45,7 @@ object Milner extends App {
 
   // CTM =def= coin.(_coffee_.CTM + _tea_.CTM)
   def CTM: Milner[Channel, CTMState] = (coin.in -> CTM1) %: (
-    (coffee.out -> CTM2) %: CTM + (tea.out -> CTM2) %: CTM)
+    (coffee.out -> CTM0) %: CTM + (tea.out -> CTM0) %: CTM)
 
   // runMilnerIO(CTM)(
   //   CTM0,
@@ -80,7 +80,7 @@ object Milner extends App {
 
   // VM  =def= coin._item_.VM
   def VM: Milner[GenChannel, GenState] =
-    (item0.in -> S1) %: (item1.out -> S2) %: VM
+    (item0.in -> S1) %: (item1.out -> S0) %: VM
 
   // CM_2 =def= VM[coffee/item]
   def CM_2: Milner[Channel, CMState] =
@@ -96,12 +96,11 @@ object Milner extends App {
   case object CF1 extends CFState
   case object CF2 extends CFState
   case object CF3 extends CFState
-  case object CF4 extends CFState
 
   object CFState {
     implicit val orderedInstance: Ordered[CFState] = new Ordered[CFState] {
       def min = CF0
-      def max = CF4
+      def max = CF3
       def compare(a1: CFState, a2: CFState) = a1.toString compare a2.toString
     }
   }
@@ -110,12 +109,11 @@ object Milner extends App {
   case object CS0 extends CSState
   case object CS1 extends CSState
   case object CS2 extends CSState
-  case object CS3 extends CSState
 
   object CSState {
     implicit val orderedInstance: Ordered[CSState] = new Ordered[CSState] {
       def min = CS0
-      def max = CS3
+      def max = CS2
       def compare(a1: CSState, a2: CSState) = a1.toString compare a2.toString
     }
   }
@@ -123,35 +121,31 @@ object Milner extends App {
   sealed trait CMState
   case object CM0 extends CMState
   case object CM1 extends CMState
-  case object CM2 extends CMState
 
   object CMState {
 
     implicit val orderedInstance: Ordered[CMState] = new Ordered[CMState] {
       def min = CM0
-      def max = CM2
+      def max = CM1
       def compare(a1: CMState, a2: CMState) = a1.toString compare a2.toString
     }
 
     implicit val isoGenCMState: Iso[GenState, CMState] =
       Iso[GenState, CMState](
         { case S0 => CM0
-          case S1 => CM1
-          case S2 => CM2 },
+          case S1 => CM1 },
         { case CM0 => S0
-          case CM1 => S1
-          case CM2 => S2 })
+          case CM1 => S1 })
   }
 
   sealed trait CTMState
   case object CTM0 extends CTMState
   case object CTM1 extends CTMState
-  case object CTM2 extends CTMState
 
   object CTMState {
     implicit val orderedInstance: Ordered[CTMState] = new Ordered[CTMState] {
       def min = CTM0
-      def max = CTM2
+      def max = CTM1
       def compare(a1: CTMState, a2: CTMState) = a1.toString compare a2.toString
     }
   }
@@ -159,14 +153,13 @@ object Milner extends App {
   sealed trait GenState
   case object S0 extends GenState
   case object S1 extends GenState
-  case object S2 extends GenState
   // ...
   // case object SN extends GenState
 
   object GenState {
     implicit val orderedInstance: Ordered[GenState] = new Ordered[GenState] {
       def min = S0
-      def max = S2
+      def max = S1
       // XXX: haha, what a crap!
       def compare(a1: GenState, a2: GenState) = a1.toString compare a2.toString
     }
