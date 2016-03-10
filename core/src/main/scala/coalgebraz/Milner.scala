@@ -27,7 +27,7 @@ trait MilnerCore extends MilnerDSL
     }
 
   def choice[A, X](m1: Milner[A, X])(m2: Milner[A, X]): Milner[A, X] =
-    milner(x => m1(x).next ++ m2(x).next)
+    milner(x => (m1(x).next ++ m2(x).next).distinct)
 
   def parallel[A, X1, X2, X](
       m1: Milner[A, X1],

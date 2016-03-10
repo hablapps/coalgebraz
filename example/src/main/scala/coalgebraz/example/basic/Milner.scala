@@ -18,10 +18,10 @@ object Milner extends App {
   def CF: Milner[Channel, CFState] =
     (coffee.in -> CF1) %: (tea.in -> CF2) %: empty[Channel, CFState]
 
-  runMilnerIO(CF)(
-    CF0,
-    l => println(s"⇒ $l".toLowerCase),
-    r => println(s"⇒ _${r}_".toLowerCase))
+  // runMilnerIO(CF)(
+  //   CF0,
+  //   l => println(s"⇒ $l".toLowerCase),
+  //   r => println(s"⇒ _${r}_".toLowerCase))
 
   // CS =def= _pub_._coin_.coffee.CS
   def CS: Milner[Channel, CSState] =
@@ -43,12 +43,12 @@ object Milner extends App {
 
   // CTM =def= coin.(_coffee_.CTM + _tea_.CTM)
   def CTM: Milner[Channel, CTMState] = (coin.in -> CTM1) %:
-    ((coffee.out -> CTM0) %: CTM + (tea.out -> CTM0) %: CTM)
+    ((coffee.out -> CTM0) %: CTM + (coffee.out -> CTM0) %: CTM)
 
-  // runMilnerIO(CTM)(
-  //   CTM0,
-  //   l => println(s"⇒ $l".toLowerCase),
-  //   r => println(s"⇒ _${r}_".toLowerCase))
+  runMilnerIO(CTM)(
+    CTM0,
+    l => println(s"⇒ $l".toLowerCase),
+    r => println(s"⇒ _${r}_".toLowerCase))
 
   // RCTM =def= CTM \ tea
   def RCTM: Milner[Channel, CTMState] = CTM \ tea
