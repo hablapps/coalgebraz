@@ -17,8 +17,11 @@ trait MilnerCore extends MilnerDSL with syntax.ToMilnerOps {
 
   def empty[A, X]: Milner[A, X] = milner(const(LazyList.empty))
 
+  // XXX: requires OrderedSyntax to be more usable!
   trait Ordered[A] {
     def compare(a1: A, a2: A): Int
+    def min: A
+    def max: A
     def lt(a1: A, a2: A): Boolean = compare(a1, a2) < 0
     def let(a1: A, a2: A): Boolean = compare(a1, a2) <= 0
     def gt(a1: A, a2: A): Boolean = compare(a1, a2) > 0
@@ -29,8 +32,16 @@ trait MilnerCore extends MilnerDSL with syntax.ToMilnerOps {
     def apply[A](implicit ev: Ordered[A]): Ordered[A] = ev
   }
 
-  def prefix[A, X: Ordered](m: Milner[A, X])(ax: (A \/ A, X)): Milner[A, X] =
-    milner(x => if (Ordered[X].get(x, ax._2)) m(x).next else LazyList(ax))
+  def prefix[A, X: Ordered](
+      m: => Milner[A, X])(
+      ax: => (A \/ A, X)): Milner[A, X] =
+    milner { x0 =>
+      val x = if (x0 == Ordered[X].max) Ordered[X].min else x0
+      if (Ordered[X].get(x, ax._2)) m(x).next else LazyList(ax)
+    }
+
+  def choice[A, X](m1: Milner[A, X])(m2: Milner[A, X]): Milner[A, X] =
+    milner(x => m1(x).next ++ m2(x).next)
 
   def parallel[A, X1, X2, X](
       m1: Milner[A, X1],
@@ -105,5 +116,9 @@ trait MilnerDSL {
 
   implicit class RenameHelper[A](a: A) {
     def /[B](b: B): (B, A) = (b, a)
+  }
+
+  implicit class PrefixHelper[A, X: Ordered](m: => Milner[A, X]) {
+    def %:(aax: (A \/ A, X)): Milner[A, X] = Coalgebraz.prefix(m)(aax)
   }
 }

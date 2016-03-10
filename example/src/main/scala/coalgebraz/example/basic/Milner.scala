@@ -11,42 +11,46 @@ import Coalgebraz._
 // http://people.cis.ksu.edu/~schmidt/705a/Lectures/intro2ccs.pdf
 object Milner extends App {
 
+  import Channel._, CFState._, CSState._
+
   // 0
   empty
 
-  // CF =def= coffee._tea_.0
+  // CF =def= coffee.tea.0
   def CF: Milner[Channel, CFState] =
-    (coffee.in -> CF1) %:
-      (tea.out -> CF2) %:
-      (tea.in -> CF3 /* should I care? */) %:
-      empty[Channel, CFState]
+    (coffee.in -> CF1) %: (tea.in -> CF2) %: empty[Channel, CFState]
 
-  runMilnerIO(CF)(CF0, l => println(s"⇒ $l"), r => println(s"⇒ _${r}_"))
+  // runMilnerIO(CF)(
+  //   CF0,
+  //   l => println(s"⇒ $l".toLowerCase),
+  //   r => println(s"⇒ _${r}_".toLowerCase))
 
   // CS =def= _pub_._coin_.coffee.CS
+  def CS: Milner[Channel, CSState] =
+    (pub.out -> CS1) %: (coin.out -> CS2) %: (coffee.in -> CS3) %: CS
 
-  def CS: Milner[Channel, CSState] = milner {
-    case CS0 => pub.out % CS1
-    case CS1 => coin.out % CS2
-    case CS2 => coffee.in % CS0
-  }
-
-  def CS_2: Milner[Channel, CSState] =
-    (pub.out -> CS1) %: (coin.out -> CS2) %: (coffee.in -> CS0) %: CS_2
-
-  // runMilnerIO(CS_2)(CS0, l => println(s"⇒ $l"), r => println(s"⇒ _${r}_"))
+  // runMilnerIO(CS)(
+  //   cs0,
+  //   l => println(s"⇒ $l".toLowerCase),
+  //   r => println(s"⇒ _${r}_".toLowerCase))
 
   // CM =def= coin._coffee_.CM
-  def CM: Milner[Channel, CMState] = milner {
-    case CM0 => coin.in % CM1
-    case CM1 => coffee.out % CM0
-  }
+  def CM: Milner[Channel, CMState] =
+    (coin.in -> CM1) %: (coffee.out -> CM2) %: CM
+
+  // runMilnerIO(CM)(
+  //   CM0,
+  //   l => println(s"⇒ $l".toLowerCase),
+  //   r => println(s"⇒ _${r}_".toLowerCase))
 
   // CTM =def= coin.(_coffee_.CTM + _tea_.CTM)
-  def CTM: Milner[Channel, CTMState] = milner {
-    case CTM0 => coin.in % CTM1
-    case CTM1 => (coffee.out % CTM0) ++ (tea.out % CTM0)
-  }
+  def CTM: Milner[Channel, CTMState] = (coin.in -> CTM1) %: (
+    (coffee.out -> CTM2) %: CTM + (tea.out -> CTM2) %: CTM)
+
+  runMilnerIO(CTM)(
+    CTM0,
+    l => println(s"⇒ $l".toLowerCase),
+    r => println(s"⇒ _${r}_".toLowerCase))
 
   // RCTM =def= CTM \ tea
   def RCTM: Milner[Channel, CTMState] = CTM \ tea
@@ -65,32 +69,39 @@ object Milner extends App {
   def SmUni: Milner[Channel \/ Channel, (CSState, CMState)] =
     (CS | CM) \ coin.right \ coffee.right
 
-  // VM  =def= coin._item_.VM
-  def VM: Milner[GenChannel, GenState] = milner {
-    case S0 => item0.in  % S1
-    case S1 => item1.out % S0
-  }
-
-  // CM2 =def= VM[coffee/item]
-  def CM2: Milner[Channel, CMState] =
-    VM rename (coin / item0, coffee / item1)
-
   // runMilnerIO(SmUni)(
   //   (CS0, CM0),
-  //   l => println(s"⇒ <| ${ l.fold(_.toString, "_" + _ + "_") }"),
-  //   r => println(s"⇒ |> ${ r.fold(_.toString, "_" + _ + "_") }"))
+  //   l1 => println(s"⇒ ${ l1.fold(
+  //     l2 => s"<| $l2",
+  //     r2 => s"|> $r2") }".toLowerCase),
+  //   r1 => println(s"⇒ ${ r1.fold(
+  //     l2 => s"<| _${l2}_",
+  //     r2 => s"|> _${r2}_") }".toLowerCase))
 
-  // runMilnerIO(CM2)(CM0, l => println(s"⇒ $l"), r => println(s"⇒ _${r}_"))
+  // VM  =def= coin._item_.VM
+  def VM: Milner[GenChannel, GenState] =
+    (item0.in -> S1) %: (item1.out -> S2) %: VM
+
+  // CM_2 =def= VM[coffee/item]
+  def CM_2: Milner[Channel, CMState] =
+    VM rename (coin / item0, coffee / item1)
+
+  // runMilnerIO(CM_2)(
+  //   CM0,
+  //   l => println(s"⇒ $l".toLowerCase),
+  //   r => println(s"⇒ _${r}_".toLowerCase))
 
   sealed trait CFState
   case object CF0 extends CFState
   case object CF1 extends CFState
   case object CF2 extends CFState
   case object CF3 extends CFState
+  case object CF4 extends CFState
 
   object CFState {
     implicit val orderedInstance: Ordered[CFState] = new Ordered[CFState] {
-      // XXX: haha, what a crap!
+      def min = CF0
+      def max = CF4
       def compare(a1: CFState, a2: CFState) = a1.toString compare a2.toString
     }
   }
@@ -99,9 +110,12 @@ object Milner extends App {
   case object CS0 extends CSState
   case object CS1 extends CSState
   case object CS2 extends CSState
+  case object CS3 extends CSState
 
   object CSState {
     implicit val orderedInstance: Ordered[CSState] = new Ordered[CSState] {
+      def min = CS0
+      def max = CS3
       def compare(a1: CSState, a2: CSState) = a1.toString compare a2.toString
     }
   }
@@ -109,25 +123,54 @@ object Milner extends App {
   sealed trait CMState
   case object CM0 extends CMState
   case object CM1 extends CMState
+  case object CM2 extends CMState
 
   object CMState {
+
+    implicit val orderedInstance: Ordered[CMState] = new Ordered[CMState] {
+      def min = CM0
+      def max = CM2
+      def compare(a1: CMState, a2: CMState) = a1.toString compare a2.toString
+    }
+
     implicit val isoGenCMState: Iso[GenState, CMState] =
       Iso[GenState, CMState](
         { case S0 => CM0
-          case S1 => CM1 },
+          case S1 => CM1
+          case S2 => CM2 },
         { case CM0 => S0
-          case CM1 => S1 })
+          case CM1 => S1
+          case CM2 => S2 })
   }
 
   sealed trait CTMState
   case object CTM0 extends CTMState
   case object CTM1 extends CTMState
+  case object CTM2 extends CTMState
+
+  object CTMState {
+    implicit val orderedInstance: Ordered[CTMState] = new Ordered[CTMState] {
+      def min = CTM0
+      def max = CTM2
+      def compare(a1: CTMState, a2: CTMState) = a1.toString compare a2.toString
+    }
+  }
 
   sealed trait GenState
   case object S0 extends GenState
   case object S1 extends GenState
+  case object S2 extends GenState
   // ...
   // case object SN extends GenState
+
+  object GenState {
+    implicit val orderedInstance: Ordered[GenState] = new Ordered[GenState] {
+      def min = S0
+      def max = S2
+      // XXX: haha, what a crap!
+      def compare(a1: GenState, a2: GenState) = a1.toString compare a2.toString
+    }
+  }
 
   sealed trait GenChannel
   case object item0 extends GenChannel
@@ -136,12 +179,18 @@ object Milner extends App {
   // case object itemN extends GenChannel
 
   sealed trait Channel
-  case object pub extends Channel
-  case object coin extends Channel
-  case object coffee extends Channel
-  case object tea extends Channel
+  case object Pub extends Channel
+  case object Coin extends Channel
+  case object Coffee extends Channel
+  case object Tea extends Channel
 
   object Channel {
+
+    def pub: Channel = Pub
+    def coin: Channel = Coin
+    def coffee: Channel = Coffee
+    def tea: Channel = Tea
+
     implicit val readChannel: Read[Channel \/ Channel] =
       new Read[Channel \/ Channel] {
         def read(s: String): Option[Channel \/ Channel] = s match {
@@ -162,8 +211,10 @@ object Milner extends App {
         val left  = """<\| (.*)""".r
         val right = """\|> (.*)""".r
         def read(s: String): Option[(Channel \/ Channel) \/ (Channel \/ Channel)] = s match {
-          case left(act)  => readChannel.read(act).map(_.left)
-          case right(act) => readChannel.read(act).map(_.right)
+          case left(act)  =>
+            readChannel.read(act).map(_.bimap(_.left, _.left))
+          case right(act) =>
+            readChannel.read(act).map(_.bimap(_.right, _.right))
           case _ => Option.empty
         }
       }

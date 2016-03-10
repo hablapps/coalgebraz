@@ -7,6 +7,8 @@ import Coalgebraz._
 
 class MilnerOps[A1, X1](val self: Milner[A1, X1]) {
 
+  def +(m2: Milner[A1, X1]): Milner[A1, X1] = choice(self)(m2)
+
   def |[X2, X](
       m2: Milner[A1, X2])(implicit
       ev0: ClearProduct.Aux[X1, X2, X]): Milner[A1 \/ A1, X] =
@@ -18,9 +20,6 @@ class MilnerOps[A1, X1](val self: Milner[A1, X1]) {
       rs: (A1, A2)*)(implicit
       ev0: X1 <-> X2): Milner[A2, X2] =
     renaming(self)(rs: _*)(ev0)
-
-  def %:(a1: (A1 \/ A1, X1))(implicit ev: Ordered[X1]): Milner[A1, X1] =
-    prefix(self)(a1)
 }
 
 trait ToMilnerOps {
