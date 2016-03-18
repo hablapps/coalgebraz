@@ -1,3 +1,5 @@
 package coalgebraz
 
-final class Void { ??? } // non-instantiable!
+sealed trait Void { 
+  def impossible: Nothing
+}
