@@ -15,6 +15,7 @@ resolvers += Resolver.sonatypeRepo("releases")
 addCompilerPlugin("org.spire-math" %% "kind-projector" % "0.7.1")
 
 libraryDependencies ++= Seq(
+  "com.chuusai" %% "shapeless" % "2.3.0",
   "org.scalaz" %% "scalaz-core" % "7.2.0",
   "org.scalatest" % "scalatest_2.11" % "2.2.4")
 

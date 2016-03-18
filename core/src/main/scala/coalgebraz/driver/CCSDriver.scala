@@ -9,18 +9,18 @@ import scalaz._, Scalaz._
 
 import Coalgebraz._
 
-trait MilnerDriver {
+trait CCSDriver {
 
-  def runMilnerIO[A, X](
-      m: Milner[A, X])(
+  def runCCSIO[A, X](
+      m: CCS[A, X])(
       x: X,
       el: A => Unit,
       er: A => Unit)(implicit
       ev0: Read[A \/ A]): Unit =
-    runDisjTreeIO(unfoldMilner(m)(x))(el, er)
+    runLTSIO(unfoldCCS(m)(x))(el, er)
 
-  def runDisjTreeIO[A](
-      dt: DisjTree[A])(
+  def runLTSIO[A](
+      dt: LTS[A])(
       el: A => Unit, er: A => Unit)(implicit
       ev0: Read[A \/ A]): Unit = {
     if (dt.branches.isEmpty)
@@ -30,32 +30,32 @@ trait MilnerDriver {
       val s = readLine("z> ")
       val oa = Read[A \/ A].read(s)
       oa.fold(s match {
-        case "" => runDisjTreeIO(dt)(el, er)
+        case "" => runLTSIO(dt)(el, er)
         case "exit" => println("bye!")
         case _ => {
           println(s"unknown input: '$s'")
-          runDisjTreeIO(dt)(el, er)
+          runLTSIO(dt)(el, er)
         }
       }) { a =>
         dt.branches.find(_._1 == a).fold {
           println(s"invalid transition: '$s'")
-          runDisjTreeIO(dt)(el, er)
-        } { case (_, dt2) => runDisjTreeIO(dt2)(el, er) }
+          runLTSIO(dt)(el, er)
+        } { case (_, dt2) => runLTSIO(dt2)(el, er) }
       }
     }
   }
 
-  def unfoldMilner[A, X](m: Milner[A, X])(x: X): DisjTree[A] = anaMilner(m)(x)
+  def unfoldCCS[A, X](m: CCS[A, X])(x: X): LTS[A] = anaCCS(m)(x)
 
-  def anaMilner[A, X](m: Milner[A, X]): X => DisjTree[A] =
-    m andThen (_ map anaMilner(m)) andThen (mf => DisjTree(mf.next))
+  def anaCCS[A, X](m: CCS[A, X]): X => LTS[A] =
+    m andThen (_ map anaCCS(m)) andThen (mf => LTS(mf.next))
 
-  class DisjTree[A](_branches: => LazyList[(A \/ A, DisjTree[A])]) {
-    def branches: LazyList[(A \/ A, DisjTree[A])] = _branches
+  class LTS[A](_branches: => LazyList[(A \/ A, LTS[A])]) {
+    def branches: LazyList[(A \/ A, LTS[A])] = _branches
   }
 
-  object DisjTree {
-    def apply[A](branches: => LazyList[(A \/ A, DisjTree[A])]): DisjTree[A] =
-      new DisjTree(branches)
+  object LTS {
+    def apply[A](branches: => LazyList[(A \/ A, LTS[A])]): LTS[A] =
+      new LTS(branches)
   }
 }

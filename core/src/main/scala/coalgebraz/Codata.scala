@@ -40,20 +40,20 @@ case class TransitionSystemF[X](next: List[X]) {
     TransitionSystemF(next map f)
 }
 
-class MilnerF[A, X](_next: => LazyList[(A \/ A, X)]) {
+class CCSF[A, X](_next: => LazyList[(A \/ A, X)]) {
 
   def next: LazyList[(A \/ A, X)] = _next
 
-  def map[Y](f: X => Y): MilnerF[A, Y] =
-    MilnerF(next map (_ map f))
+  def map[Y](f: X => Y): CCSF[A, Y] =
+    CCSF(next map (_ map f))
 }
 
-object MilnerF {
+object CCSF {
 
-  def apply[A, X](next: => LazyList[(A \/ A, X)]): MilnerF[A, X] =
-    new MilnerF(next)
+  def apply[A, X](next: => LazyList[(A \/ A, X)]): CCSF[A, X] =
+    new CCSF(next)
 
-  def unapply[A, X](mf: MilnerF[A, X]): Option[LazyList[(A \/ A, X)]] =
+  def unapply[A, X](mf: CCSF[A, X]): Option[LazyList[(A \/ A, X)]] =
     Option(mf.next)
 }
 
@@ -114,8 +114,8 @@ trait CodataInstances {
     def map[A, B](r: TransitionSystemF[A])(f: A => B) = r map f
   }
 
-  implicit def MilnerF[A] = new Functor[MilnerF[A, ?]] {
-    def map[B, C](r: MilnerF[A, B])(f: B => C) = r map f
+  implicit def CCSF[A] = new Functor[CCSF[A, ?]] {
+    def map[B, C](r: CCSF[A, B])(f: B => C) = r map f
   }
 
   implicit def EntityFFunctor[I, O, C] = new Functor[EntityF[I, O, C, ?]] {
