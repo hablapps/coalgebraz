@@ -35,12 +35,19 @@ object CCS extends App {
 
   def CCZ = coffee.in %: coffee.in %: Z
 
+  def CCTZ = coin.in %: (choice2(coffee.out %: Z)(tea.out %: Z))
+
   // No way!
   // def CS = pub.out %: coin.out %: coffee.in %: CS
 
-  runCCSIO(CTZ)(
-    // Inr(Inr(Inl(()))),
-    Coproduct(()),
+  // This type is sooo ugly!
+  def CoTZ: CCS[
+      Channel,
+      (Unit, Unit) :+: (Unit :+: CNil) :+: (Unit :+: CNil) :+: CNil] =
+    choice3(coffee.out %: Z)(tea.out %: Z)
+
+  runCCSIO(CoTZ)(
+    Inl(((), ())),
     l => println(s"⇒ $l".toLowerCase),
     r => println(s"⇒ _${r}_".toLowerCase))
 

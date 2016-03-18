@@ -6,7 +6,8 @@ import scala.collection.immutable.{ Stream => LazyList }
 
 import scalaz._, Scalaz._
 
-import shapeless._, shapeless.{ :+:, Coproduct }, ops.hlist._, ops.coproduct._
+import shapeless._, shapeless.{ :+:, Coproduct }, ops.coproduct._
+import ops.coproduct.Inject
 
 import Coalgebraz._
 
@@ -14,8 +15,7 @@ trait CCSCore extends CCSDSL with syntax.ToCCSOps {
 
   type CCS[A, X] = Coalgebra[CCSF[A, ?], X]
 
-  def ccs[A, X](pi1: X => LazyList[(A \/ A, X)]): CCS[A, X] =
-    x => CCSF(pi1(x))
+  def ccs[A, X](pi1: X => LazyList[(A \/ A, X)]): CCS[A, X] = x => CCSF(pi1(x))
 
   def empty[A, X]: CCS[A, X] = ccs(const(LazyList.empty))
 
@@ -83,10 +83,51 @@ trait CCSCore extends CCSDSL with syntax.ToCCSOps {
   def choice[A, X](m1: CCS[A, X])(m2: CCS[A, X]): CCS[A, X] =
     ccs(x => (m1(x).next ++ m2(x).next).distinct)
 
-  def choice2[A, X, Y](m1: CCS[A, X])(m2: CCS[A, Y]): CCS[A, (X, Y)] =
-    ccs(xy =>
-      m1(xy._1).next.map(_.map(x => (x, xy._2))) ++
-      m2(xy._2).next.map(_.map(y => (xy._1, y))))
+  def choice2[A, X, Y](
+      m1: CCS[A, X])(
+      m2: CCS[A, Y]): CCS[A, X :+: Y :+: CNil] = {
+    def f[Z: Inject[X :+: Y :+: CNil, ?]](m: CCS[A, Z])(z: Z) =
+      m(z).next.map(_.map(Coproduct(_)))
+    object toNext extends Poly1 {
+      implicit val caseX = at[X] { f(m1)(_) }
+      implicit val caseY = at[Y] { f(m2)(_) }
+    }
+    ccs(_.fold(toNext))
+  }
+
+  def choice3[A, X <: Coproduct, Y <: Coproduct,
+    HX, HY, TX <: Coproduct, TY <: Coproduct](
+      m1: CCS[A, X])(
+      m2: CCS[A, Y])(implicit
+      ev0: IsCCons.Aux[X, HX, TX],
+      ev1: IsCCons.Aux[Y, HY, TY],
+      // XXX: shapeless is not quite sure about next pair, why not? At least I
+      // sleep better with them here.
+      ev2: X =:= (HX :+: TX),
+      ev3: Y =:= (HY :+: TY),
+      // XXX: Isn't this redundant by `ev[01]`?
+      ev4: Drop.Aux[X, Succ[_0], TX],
+      ev5: Drop.Aux[Y, Succ[_0], TY],
+      // XXX: redundant by `ev[01]`?
+      ev6: Inject[X, HX],
+      ev7: Inject[Y, HY]): CCS[A, (HX, HY) :+: TX :+: TY :+: CNil] = {
+    type Res = (HX, HY) :+: TX :+: TY :+: CNil
+    object toNext extends Poly1 {
+      implicit val caseH  = at[(HX, HY)] { case (hx, hy) =>
+        m1(Coproduct[X](hx)).next.map(_.map(x => Coproduct[Res](x.drop.get))) ++
+          m2(Coproduct[Y](hy)).next.map(_.map(y => Coproduct[Res](y.drop.get)))
+      }
+      implicit val caseTX = at[TX] { tx =>
+        m1(tx.extendLeft[HX].asInstanceOf[X])
+          .next.map(_.map(x => Coproduct[Res](x.drop.get)))
+      }
+      implicit val caseTY = at[TY] {  ty =>
+        m2(ty.extendLeft[HY].asInstanceOf[Y])
+          .next.map(_.map(y => Coproduct[Res](y.drop.get)))
+      }
+    }
+    ccs(_.fold(toNext))
+  }
 
   def parallel[A, X1, X2, X](
       m1: CCS[A, X1],
