@@ -34,8 +34,8 @@ trait CCSCore extends syntax.ToCCSOps {
 
   def choice[A, X <: Coproduct, Y <: Coproduct,
     HX, HY, TX <: Coproduct, TY <: Coproduct](
-      m1: CCS[A, X])(
-      m2: CCS[A, Y])(implicit
+      m1: => CCS[A, X])(
+      m2: => CCS[A, Y])(implicit
       ev0: IsCCons.Aux[X, HX, TX],
       ev1: IsCCons.Aux[Y, HY, TY],
       // XXX: shapeless is not quite sure about next pair, why not? At least I
@@ -63,6 +63,9 @@ trait CCSCore extends syntax.ToCCSOps {
     }
     _.fold(toCCS)
   }
+
+  def restrict[A, X](m: CCS[A, X])(r: Set[A]): CCS[A, X] =
+    ccs(x => m(x).next.filterNot(ax => ax._1.fold(r contains _, r contains _)))
 
   // def parallel[A, X1, X2, X](
   //     m1: CCS[A, X1],
@@ -103,10 +106,7 @@ trait CCSCore extends syntax.ToCCSOps {
   //     _nxt1.map(_.bimap(_.fold(_.left.left, _.left.right), ev0(_, x2))) ++
   //       _nxt2.map(_.bimap(_.fold(_.right.left, _.right.right), ev0(x1, _))))
   // }
-  //
-  // def restrict[A, X](m: CCS[A, X])(act: A): CCS[A, X] =
-  //   ccs(m(_).next.filter(ax => ax._1.fold(_ != act, _ != act)))
-  //
+  // 
   // def renaming[A1, A2, X1, X2](
   //     m: CCS[A1, X1])(
   //     rs: (A1, A2)*)(implicit

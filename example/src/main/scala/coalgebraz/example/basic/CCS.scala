@@ -27,7 +27,9 @@ object CCS extends App {
 
   def CCTZ = coin.in %: ((coffee.out %: Z) + (tea.out %: Z))
 
-  runCCSIO(CCTZ)(
+  def CCT = CCTZ \ Set(tea)
+
+  runCCSIO(CCT)(
     Inl(Inl((), ())),
     l => println(s"⇒ $l".toLowerCase),
     r => println(s"⇒ _${r}_".toLowerCase))

@@ -26,9 +26,9 @@ class CCSOps[A1, X1 <: Coproduct](val self: CCS[A1, X1]) {
   //     m2: CCS[A1, X2])(implicit
   //     ev0: ClearProduct.Aux[X1, X2, X]): CCS[A1 \/ A1, X] =
   //   parallel(self, m2)
-  //
-  // def \(a: A1): CCS[A1, X1] = restrict(self)(a)
-  //
+
+  def \(r: Set[A1]): CCS[A1, X1] = restrict(self)(r)
+
   // def r[A2, X2](
   //     rs: (A1, A2)*)(implicit
   //     ev0: X1 <-> X2): CCS[A2, X2] =
