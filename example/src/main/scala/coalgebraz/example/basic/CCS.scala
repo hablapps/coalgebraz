@@ -12,22 +12,7 @@ import Coalgebraz._
 
 object CCS extends App {
 
-  // // Z =def= 0
-  // def Z: CCS[Channel, Unit] = empty
-  //
-  // // runCCSIO(Z)(
-  // //   (),
-  // //   l => println(s"⇒ $l".toLowerCase),
-  // //   r => println(s"⇒ _${r}_".toLowerCase))
-  //
-  // // CZ =def= coffee.Z
-  // def CZ: CCS[Channel, Unit \/ Unit] = coffee.in %: Z
-  //
-  // // CTZ =def= coffee.tea.Z
-  // def CTZ: CCS[Channel, (Unit \/ Unit) \/ (Unit \/ Unit)] =
-  //   coffee.in %: tea.in %: Z
-
-  def Z = empty3[Channel]
+  def Z = empty[Channel, Unit]
 
   def CZ = coffee.in %: Z
 
@@ -35,19 +20,15 @@ object CCS extends App {
 
   def CCZ = coffee.in %: coffee.in %: Z
 
-  def CCTZ = coin.in %: (choice2(coffee.out %: Z)(tea.out %: Z))
-
   // No way!
   // def CS = pub.out %: coin.out %: coffee.in %: CS
 
-  // This type is sooo ugly!
-  def CoTZ: CCS[
-      Channel,
-      (Unit, Unit) :+: (Unit :+: CNil) :+: (Unit :+: CNil) :+: CNil] =
-    choice3(coffee.out %: Z)(tea.out %: Z)
+  def CoTZ = (coffee.out %: Z) + (tea.out %: Z)
 
-  runCCSIO(CoTZ)(
-    Inl(((), ())),
+  def CCTZ = coin.in %: ((coffee.out %: Z) + (tea.out %: Z))
+
+  runCCSIO(CCTZ)(
+    Inl(Inl((), ())),
     l => println(s"⇒ $l".toLowerCase),
     r => println(s"⇒ _${r}_".toLowerCase))
 
