@@ -18,19 +18,17 @@ object CCS extends App {
 
   def CTZ = coffee.in %: tea.in %: Z
 
-  def CCZ = coffee.in %: coffee.in %: Z
-
   // No way!
   // def CS = pub.out %: coin.out %: coffee.in %: CS
 
   def CoTZ = (coffee.out %: Z) + (tea.out %: Z)
 
-  def CCTZ = coin.in %: ((coffee.out %: Z) + (tea.out %: Z))
+  def CCoTZ = coin.in %: ((coffee.out %: Z) + (tea.out %: Z))
 
-  def CCT = CCTZ \ Set(tea)
+  def CCZ = CCoTZ \ Set(tea)
 
-  runCCSIO(CCT)(
-    Inl(Inl((), ())),
+  runCCSIO(CCZ)(
+    Inl(Inl((Inl(()), Inl(())))),
     l => println(s"⇒ $l".toLowerCase),
     r => println(s"⇒ _${r}_".toLowerCase))
 

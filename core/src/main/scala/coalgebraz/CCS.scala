@@ -32,36 +32,19 @@ trait CCSCore extends syntax.ToCCSOps {
     xx.fold(toNext)
   }
 
-  def choice[A, X <: Coproduct, Y <: Coproduct,
-    HX, HY, TX <: Coproduct, TY <: Coproduct](
+  def choice[A, X, Y](
       m1: => CCS[A, X])(
-      m2: => CCS[A, Y])(implicit
-      ev0: IsCCons.Aux[X, HX, TX],
-      ev1: IsCCons.Aux[Y, HY, TY],
-      // XXX: shapeless is not quite sure about next pair, why not? At least I
-      // sleep better with them here.
-      ev2: X =:= (HX :+: TX),
-      ev3: Y =:= (HY :+: TY),
-      // XXX: Isn't this redundant by `ev[01]`?
-      ev4: Drop.Aux[X, Succ[_0], TX],
-      ev5: Drop.Aux[Y, Succ[_0], TY],
-      // XXX: redundant by `ev[01]`?
-      ev6: Inject[X, HX],
-      ev7: Inject[Y, HY]): CCS[A, (HX, HY) :+: TX :+: TY :+: CNil] = {
-    type R = (HX, HY) :+: TX :+: TY :+: CNil
-    object toCCS extends Poly1 {
-      implicit val caseH  = at[(HX, HY)] { case (hx, hy) =>
-        CCSF(m1(Coproduct(hx)).map(x => Coproduct[R](x.drop.get)).next ++
-          m2(Coproduct(hy)).map(y => Coproduct[R](y.drop.get)).next)
+      m2: => CCS[A, Y]): CCS[A, (X, Y) :+: X :+: Y :+: CNil] = {
+    type R = (X, Y) :+: X :+: Y :+: CNil
+    object toNext extends Poly1 {
+      implicit val caseXY = at[(X, Y)] { case (x, y) => 
+        m1(x).map(x2 => Coproduct[R](x2)).next ++
+          m2(y).map(y2 => Coproduct[R](y2)).next
       }
-      implicit val caseTX = at[TX] { tx =>
-        m1(tx.extendLeft[HX].asInstanceOf[X]).map(x => Coproduct[R](x.drop.get))
-      }
-      implicit val caseTY = at[TY] {  ty =>
-        m2(ty.extendLeft[HY].asInstanceOf[Y]).map(y => Coproduct[R](y.drop.get))
-      }
+      implicit val caseX  = at[X] { m1(_).map(Coproduct[R](_)).next }
+      implicit val caseY  = at[Y] { m2(_).map(Coproduct[R](_)).next }
     }
-    _.fold(toCCS)
+    ccs(_.fold(toNext))
   }
 
   def restrict[A, X](m: CCS[A, X])(r: Set[A]): CCS[A, X] =
