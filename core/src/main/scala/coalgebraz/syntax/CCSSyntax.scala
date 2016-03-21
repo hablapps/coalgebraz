@@ -13,14 +13,12 @@ class CCSOps[A1, X1](val self: CCS[A1, X1]) {
   def +[X2](m2: CCS[A1, X2]): CCS[A1, (X1, X2) :+: X1 :+: X2 :+: CNil] =
     choice(self)(m2)
 
-  // def |[X2, X](
-  //     m2: CCS[A1, X2])(implicit
-  //     ev0: ClearProduct.Aux[X1, X2, X]): CCS[A1 \/ A1, X] =
-  //   parallel(self, m2)
+  def |[X2](m2: CCS[A1, X2]): CCS[A1, X1 :: X2 :: HNil] =
+    parallel(self)(m2)
 
   def \(r: Set[A1]): CCS[A1, X1] = restrict(self)(r)
 
-  def :/(f: PartialFunction[A1, A1]): CCS[A1, X1] = {
+  def /(f: PartialFunction[A1, A1]): CCS[A1, X1] = {
     def lift(f: A1 => A1): A1 \/ A1 => A1 \/ A1 = {
       case -\/(a) => -\/(f(a))
       case \/-(a) => \/-(f(a))
@@ -31,7 +29,7 @@ class CCSOps[A1, X1](val self: CCS[A1, X1]) {
 
 trait ToCCSOps {
 
-  implicit def toCCSOps[A, X <: Coproduct](m: CCS[A, X]): CCSOps[A, X] =
+  implicit def toCCSOps[A, X](m: CCS[A, X]): CCSOps[A, X] =
     new CCSOps[A, X](m)
 
   implicit class InOutHelper[A](a: A) {
