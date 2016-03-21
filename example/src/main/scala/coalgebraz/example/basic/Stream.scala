@@ -1,6 +1,8 @@
 package coalgebraz
 package example.basic
 
+import shapeless._
+
 import Coalgebraz._
 
 object Stream extends App {
@@ -13,18 +15,14 @@ object Stream extends App {
     h => println(s"⇒ $h"))
   println
 
-  def odd[A]: Stream[A, List[A]] = stream(_.head, _.tail.tail)
+  val nats: Stream[Int, Int] = stream(identity, _ + 1)
 
-  def even[A]: Stream[A, List[A]] = stream(_.tail.head, _.tail.tail)
+  def all = nats.odds merge nats.evens
 
-  def all[A]: Stream[A, (List[A], List[A], Boolean)] = odd merge even
-
-  runIO(all[Int])(
-    (1 to 100 toList, 1 to 100 toList, true),
-    h => println(s"⇒ $h"))
+  runIO(all)(Coproduct(1, 1), h => println(s"⇒ $h"))
   println
 
-  runIO(odd[Int].until(_ > 25, even))(
-    (1 to 100 toList, false),
-    h => println(s"⇒ $h"))
+  // runIO(odd[Int].until(_ > 25, even))(
+  //   (1 to 100 toList, false),
+  //   h => println(s"⇒ $h"))
 }

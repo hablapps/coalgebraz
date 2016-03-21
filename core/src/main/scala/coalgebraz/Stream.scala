@@ -4,6 +4,8 @@ import Function.const
 
 import scalaz._, Scalaz._
 
+import shapeless._, shapeless.{ :+:, Coproduct }
+
 trait StreamCore extends syntax.ToStreamOps {
 
   type Stream[H, X] = Coalgebra[StreamF[H, ?], X]
@@ -14,16 +16,25 @@ trait StreamCore extends syntax.ToStreamOps {
   def repeatS[H, X](h: H): Stream[H, X] =
     stream(const(h), identity)
 
+  def oddsS[H, X](s: Stream[H, X]): Stream[H, X] =
+    stream(x => s(x).head, x => s(s(x).tail).tail)
+
+  def evensS[H, X](s: Stream[H, X]): Stream[H, X] =
+    stream(x => s(s(x).tail).head, x => s(s(x).tail).tail)
+
   def mergeS[H, X, Y](
-      s1: Stream[H, X],
-      s2: Stream[H, Y]): Stream[H, (X, Y, Boolean)] = {
-    case (x, y, b) => {
-      lazy val StreamF(h1, x1) = s1(x)
-      lazy val StreamF(h2, y2) = s2(y)
-      b.fold(
-        StreamF(h1, (x1, y, false)),
-        StreamF(h2, (x, y2, true)))
+      s1: Stream[H, X])(
+      s2: Stream[H, Y]): Stream[H, (X, Y) :+: (Y, X) :+: CNil] = {
+    type T = (X, Y) :+: (Y, X) :+: CNil
+    object toStream extends Poly1 {
+      implicit val caseXY = at[(X, Y)] { case (x, y) => 
+        s1(x).map(Coproduct[T](y, _))
+      }
+      implicit val caseYX = at[(Y, X)] { case (y, x) => 
+        s2(y).map(Coproduct[T](x, _)) 
+      }
     }
+    _.fold(toStream)
   }
 
   def untilS[H, X](

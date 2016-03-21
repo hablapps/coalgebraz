@@ -7,7 +7,6 @@ import scala.collection.immutable.{ Stream => LazyList }
 import scalaz._, Scalaz._
 
 import shapeless._, shapeless.{ :+:, Coproduct }
-import ops.coproduct._, ops.coproduct.Inject
 
 import Coalgebraz._
 
