@@ -86,7 +86,6 @@ trait CCSCore extends syntax.ToCCSOps {
   
     val (x, y, _nxt1, _nxt2) = handshake(xy.head, xy.tail.head)
   
-    CCSF(_nxt1.map(_.map(_ :: y :: HNil)) ++
-         _nxt2.map(_.map(x :: _ :: HNil)))
+    CCSF(_nxt1.map(_.map(_ :: y :: HNil)) ++ _nxt2.map(_.map(x :: _ :: HNil)))
   }
 }
