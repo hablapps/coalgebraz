@@ -20,10 +20,13 @@ class CCSOps[A1, X1](val self: CCS[A1, X1]) {
 
   def \(r: Set[A1]): CCS[A1, X1] = restrict(self)(r)
 
-  // def r[A2, X2](
-  //     rs: (A1, A2)*)(implicit
-  //     ev0: X1 <-> X2): CCS[A2, X2] =
-  //   renaming(self)(rs: _*)(ev0)
+  def :/(f: PartialFunction[A1, A1]): CCS[A1, X1] = {
+    def lift(f: A1 => A1): A1 \/ A1 => A1 \/ A1 = {
+      case -\/(a) => -\/(f(a))
+      case \/-(a) => \/-(f(a))
+    }
+    renaming(self)(lift(f orElse PartialFunction(identity)))
+  }
 }
 
 trait ToCCSOps {

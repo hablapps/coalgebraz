@@ -27,8 +27,14 @@ object CCS extends App {
 
   def CCZ = CCoTZ \ Set(tea)
 
-  runCCSIO(CCZ)(
-    Inl(Inl((Inl(()), Inl(())))),
+  def VM = coin.in %: item.out %: Z
+
+  def CHM = VM :/ { case `item` => chocs }
+  def DFM = VM :/ { case `item` => figs }
+  def CRM = VM :/ { case `item` => crisps }
+
+  runCCSIO(CRM)(
+    Inl(Inl(())),
     l => println(s"⇒ $l".toLowerCase),
     r => println(s"⇒ _${r}_".toLowerCase))
 
@@ -224,6 +230,10 @@ object CCS extends App {
   case object coin extends Channel
   case object coffee extends Channel
   case object tea extends Channel
+  case object chocs extends Channel
+  case object figs extends Channel
+  case object crisps extends Channel
+  case object item extends Channel
 
   object Channel {
 
@@ -234,10 +244,16 @@ object CCS extends App {
           case "coin" => coin.in.some
           case "coffee" => coffee.in.some
           case "tea" => tea.in.some
+          case "chocs" => chocs.in.some
+          case "figs" => figs.in.some
+          case "crisps" => crisps.in.some
           case "_pub_" => pub.out.some
           case "_coin_" => coin.out.some
           case "_coffee_" => coffee.out.some
           case "_tea_" => tea.out.some
+          case "_chocs_" => chocs.out.some
+          case "_figs_" => figs.out.some
+          case "_crisps_" => crisps.out.some
           case _ => Option.empty
         }
       }

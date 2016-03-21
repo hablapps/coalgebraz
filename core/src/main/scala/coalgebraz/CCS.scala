@@ -47,6 +47,11 @@ trait CCSCore extends syntax.ToCCSOps {
     ccs(_.fold(toNext))
   }
 
+  def renaming[A, X](
+      m: => CCS[A, X])(
+      f: A \/ A => A \/ A): CCS[A, X] =
+    ccs(m(_).next.map(_.swap.map(f).swap))
+
   def restrict[A, X](m: CCS[A, X])(r: Set[A]): CCS[A, X] =
     ccs(m(_).next.filterNot(_._1.fold(r.contains, r.contains)))
 
@@ -88,18 +93,5 @@ trait CCSCore extends syntax.ToCCSOps {
   //   CCSF(
   //     _nxt1.map(_.bimap(_.fold(_.left.left, _.left.right), ev0(_, x2))) ++
   //       _nxt2.map(_.bimap(_.fold(_.right.left, _.right.right), ev0(x1, _))))
-  // }
-  //
-  // def renaming[A1, A2, X1, X2](
-  //     m: CCS[A1, X1])(
-  //     rs: (A1, A2)*)(implicit
-  //     ev0: X1 <-> X2): CCS[A2, X2] = {
-  //   val pf: PartialFunction[A1 \/ A1, A2 \/ A2] = rs
-  //     .map { case (a1, a2) => {
-  //       case -\/(`a1`) => -\/(a2)
-  //       case \/-(`a1`) => \/-(a2)
-  //     }: PartialFunction[A1 \/ A1, A2 \/ A2] }
-  //     .foldRight(PartialFunction.empty[A1 \/ A1, A2 \/ A2])(_ orElse _)
-  //   ccs(x2 => m(ev0.from(x2)).next.map(_.bimap(pf, ev0.to)))
   // }
 }
