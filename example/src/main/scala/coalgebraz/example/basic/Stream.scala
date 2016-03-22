@@ -17,14 +17,20 @@ object Stream extends App {
 
   val nats: Stream[Int, Int] = stream(identity, _ + 1)
 
-  def all = nats.odds merge nats.evens
+  val all = nats.odds merge nats.evens
 
   runIO(all)(Coproduct(1, 1), h => println(s"⇒ $h"))
   println
 
-  def oddsXevens = nats.odds until (_ > 25, nats.evens)
+  val oddsXevens = nats.odds until (_ > 25, nats.evens)
 
   runIO(oddsXevens)(
     Coproduct((1, 1)),
     h => println(s"⇒ $h"))
+  println
+
+  val dup = nats.duplicate
+
+  runIO(dup)(Coproduct(1), h => println(s"⇒ $h"))
+  println
 }

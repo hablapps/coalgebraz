@@ -18,6 +18,8 @@ class StreamOps[H, X](val self: Stream[H, X]) {
   def odds: Stream[H, X] = oddsS(self)
 
   def evens: Stream[H, X] = evensS(self)
+
+  def duplicate: Stream[H, X :+: X :+: CNil] = duplicateS(self)
 }
 
 trait ToStreamOps {

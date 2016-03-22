@@ -22,19 +22,31 @@ trait StreamCore extends syntax.ToStreamOps {
   def evensS[H, X](s: Stream[H, X]): Stream[H, X] =
     stream(x => s(s(x).tail).head, x => s(s(x).tail).tail)
 
+  def duplicateS[H, X](s: Stream[H, X]): Stream[H, X :+: X :+: CNil] = { xx =>
+    type R = X :+: X :+: CNil
+    object toStreamF extends Poly1 {
+      implicit val caseX = at[X] { x =>
+        xx.head.isDefined.fold(
+          StreamF(s(x).head, Coproduct[X :+: CNil](x).extendLeft[X]),
+          s(x).map(x2 => Coproduct[R](x2)))
+      }
+    }
+    xx.fold(toStreamF)
+  }
+
   def mergeS[H, X, Y](
       s1: Stream[H, X])(
       s2: Stream[H, Y]): Stream[H, (X, Y) :+: (Y, X) :+: CNil] = {
-    type T = (X, Y) :+: (Y, X) :+: CNil
-    object toStream extends Poly1 {
+    type R = (X, Y) :+: (Y, X) :+: CNil
+    object toStreamF extends Poly1 {
       implicit val caseXY = at[(X, Y)] { case (x, y) =>
-        s1(x).map(Coproduct[T](y, _))
+        s1(x).map(Coproduct[R](y, _))
       }
       implicit val caseYX = at[(Y, X)] { case (y, x) =>
-        s2(y).map(Coproduct[T](x, _))
+        s2(y).map(Coproduct[R](x, _))
       }
     }
-    _.fold(toStream)
+    _.fold(toStreamF)
   }
 
   def untilS[H, X, Y](
@@ -42,7 +54,7 @@ trait StreamCore extends syntax.ToStreamOps {
       s2: Stream[H, Y],
       p: H => Boolean): Stream[H, (X, Y) :+: Y :+: CNil] = {
     type R = (X, Y) :+: Y :+: CNil
-    object toStream extends Poly1 {
+    object toStreamF extends Poly1 {
       implicit val caseX = at[(X, Y)] { case (x, y) =>
         p(s1(x).head).fold(
           s2(y).map(y2 => Coproduct[R](y2)),
@@ -50,6 +62,6 @@ trait StreamCore extends syntax.ToStreamOps {
       }
       implicit val caseY = at[Y] { y => s2(y).map(Coproduct[R](_)) }
     }
-    _.fold(toStream)
+    _.fold(toStreamF)
   }
 }
