@@ -36,7 +36,7 @@ trait CCSCore extends syntax.ToCCSOps {
       m2: => CCS[A, Y]): CCS[A, (X, Y) :+: X :+: Y :+: CNil] = {
     type R = (X, Y) :+: X :+: Y :+: CNil
     object toNext extends Poly1 {
-      implicit val caseXY = at[(X, Y)] { case (x, y) => 
+      implicit val caseXY = at[(X, Y)] { case (x, y) =>
         m1(x).map(x2 => Coproduct[R](x2)).next ++
           m2(y).map(y2 => Coproduct[R](y2)).next
       }
@@ -66,13 +66,13 @@ trait CCSCore extends syntax.ToCCSOps {
         b <- l2
         if p(a, b)
       } yield (a, b)
-  
+
     def isDual(v1: A \/ A, v2: A \/ A): Boolean = (v1, v2) match {
       case (-\/(a1), \/-(a2)) if (a1 == a2) => true
       case (\/-(a1), -\/(a2)) if (a1 == a2) => true
       case _ => false
     }
-  
+
     def handshake(x: X, y: Y)
         : (X, Y, LazyList[(A \/ A, X)], LazyList[(A \/ A, Y)]) = {
       val nxt1 = m1(x).next
@@ -82,9 +82,22 @@ trait CCSCore extends syntax.ToCCSOps {
           case ((_, x2), (_, y2)) => handshake(x2, y2)
         }
     }
-  
+
     val (x, y, _nxt1, _nxt2) = handshake(xy.head, xy.tail.head)
-  
+
     CCSF(_nxt1.map(_.map(_ :: y :: HNil)) ++ _nxt2.map(_.map(x :: _ :: HNil)))
+  }
+
+  def restartCCS[A, X](m: => CCS[A, X]): CCS[A, X :+: (X, X) :+: CNil] = {
+    type R = X :+: (X, X) :+: CNil
+    object poly extends Poly1 {
+      implicit val caseX = at[X] { x => m(x).map(Coproduct[R](x, _)) }
+      implicit val caseXX = at[(X, X)] { case (x1, x2) =>
+        m(x2).next.nonEmpty.fold(
+          m(x2).map(Coproduct[R](x1, _)),
+          m(x1).map(Coproduct[R](x1, _)))
+      }
+    }
+    _.fold(poly)
   }
 }

@@ -25,6 +25,8 @@ class CCSOps[A1, X1](val self: CCS[A1, X1]) {
     }
     renaming(self)(lift(f orElse PartialFunction(identity)))
   }
+
+  def restart: CCS[A1, X1 :+: (X1, X1) :+: CNil] = restartCCS(self)
 }
 
 trait ToCCSOps {

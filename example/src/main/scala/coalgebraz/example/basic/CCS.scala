@@ -33,16 +33,16 @@ object CCS extends App {
   def DFM = VM / { case `item` => figs }
   def CRM = VM / { case `item` => crisps }
 
-  def CS = pub.out %: coin.out %: coffee.in %: Z
+  def CS = (pub.out %: coin.out %: coffee.in %: Z).restart
 
-  def CM = coin.in %: coffee.out %: Z
+  def CM = (coin.in %: coffee.out %: Z).restart
 
   def SmUni = (CS | CM) \ Set(coin, coffee)
 
   def SmUni2 = (CS | CS | CM) \ Set(coin, coffee)
 
-  runCCSIO(SmUni2)(
-    (Inl(Inl(Inl(()))) :: Inl(Inl(Inl(()))) :: HNil) :: Inl(Inl(())) :: HNil,
+  runCCSIO(SmUni)(
+    Inl(Inl(Inl(Inl(())))) :: Inl(Inl(Inl(()))) :: HNil,
     l => println(s"⇒ $l".toLowerCase),
     r => println(s"⇒ _${r}_".toLowerCase))
 
