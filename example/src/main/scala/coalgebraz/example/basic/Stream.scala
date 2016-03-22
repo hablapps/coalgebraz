@@ -22,7 +22,9 @@ object Stream extends App {
   runIO(all)(Coproduct(1, 1), h => println(s"⇒ $h"))
   println
 
-  // runIO(odd[Int].until(_ > 25, even))(
-  //   (1 to 100 toList, false),
-  //   h => println(s"⇒ $h"))
+  def oddsXevens = nats.odds until (_ > 25, nats.evens)
+
+  runIO(oddsXevens)(
+    Coproduct((1, 1)),
+    h => println(s"⇒ $h"))
 }

@@ -9,6 +9,7 @@ import Coalgebraz._
 class StreamF[H, X](val head: H, _tail: => X) {
   def tail: X = _tail
   def map[Y](f: X => Y): StreamF[H, Y] = StreamF(head, f(tail))
+  def bimap[J, Y](f: H => J, g: X => Y) = StreamF(f(head), tail) map g
 }
 
 object StreamF {
@@ -96,6 +97,13 @@ trait CodataInstances {
 
   implicit def StreamFFunctor[H] = new Functor[StreamF[H, ?]] {
     def map[A, B](r: StreamF[H, A])(f: A => B) = r map f
+  }
+
+  implicit def StreamFBifunctor = new Bifunctor[StreamF] {
+    def bimap[A, B, C, D](
+        r: StreamF[A, B])(
+        f: A => C, g: B => D): StreamF[C, D] =
+      r bimap (f, g)
   }
 
   implicit def MooreFFunctor[I, O] = new Functor[MooreF[I, O, ?]] {
