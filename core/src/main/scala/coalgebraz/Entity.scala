@@ -8,7 +8,7 @@ trait EntityCore extends EntityNextDsl
     with EntityWrapDsl
     with ToObservableOps
     with ToMappableOps
-    with syntax.ToEntityOps {
+    with syntax.ToEntityOps { self =>
 
   type Entity[I, O, B, X] = Coalgebra[EntityF[I, O, B, ?], X]
 
@@ -293,6 +293,96 @@ trait EntityCore extends EntityNextDsl
       val (o2s, ox2) = feed(co2, o1s, x2)
       (o2s, (ox1 |@| ox2)(ev1(_, _)))
     })
+  }
+
+  import shapeless._, ops.coproduct.Inject
+
+  /* From CCS & CSP */
+
+  def prefixing[I, O, B, X](
+      co: Entity[I, O, B, X])(
+      b: B): Entity[I, O, B, X :+: X :+: CNil] = { xx =>
+    object poly extends Poly1 {
+      implicit val caseX = at[X] { x =>
+        xx.head.isDefined.fold[EntityF[I, O, B, X :+: X :+: CNil]](
+          EntityF(b, (_: I) => Coproduct[X :+: X :+: CNil](x).reverse),
+          co(x).map(Coproduct[X :+: X :+: CNil](_).reverse))
+      }
+    }
+    xx.fold(poly)
+  }
+
+  // External choice
+  def choice[I1, O1, B1, X1, I2, O2, B2, X2](
+      co1: Entity[I1, O1, B1, X1],
+      co2: Entity[I2, O2, B2, X2]): Entity[
+        I1 :+: I2 :+: CNil,
+        O1 :+: O2 :+: CNil,
+        (B1, B2) :+: B1 :+: B2 :+: CNil,
+        (X1, X2) :+: X1 :+: X2 :+: CNil] = {
+    object toEntityF extends Poly1 {
+      implicit val caseXX = at[(X1, X2)] { case (x1, x2) =>
+        object poly extends Poly1 {
+          private def caseI[I, O, B, X, CO <: Coproduct, CX <: Coproduct](
+              co: Entity[I, O, B, X])(
+              i: I, x: X)(implicit
+              ev0: Inject[CO, O],
+              ev1: Inject[CX, X]) =
+            co(x).next(i).bimap(
+              _.map(Coproduct[CO](_)),
+              _.map(Coproduct[CX](_)))
+          implicit val caseI1 = at[I1] { i1 => caseI[
+            I1, O1, B1, X1,
+            O1 :+: O2 :+: CNil,
+            (X1, X2) :+: X1 :+: X2 :+: CNil](co1)(i1, x1)
+          }
+          implicit val caseI2 = at[I2] { i2 => caseI[
+            I2, O2, B2, X2,
+            O1 :+: O2 :+: CNil,
+            (X1, X2) :+: X1 :+: X2 :+: CNil](co2)(i2, x2)
+          }
+        }
+        EntityF[
+            I1 :+: I2 :+: CNil,
+            O1 :+: O2 :+: CNil,
+            (B1, B2) :+: B1 :+: B2 :+: CNil,
+            (X1, X2) :+: X1 :+: X2 :+: CNil](
+          Coproduct((co1(x1).observe, co2(x2).observe)),
+          (i: I1 :+: I2 :+: CNil) => i.fold(poly))
+      }
+      implicit val caseX1 = at[X1] { x1 =>
+        object poly extends Poly1 {
+          implicit val caseI1 = at[I1] { i1 =>
+            co1(x1).next(i1).bimap(
+              _.map(Coproduct[O1 :+: O2 :+: CNil](_)),
+              _.map(Coproduct[(X1, X2) :+: X1 :+: X2 :+: CNil](_))
+          )}
+          implicit val caseI2 = at[I2] { i2 =>
+            skip[O1 :+: O2 :+: CNil, (X1, X2) :+: X1 :+: X2 :+: CNil](
+              Coproduct[(X1, X2) :+: X1 :+: X2 :+: CNil](x1))
+          }
+        }
+        EntityF(
+          Coproduct[(B1, B2) :+: B1 :+: B2 :+: CNil](co1(x1).observe),
+          (i: I1 :+: I2 :+: CNil) => i.fold(poly))
+      }
+      implicit val caseX2 = at[X2] { x2 =>
+        object poly extends Poly1 {
+          implicit val caseI1 = at[I1] { i1 =>
+            skip[O1 :+: O2 :+: CNil, (X1, X2) :+: X1 :+: X2 :+: CNil](
+              Coproduct[(X1, X2) :+: X1 :+: X2 :+: CNil](x2))
+          }
+          implicit val caseI2 = at[I2] { i2 => co2(x2).next(i2).bimap(
+            _.map(Coproduct[O1 :+: O2 :+: CNil](_)),
+            _.map(Coproduct[(X1, X2) :+: X1 :+: X2 :+: CNil](_))
+          )}
+        }
+        EntityF(
+          Coproduct[(B1, B2) :+: B1 :+: B2 :+: CNil](co2(x2).observe),
+          (i: I1 :+: I2 :+: CNil) => i.fold(poly))
+      }
+    }
+    _.fold(toEntityF)
   }
 }
 

@@ -3,6 +3,8 @@ package syntax
 
 import scalaz._, Scalaz._
 
+import shapeless._, shapeless.{ :+: }
+
 import Coalgebraz._
 
 class EntityOps[I1, O1, B1, X1](val co1: Entity[I1, O1, B1, X1]) {
@@ -77,6 +79,12 @@ class EntityOps[I1, O1, B1, X1](val co1: Entity[I1, O1, B1, X1]) {
       ev0: ClearProduct.Aux[B1, B2, B],
       ev1: ClearProduct.Aux[X1, X2, X]) =
     Coalgebraz.flow(co1, co2)
+
+  def |#|[I2, O2, B2, X2](co2: Entity[I2, O2, B2, X2]): Entity[
+    I1 :+: I2 :+: CNil,
+    O1 :+: O2 :+: CNil,
+    (B1, B2) :+: B1 :+: B2 :+: CNil,
+    (X1, X2) :+: X1 :+: X2 :+: CNil] = choice(co1, co2)
 }
 
 trait ToEntityOps {

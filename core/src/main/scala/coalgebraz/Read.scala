@@ -2,6 +2,8 @@ package coalgebraz
 
 import scala.util.matching.Regex
 
+import scalaz._, Scalaz._
+
 trait Read[A] {
   def read(s: String): Option[A]
 }
@@ -25,6 +27,13 @@ object Read {
         case pattern(v) => Option(v)
         case _ => None
       }
+    }
+  }
+
+  implicit val readChar = new Read[Char] {
+    def read(s: String) = s match {
+      case s if s.length == 1 => s.head.some
+      case _ => Option.empty
     }
   }
 }
