@@ -23,8 +23,18 @@ object Entity extends App {
       (Int, Unit) :+: Int :+: Unit :+: CNil] =
     counter |#| copy[Char]
 
-  runIO(counterOrCopy)(
-    Coproduct[(Int, Unit) :+: Int :+: Unit :+: CNil](1, ()),
+  val counter2: Entity[Int, String, Int, Int] =
+    next(x => i => (x + i * 2) ~> s"Added: $i * 2")
+
+  val counterOrCounter2: Entity[
+      Int,
+      String :+: String :+: CNil,
+      (Int, Int) :+: Int :+: Int :+: CNil,
+      (Int, Int) :+: Int :+: Int :+: CNil] =
+    (counter |<|>| counter2)(false)
+
+  runIO(counterOrCounter2)(
+    Coproduct[(Int, Int) :+: Int :+: Int :+: CNil](1, 1),
     println(_),
     _.foreach(o => println(s"=> $o")))
 

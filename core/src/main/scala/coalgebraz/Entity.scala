@@ -312,8 +312,7 @@ trait EntityCore extends EntityNextDsl
     xx.fold(poly)
   }
 
-  // External choice
-  def choice[I1, O1, B1, X1, I2, O2, B2, X2](
+  def externalChoice[I1, O1, B1, X1, I2, O2, B2, X2](
       co1: Entity[I1, O1, B1, X1],
       co2: Entity[I2, O2, B2, X2]): Entity[
         I1 :+: I2 :+: CNil,
@@ -383,6 +382,25 @@ trait EntityCore extends EntityNextDsl
       }
     }
     _.fold(toEntityF)
+  }
+
+  // XXX: I've decided to have both entities sharing `I`, cause I could made the
+  // distinction easily, provided that I'd have different types to discriminate.
+  // While sharing `I`, the decision of which entity to use is based exclusively
+  // on the boolean condition.
+  def conditionalChoice[I, O1, B1, X1, O2, B2, X2](
+      b: Boolean,
+      co1: Entity[I, O1, B1, X1],
+      co2: Entity[I, O2, B2, X2]): Entity[
+        I,
+        O1 :+: O2 :+: CNil,
+        (B1, B2) :+: B1 :+: B2 :+: CNil,
+        (X1, X2) :+: X1 :+: X2 :+: CNil] = {
+    externalChoice(co1, co2).in[I](_ => i => List(
+      if (b)
+        Coproduct[I :+: I :+: CNil](i)
+      else
+        Coproduct[I :+: I :+: CNil](i).reverse))
   }
 }
 

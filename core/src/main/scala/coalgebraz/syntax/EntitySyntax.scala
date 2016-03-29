@@ -84,7 +84,14 @@ class EntityOps[I1, O1, B1, X1](val co1: Entity[I1, O1, B1, X1]) {
     I1 :+: I2 :+: CNil,
     O1 :+: O2 :+: CNil,
     (B1, B2) :+: B1 :+: B2 :+: CNil,
-    (X1, X2) :+: X1 :+: X2 :+: CNil] = choice(co1, co2)
+    (X1, X2) :+: X1 :+: X2 :+: CNil] = externalChoice(co1, co2)
+
+  def |<|>|[O2, B2, X2](co2: Entity[I1, O2, B2, X2])(b: Boolean): Entity[
+      I1,
+      O1 :+: O2 :+: CNil,
+      (B1, B2) :+: B1 :+: B2 :+: CNil,
+      (X1, X2) :+: X1 :+: X2 :+: CNil] =
+    conditionalChoice(b, co1, co2)
 }
 
 trait ToEntityOps {
