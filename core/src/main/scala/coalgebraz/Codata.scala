@@ -1,12 +1,15 @@
 package coalgebraz
 
-import scalaz._, Scalaz._, Scalaz.{ Identity => _ }
+import scala.collection.immutable.{ Stream => LazyList }
+
+import scalaz._, Scalaz._
 
 import Coalgebraz._
 
 class StreamF[H, X](val head: H, _tail: => X) {
   def tail: X = _tail
   def map[Y](f: X => Y): StreamF[H, Y] = StreamF(head, f(tail))
+  def bimap[J, Y](f: H => J, g: X => Y) = StreamF(f(head), tail) map g
 }
 
 object StreamF {
@@ -36,6 +39,23 @@ case class ObjectF[I, O, E, X](method: I => E \/ (O, X)) {
 case class TransitionSystemF[X](next: List[X]) {
   def map[Y](f: X => Y): TransitionSystemF[Y] =
     TransitionSystemF(next map f)
+}
+
+class CCSF[A, X](_next: => LazyList[(A \/ A, X)]) {
+
+  def next: LazyList[(A \/ A, X)] = _next
+
+  def map[Y](f: X => Y): CCSF[A, Y] =
+    CCSF(next map (_ map f))
+}
+
+object CCSF {
+
+  def apply[A, X](next: => LazyList[(A \/ A, X)]): CCSF[A, X] =
+    new CCSF(next)
+
+  def unapply[A, X](mf: CCSF[A, X]): Option[LazyList[(A \/ A, X)]] =
+    Option(mf.next)
 }
 
 case class EntityF[I, O, B, X](observe: B, next: I => (List[O], Option[X])) {
@@ -79,6 +99,13 @@ trait CodataInstances {
     def map[A, B](r: StreamF[H, A])(f: A => B) = r map f
   }
 
+  implicit def StreamFBifunctor = new Bifunctor[StreamF] {
+    def bimap[A, B, C, D](
+        r: StreamF[A, B])(
+        f: A => C, g: B => D): StreamF[C, D] =
+      r bimap (f, g)
+  }
+
   implicit def MooreFFunctor[I, O] = new Functor[MooreF[I, O, ?]] {
     def map[A, B](r: MooreF[I, O, A])(f: A => B) = r map f
   }
@@ -93,6 +120,10 @@ trait CodataInstances {
 
   implicit def TransitionSystemF = new Functor[TransitionSystemF[?]] {
     def map[A, B](r: TransitionSystemF[A])(f: A => B) = r map f
+  }
+
+  implicit def CCSF[A] = new Functor[CCSF[A, ?]] {
+    def map[B, C](r: CCSF[A, B])(f: B => C) = r map f
   }
 
   implicit def EntityFFunctor[I, O, C] = new Functor[EntityF[I, O, C, ?]] {

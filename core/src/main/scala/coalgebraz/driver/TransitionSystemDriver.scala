@@ -1,6 +1,7 @@
-package coalgebraz.driver
+package coalgebraz
+package driver
 
-import coalgebraz._, Coalgebraz._
+import Coalgebraz._
 
 trait TransitionSystemDriver {
 

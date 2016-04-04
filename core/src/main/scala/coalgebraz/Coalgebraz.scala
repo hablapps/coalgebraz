@@ -1,6 +1,7 @@
 package coalgebraz
 
 object Coalgebraz extends CodataInstances
+  with CCSCore with driver.CCSDriver
   with EntityCore with driver.EntityDriver
   with MealyCore with driver.MealyDriver
   with MooreCore with driver.MooreDriver

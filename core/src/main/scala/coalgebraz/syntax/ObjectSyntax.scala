@@ -1,6 +1,7 @@
-package coalgebraz.syntax
+package coalgebraz
+package syntax
 
-import coalgebraz._, Coalgebraz._
+import Coalgebraz._
 
 class ObjectOps[I1, O1, E1, X1](val self: Object[I1, O1, E1, X1]) {
 

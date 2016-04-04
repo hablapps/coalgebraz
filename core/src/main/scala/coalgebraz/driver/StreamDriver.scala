@@ -1,10 +1,11 @@
-package coalgebraz.driver
+package coalgebraz
+package driver
 
 import scala.collection.immutable.{ Stream => LazyList }
 
 import scalaz._, Scalaz._
 
-import coalgebraz._, Coalgebraz._
+import Coalgebraz._
 
 trait StreamDriver {
 

@@ -1,14 +1,25 @@
-package coalgebraz.syntax
+package coalgebraz
+package syntax
 
-import coalgebraz._, Coalgebraz._
+import shapeless._
+
+import Coalgebraz._
 
 class StreamOps[H, X](val self: Stream[H, X]) {
 
-  def merge[Y](s: Stream[H, Y]): Stream[H, (X, Y, Boolean)] =
-    mergeS(self, s)
+  def merge[Y](s: Stream[H, Y]): Stream[H, (X, Y) :+: (Y, X) :+: CNil] =
+    mergeS(self)(s)
 
-  def until(f: H => Boolean, s: Stream[H, X]): Stream[H, (X, Boolean)] =
-    untilS(self, s)(f)
+  def until[Y](
+      p: H => Boolean,
+      s: Stream[H, Y]): Stream[H, (X, Y) :+: Y :+: CNil] =
+    untilS(self)(s, p)
+
+  def odds: Stream[H, X] = oddsS(self)
+
+  def evens: Stream[H, X] = evensS(self)
+
+  def duplicate: Stream[H, X :+: X :+: CNil] = duplicateS(self)
 }
 
 trait ToStreamOps {
