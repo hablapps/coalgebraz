@@ -385,9 +385,9 @@ trait EntityCore extends EntityNextDsl
   }
 
   // XXX: I've decided to have both entities sharing `I`, cause I could made the
-  // distinction easily, provided that I'd have different types to discriminate.
-  // While sharing `I`, the decision of which entity to use is based exclusively
-  // on the boolean condition.
+  // distinction easily with different inputs, provided that I'd be able to
+  // discriminate among them. While sharing `I`, the decision of which entity to
+  // use is based exclusively on the boolean condition.
   def conditionalChoice[I, O1, B1, X1, O2, B2, X2](
       b: Boolean,
       co1: Entity[I, O1, B1, X1],
