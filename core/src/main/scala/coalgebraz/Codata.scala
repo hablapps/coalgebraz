@@ -118,6 +118,15 @@ object CoalgebraTypeclass extends App {
       coalg(_).next
   }
 
+  trait StreamInstance2[I, O] extends Stream[MooreF[I, O, ?], O] {
+
+    def head[X](coalg: Coalgebra[MooreF[I, O, ?], X]): X => O = coalg(_).output
+
+    // XXX: I don't like this `null` at all
+    def tail[X](coalg: Coalgebra[MooreF[I, O, ?], X]): X => X =
+      coalg(_).next(null.asInstanceOf[I])
+  }
+
   trait MooreAlgInstance[I, O] extends MooreAutomataAlg[MooreF[I, O, ?], I, O] {
     def moore[X](pi1: X => O, pi2: X => I => X): Coalgebra[MooreF[I, O, ?], X] =
       x => MooreF(pi1(x), pi2(x))
@@ -133,16 +142,36 @@ object CoalgebraTypeclass extends App {
     merge(odds, odds)
   }
 
+  def expr3[F[_]](implicit
+        ev0: MooreAutomataAlg[F, Int, Boolean],
+        ev1: MooreAutomata[F, Int, Boolean],
+        ev2: Stream[F, Boolean], // Moore Automata evidence should be enough!
+        ev3: Functor[F])
+      : Coalgebra[F, (Boolean, Boolean)] = {
+    import ev0._
+    val odds = moore[Boolean](x => x.fold(false, true), x => _ => ! x)
+    zipWith(_ && _)(odds, odds)
+  }
+
   implicit def mooreAlgInstance[I, O]: MooreAutomataAlg[MooreF[I, O, ?], I, O] =
     new MooreAlgInstance[I, O] {}
 
   implicit def mooreInstance[I, O]: MooreAutomata[MooreF[I, O, ?], I, O] =
     new MooreInstance[I, O] {}
 
-  runIO(expr2[MooreF[Int, Boolean, ?]](
-    mooreAlgInstance,
-    mooreInstance,
-    MooreFFunctor))(Coproduct(false, false), o => println(s"⇒ $o"))
+  implicit def streamInstance[I, O]: Stream[MooreF[I, O, ?], O] =
+    new StreamInstance2[I, O] {}
+
+  // runIO(expr2[MooreF[Int, Boolean, ?]](
+  //   mooreAlgInstance,
+  //   mooreInstance,
+  //   MooreFFunctor))(Coproduct(false, false), o => println(s"⇒ $o"))
+
+  runIO(expr3[MooreF[Int, Boolean, ?]](
+    mooreAlgInstance[Int, Boolean],
+    mooreInstance[Int, Boolean],
+    streamInstance[Int, Boolean],
+    MooreFFunctor))((false, false), o => println(s"⇒ $o"))
 
   // 2. ¿Es posible quitar el parámetro `A` de la typeclass Stream? Parece que
   // sí, pero nos encontramos con problemas a la hora de instanciarla con
