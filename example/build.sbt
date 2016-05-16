@@ -11,6 +11,7 @@ scalacOptions ++= Seq(
   "-language:postfixOps")
 
 unmanagedClasspath in Runtime <+= (baseDirectory) map { bd => Attributed.blank(bd / "src" / "main" / "scala" / "coalgebraz" / "example" / "geofence-spark-streaming" / "config") }
+unmanagedClasspath in Runtime <+= (baseDirectory) map { bd => Attributed.blank(bd / "src" / "main" / "scala" / "coalgebraz" / "example" / "geofence-flink-streaming" / "config") }
 
 resolvers += Resolver.sonatypeRepo("releases")
 
@@ -20,7 +21,9 @@ libraryDependencies ++= Seq(
   "org.scalaz" %% "scalaz-core" % "7.2.0",
   "org.scalatest" % "scalatest_2.11" % "2.2.4",
   "org.apache.spark" %% "spark-core" % "1.4.1",
-  "org.apache.spark" %% "spark-streaming" % "1.4.1")
+  "org.apache.spark" %% "spark-streaming" % "1.4.1",
+  "org.apache.flink" %% "flink-scala" % "1.0.0",
+  "org.apache.flink" %% "flink-streaming-scala" % "1.0.0")
 
 initialCommands in console := """
   | import scalaz._, Scalaz._
