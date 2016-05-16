@@ -8,7 +8,7 @@ import com.hablapps.geofence._ // Domain
 
 object SparkStreamingGeofence extends App {
   
-  val conf = new SparkConf().setAppName("IoTFence").setMaster("local[2]")
+  val conf = new SparkConf().setAppName("SparkStreamingGeofence").setMaster("local[2]")
   
   val batchInterval = Seconds(5) 
   val ssc = new StreamingContext(conf, batchInterval)
