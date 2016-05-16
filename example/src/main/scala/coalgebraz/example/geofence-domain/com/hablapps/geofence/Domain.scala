@@ -1,4 +1,4 @@
-package com.hablapps.sparkStreamingTests.geofence
+package com.hablapps.geofence
 
 import scala.util.Try
 

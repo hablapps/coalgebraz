@@ -1,12 +1,12 @@
-package com.hablapps.sparkStreamingTests
+package com.hablapps.geofence.sparkStreaming
 
 import org.apache.spark._
 import org.apache.spark.streaming._
 import org.apache.spark.streaming.dstream.DStream
 
-import com.hablapps.sparkStreamingTests.geofence._
+import com.hablapps.geofence._ // Domain
 
-object IoTFence extends App {
+object SparkStreamingGeofence extends App {
   
   val conf = new SparkConf().setAppName("IoTFence").setMaster("local[2]")
   
