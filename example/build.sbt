@@ -10,6 +10,8 @@ scalacOptions ++= Seq(
   "-language:implicitConversions",
   "-language:postfixOps")
 
+unmanagedClasspath in Runtime <+= (baseDirectory) map { bd => Attributed.blank(bd / "src" / "main" / "scala" / "coalgebraz" / "example" / "geofence-spark-streaming" / "config") }
+
 resolvers += Resolver.sonatypeRepo("releases")
 
 addCompilerPlugin("org.spire-math" %% "kind-projector" % "0.7.1")
