@@ -40,7 +40,7 @@ object GeofencesAkka extends App {
   // Pure data
   val fences = List(Geofence("a", Coordinate(1,1), 2, 3),
                     Geofence("b", Coordinate(1,1), 2, 3))
-  val initialState: State = State(0, Map[Entity,List[(Geofence,Int)]](), List.empty[String])
+  val initialState: State = State(0, Map.empty[Entity, List[(Geofence, Int)]], List.empty[String])
   val lines: Source[String, NotUsed] = Source(
     "tick" ::
     "tick" ::
@@ -56,8 +56,9 @@ object GeofencesAkka extends App {
   val events: Source[Event, NotUsed] =
     lines
       .map(Event.parse)
-      .filter(_.isDefined)
-      .map(_.get)
+      .collect {
+        case Some(e) => e
+      }
 
   val extractEvents: Flow[State, String, NotUsed] =
     Flow[State]
