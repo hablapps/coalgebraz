@@ -20,7 +20,9 @@ libraryDependencies ++= Seq(
   "org.scalaz" %% "scalaz-core" % "7.2.0",
   "org.scalatest" % "scalatest_2.11" % "2.2.4",
   "org.apache.spark" %% "spark-core" % "1.4.1",
-  "org.apache.spark" %% "spark-streaming" % "1.4.1")
+  "org.apache.spark" %% "spark-streaming" % "1.4.1",
+  "com.typesafe.akka" %% "akka-actor" % "2.4.4",
+  "com.typesafe.akka" %% "akka-stream" % "2.4.4")
 
 initialCommands in console := """
   | import scalaz._, Scalaz._
